@@ -70,3 +70,6 @@ class Gantry():
                       headers=self.headers)
         return res
     
+    def get_next_job(self):
+        #TODO call API
+        return "example"
