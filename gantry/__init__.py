@@ -1,2 +1,2 @@
-from gantry import Gantry
-from job import Job
+from .gantry import Gantry
+from .job import Job
