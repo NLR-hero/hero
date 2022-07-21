@@ -2,6 +2,8 @@ import os
 import requests
 import base64
 
+from . job import Job
+
 class Gantry():
     
     def __init__(self):
