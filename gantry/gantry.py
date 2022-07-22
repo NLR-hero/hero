@@ -32,7 +32,7 @@ class Gantry():
         self.access_token = response.json()['access_token']
         self.bearer_token = f'Bearer {self.access_token}'
 
-    def _get_job(self):
+    def get_job_data(self):
         self.job = requests.post(self.base_api_url + '/api/job/' + os.environ['GANTRY_JOB_ID'] + '/run', headers=self.headers).json()
         if not self.job['success']:
             print('Job does not exist')
