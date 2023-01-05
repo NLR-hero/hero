@@ -12,6 +12,7 @@ class Gantry():
         self.base_api_url = os.environ['GANTRY_BASE_API_URL']
         # 'https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token'
         self.auth_url = os.environ['GANTRY_AUTH_URL']
+        self.resource_name = os.environ['GANTRY_RESOURCE_NAME']
         self._get_token()
         self.headers = {
             'Authorization': self.bearer_token
@@ -77,7 +78,7 @@ class Gantry():
 
         results = []
         for job in jobs.json()['data']:
-            if (job['resource_name'] == "harbor.nrel.gov/dav-data-library/seatac:0.9.0"):
+            if (job['resource_name'] == self.resource_name):
                 results.append(Job(job))
         return results
 
@@ -87,7 +88,7 @@ class Gantry():
             "queue_name": "standard",
             "status": "ready",
             "priority": None,
-            "resource_name": 'harbor.nrel.gov/dav-data-library/seatac:0.9.0',
+            "resource_name": self.resource_name,
             "job_description": job
         }
         res = requests.post(self.base_api_url + '/api/jobs/',
