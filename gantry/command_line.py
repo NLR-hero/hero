@@ -33,7 +33,8 @@ def main():
 
     elif args.command == "get":
         print(f"Getting single job from {g.resource_name}:")
-        print(g.get_next_job())
+        job = g.get_next_job()
+        print(type(job), str(job))
 
     elif args.command == "purge":
         print(f"Removing all jobs from {g.resource_name}:")

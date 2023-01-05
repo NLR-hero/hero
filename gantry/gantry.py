@@ -71,10 +71,10 @@ class Gantry():
             return "example"
 
     def get_next_job(self):
-        jobs = self.jobs()
-        for job in jobs:
+        for job in self.jobs():
             if job._packet['status'] not in ['done', 'running']:
                 return job
+        return None
 
     def jobs(self):
         jobs = requests.get(self.base_api_url +
