@@ -10,6 +10,7 @@ def get_args():
     subparsers = parser.add_subparsers(
         help='list, remove, or create', dest='command')
     list_parser = subparsers.add_parser("list")
+    get_parser = subparsers.add_parser("get")
     remove_parser = subparsers.add_parser("purge")
     create_parser = subparsers.add_parser("create")
     create_parser.add_argument("job")
@@ -29,6 +30,10 @@ def main():
         print(f"Listing all jobs in {g.resource_name}:")
         for j in g.jobs():
             print(j)
+
+    elif args.command == "get":
+        print(f"Getting single job from {g.resource_name}:")
+        print(g.get_next_job())
 
     elif args.command == "purge":
         print(f"Removing all jobs from {g.resource_name}:")
