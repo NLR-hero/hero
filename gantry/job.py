@@ -10,6 +10,10 @@ class Job():
         return f"{self._packet['id']}  {self._packet['status']}  {self._inputs['name']} "
 
     @property
+    def job_id(self):
+        return self._packet['id']
+
+    @property
     def inputs(self):
         return self._inputs
 
