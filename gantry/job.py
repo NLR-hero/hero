@@ -20,3 +20,7 @@ class Job():
     @property
     def results(self):
         return self._results
+
+    @property
+    def status(self):
+        return self._packet['status']
