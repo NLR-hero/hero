@@ -75,7 +75,7 @@ class Gantry():
             return "example"
 
     def get_next_job(self):
-        for job in [x for x in self.jobs() if job.status != "complete"]:
+        for job in [x for x in self.jobs() if x.status != "complete"]:
             if job._packet['status'] not in ['done', 'running']:
                 return job
         return None
