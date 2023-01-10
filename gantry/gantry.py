@@ -97,7 +97,8 @@ class Gantry():
             "status": "ready",
             "priority": None,
             "resource_name": self.resource_name,
-            "job_description": job
+            "job_description": job,
+            "created_by": "mlunacek",
         }
         res = requests.post(self.base_api_url + '/api/jobs/',
                             json=job_template,
