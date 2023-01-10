@@ -90,26 +90,16 @@ class Gantry():
                 results.append(Job(job))
         return results
 
-    def submit_job(self, job, resource_name=None):
+    def submit_job(self, job, priority=None):
 
-        if resource_name is None:
-            job_template = {
-                "queue_name": "standard",
-                "status": "ready",
-                "priority": None,
-                "resource_name": self.resource_name,
-                "job_description": job,
-                "created_by": "mlunacek",
-            }
-        else:
-            job_template = {
-                "queue_name": "standard",
-                "status": "ready",
-                "priority": None,
-                "resource_name": resource_name,
-                "job_description": job,
-                "created_by": "mlunacek",
-            }
+        job_template = {
+            "queue_name": "standard",
+            "status": "ready",
+            "priority": priority,
+            "resource_name": self.resource_name,
+            "job_description": job,
+            "created_by": "mlunacek",
+        }
 
         res = requests.post(self.base_api_url + '/api/jobs/',
                             json=job_template,
