@@ -49,6 +49,11 @@ class Gantry():
 
         self.data = self.job['data']['job_description']
 
+    def get_job_results(self, job_id):
+        job = requests.post(self.base_api_url + '/api/job/' +
+                            str(job_id) + '/run', headers=self.headers).json()
+        return job
+
     def add_result(self, result, job_id=None):
         if job_id is None:
             requests.post(self.base_api_url + '/api/job/' +
