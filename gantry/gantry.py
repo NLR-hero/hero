@@ -90,7 +90,7 @@ class Gantry():
                             '/api/jobs/', headers=self.headers)
 
         results = []
-        for job in jobs.json()['data']:
+        for job in jobs.json():
             if (job['resource_name'] == self.resource_name):
                 results.append(Job(job))
         return results
