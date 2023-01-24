@@ -95,6 +95,11 @@ class Gantry():
                 results.append(Job(job))
         return results
 
+    def set_job_status(self, id, status):
+        res = requests.put(f'{self.base_api_url}/api/job/{id}',
+                            json={'status': status},
+                            headers=self.headers)
+
     def submit_job(self, job, priority=None):
 
         job_template = {
