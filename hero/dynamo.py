@@ -105,7 +105,7 @@ def update_item_results(table, job_id, queue, results={}):
             "#results": "results",
         },
         ExpressionAttributeValues={
-            ":s": "done",
+            ":s": COMPLETE,
             ":r": results,
         },
         ReturnValues="UPDATED_NEW",

@@ -7,12 +7,14 @@ from .dynamo import update_item_claimed, get_project_table
 from .rds import get_next_available_job
 
 
-def retry(pull_function, project, queue, queue_url, attempts=3):
+def retry(pull_function, project, queue, queue_url, attempts=1):
     retries = 0
     while retries < attempts:
         task = pull_function(project, queue, queue_url)
         if task is None:
             retries += 1
+            if retries >= attempts:
+                return None
             time.sleep(retries)
         else:
             return task

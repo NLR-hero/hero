@@ -1,4 +1,5 @@
 import json
+import time
 from botocore.exceptions import ClientError
 
 from .task import Task, COMPLETE, CLAIMED, READY
@@ -17,6 +18,10 @@ from .pull import retry, pull_task_sqs_dynamo
 import socket
 
 get_session()
+
+# class SuperHero:
+# - clear_tasks
+# - create_tables, dynamo_streams, lambda_functions with tagging
 
 
 class Hero:
@@ -55,7 +60,7 @@ class Hero:
         task_ids = put_items(self._table, tasks)
         return task_ids
 
-    def clear_queue(self):
+    def clear_tasks(self):
         """Clears the queue of all messages by deleting queue"""
         self._queue_url = create_queue(self._project, self._queue)
         update_queue_url(self._project, self._queue, self._queue_url)
@@ -80,25 +85,37 @@ class Hero:
             task = Task(**raw_task)
         except ClientError as e:
             if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
+                print("queue does not exist, getting new queue")
+                time.sleep(1)
                 self._queue_url = get_queue_url(self._project, self._queue)
-                task = retry(
+                raw_task = retry(
                     pull_task_sqs_dynamo,
                     self._project,
                     self._queue,
                     self._queue_url,
                     attempts=attempts,
                 )
-            else:
-                raise e
+                if raw_task is None:
+                    return None
+                del raw_task["id"]
+                del raw_task["queue"]
+                raw_task["claimed_resource_name"] = self._resource_name
+                raw_task["status"] = CLAIMED
+                task = Task(**raw_task)
 
         return task
 
     def update_task(self, task, results):
         """Updates a task in the queue"""
-        task.completed_resource_name = self._resource_name
+        # task.completed_resource_name = self._resource_name
         task.results = results
         task.status = COMPLETE
         update_item_results(
             self._table, task.task_id, task.queue_name, results=task.results
         )
         return task
+
+    def get_task(self, task_id):
+        """Gets a task from the queue"""
+        response = self._table.get_item(Key={"id": task_id, "queue": self._queue})
+        return response["Item"]

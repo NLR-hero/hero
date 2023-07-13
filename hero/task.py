@@ -27,13 +27,17 @@ class Task:
     inputs: dict
     # defaults
     task_id: Optional[str] = field(default_factory=get_new_uuid)
-    status: str = "READY"
-    insert_resource_name: str = None
-    claimed_resource_name: str = None
-    complete_resource_name: str = None
+    status: str = READY
+    created_by: str = None
+
     insert_time: str = None
     claimed_time: str = None
     complete_time: str = None
+
+    insert_resource_name: str = None
+    claimed_resource_name: str = None
+    complete_resource_name: str = None
+
     attempts: int = 0
     inputs_s3: str = None
     results: dict = field(default_factory=dict)
