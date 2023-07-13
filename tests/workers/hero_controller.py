@@ -18,11 +18,6 @@ if __name__ == "__main__":
         {"name": "test_3"},
         {"name": "test_4"},
         {"name": "test_5"},
-        {"name": "test_6"},
-        {"name": "test_7"},
-        {"name": "test_8"},
-        {"name": "test_9"},
-        {"name": "test_10"},
     ]
 
     task_ids = hero.put_tasks(items)
@@ -32,7 +27,7 @@ if __name__ == "__main__":
     while True:
         done = get_jobs_status_count_by_queue_url(hero._project, hero._queue, COMPLETE)
         print(f"done: {done}")
-        if done == 10:
+        if done == 5:
             break
         time.sleep(1)
 

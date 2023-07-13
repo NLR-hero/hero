@@ -77,6 +77,9 @@ class Hero:
             )
             ## TODO: clean up dynamo description
             if raw_task is None:
+                # queue may not exist..
+                print("REDO this functionality...")
+                self._queue_url = get_queue_url(self._project, self._queue)
                 return None
             del raw_task["id"]
             del raw_task["queue"]
