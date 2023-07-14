@@ -25,7 +25,7 @@ def test_hero():
         print(task2)
 
     print(hero._queue_url)
-    hero.clear_queue()
+    hero.clear_tasks()
     print(hero._queue_url)
 
     # pull jobs

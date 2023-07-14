@@ -1,5 +1,6 @@
 import hero as hq
 
+hq.session.get_session()
 
 def test_different_task_id():
     project = hq.session.get_project()
@@ -21,7 +22,13 @@ def test_same_task_id():
     data = {"name": "test-packet"}
     task = hq.task.Task(project, queue, queue_url, data)
 
-    task2 = hq.task.Task(**task.task)
+    # TODO this needs to be cleaned up on the project dynamo table.
+    # in other words, we need to make sure that the dynamo table uses
+    # task_id and queue_name not id and queue.
+    raw_data = task.data
+    del raw_data["id"]
+    del raw_data["queue"]
+    task2 = hq.task.Task(**raw_data)
 
     assert task.task_id == task2.task_id
 
