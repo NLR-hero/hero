@@ -7,10 +7,10 @@ from .dynamo import update_item_claimed, get_project_table
 from .rds import get_next_available_job
 
 
-def retry(pull_function, project, queue, queue_url, attempts=1):
+def retry(pull_function, session, project, queue, queue_url, attempts=1):
     retries = 0
     while retries < attempts:
-        task = pull_function(project, queue, queue_url)
+        task = pull_function(session, project, queue, queue_url)
         if task is None:
             retries += 1
             if retries >= attempts:
@@ -20,16 +20,16 @@ def retry(pull_function, project, queue, queue_url, attempts=1):
             return task
 
 
-def pull_task_sqs_dynamo(project, queue, queue_url):
-    table = get_project_table(project)
-    message_packet = receive_messages(queue_url)
+def pull_task_sqs_dynamo(session, project, queue, queue_url):
+    table = get_project_table(session, project)
+    message_packet = receive_messages(session, queue_url)
 
     if "Messages" in message_packet.keys():
         for m in message_packet["Messages"]:
             task = json.loads(m["Body"])
             # either way we need to delete the message from the queue
-            delete_message(queue_url, m)
-            if update_item_claimed(table, task["id"], task["queue"]) == True:
+            delete_message(session, queue_url, m)
+            if update_item_claimed(session, table, task["id"], task["queue"]) == True:
                 return task
             else:
                 print(f"task {task['id']} already claimed")

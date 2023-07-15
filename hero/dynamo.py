@@ -8,32 +8,43 @@ import botocore
 from botocore.exceptions import ClientError
 
 from .session import get_project, get_queue
+from .task import READY, CLAIMED, COMPLETE
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 log = logging.getLogger("gantry:dynamo")
 
-from .task import READY, CLAIMED, COMPLETE
+
+class Dynamo:
+    def __init__(self, session):
+        self.session = session
+        self.table_name = 'hero-table'
+
+    def get_table(self, table_name):
+        """Gets the table opject for table_name"""
+        dyn_resource = self.session.resource('dynamodb')
+        table = dyn_resource.Table(table_name)
+        table.load()
+        return table
 
 
-def get_table(table_name):
+
+def get_table(session, table_name):
     """Gets the table opject for table_name"""
-    dyn_resource = boto3.resource("dynamodb")
+    dyn_resource = session.resource("dynamodb")
     table = dyn_resource.Table(table_name)
     table.load()
     return table
 
 
-def get_project_table(project):
+def get_project_table(session, project):
     """Gets the table opject for a specific project"""
     table_name = f"hero-{project}"
-    return get_table(table_name)
+    return get_table(session, table_name)
 
 
-def update_queue_url(
-    project, queue, queue_url, table_name="hero-dynamodb-project-queue-names"
-):
+def update_queue_url(session, project, queue, queue_url, table_name="hero-dynamodb-project-queue-names"):
     """Sets the current queue_url in the dynamodb table"""
-    table = get_table(table_name)
+    table = get_table(session, table_name)
     response = table.update_item(
         Key={"queue_prefix": queue, "project_name": project},
         UpdateExpression="set  #queue_url=:s",
@@ -46,8 +57,8 @@ def update_queue_url(
     assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
-def get_queue_url(project, queue, table_name="hero-dynamodb-project-queue-names"):
-    table = get_table(table_name)
+def get_queue_url(session, project, queue, table_name="hero-dynamodb-project-queue-names"):
+    table = get_table(session, table_name)
     response = table.get_item(Key={"queue_prefix": queue, "project_name": project})
     return response["Item"]["queue_url"]
 

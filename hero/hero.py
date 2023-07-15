@@ -1,5 +1,6 @@
 import json
 import time
+import requests
 from botocore.exceptions import ClientError
 
 from .task import Task, COMPLETE, CLAIMED, READY
@@ -12,8 +13,9 @@ from .dynamo import (
     update_item_results,
 )
 from .queue import create_queue, receive_messages
-from .session import get_project, get_queue, get_session
+from .session import get_project, get_queue, get_session, get_client_credentials
 from .pull import retry, pull_task_sqs_dynamo
+from .auth import get_token_from_cognito, assume_role
 
 import socket
 
@@ -26,12 +28,34 @@ get_session()
 
 class Hero:
     def __init__(self, project=None, queue=None):
-        self._session = get_session()
+        client_id, client_secret = get_client_credentials()
+        scopes = ['hero-api/user']
+        self.access_token = get_token_from_cognito(client_id=client_id, client_secret=client_secret, scopes=scopes)
+        self.aws_credentials = assume_role(self.access_token)
+
+        self._session = get_session(self.aws_credentials)
         self._project = get_project(project)
         self._queue = get_queue(queue)
-        self._queue_url = get_queue_url(self._project, self._queue)
-        self._table = get_project_table(self._project)
+
+        #TODO: This fails if the queue doesn't exist.
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue)
+        except KeyError as e:
+            print('Queue not found, you need to create the queue first.')
+            # self._queue_url = create_queue(self._session, self._project, self._queue)
+        self._table = get_project_table(self._session, self._project)
         self._resource_name = socket.gethostname()
+
+        
+
+    # def get_queue_url(self):
+    #     endpoint = f'{API_URL}/hero/api/v2/project/{self.project}/queue/{self.queue}'
+    #     response = requests.get(endpoint,
+    #         headers={
+    #             'Authorization': f'Bearer {self.access_token}'
+    #         },
+    #         verify=False)
+    #     return response.json()['QueueUrl']
 
     def put_task(self, item):
         task = Task(
@@ -62,14 +86,15 @@ class Hero:
 
     def clear_tasks(self):
         """Clears the queue of all messages by deleting queue"""
-        self._queue_url = create_queue(self._project, self._queue)
-        update_queue_url(self._project, self._queue, self._queue_url)
+        self._queue_url = create_queue(self._session, self._project, self._queue)
+        update_queue_url(self._session, self._project, self._queue, self._queue_url)
 
     def pull_task(self, attempts=3):
         """Pulls a task from the queue. If the queue is empty, it will return None."""
         try:
             raw_task = retry(
                 pull_task_sqs_dynamo,
+                self._session,
                 self._project,
                 self._queue,
                 self._queue_url,
@@ -79,20 +104,22 @@ class Hero:
             if raw_task is None:
                 # queue may not exist..
                 print("REDO this functionality...")
-                self._queue_url = get_queue_url(self._project, self._queue)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue)
                 return None
             del raw_task["id"]
             del raw_task["queue"]
             raw_task["claimed_resource_name"] = self._resource_name
             raw_task["status"] = CLAIMED
             task = Task(**raw_task)
+            return task
         except ClientError as e:
             if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
                 print("queue does not exist, getting new queue")
                 time.sleep(1)
-                self._queue_url = get_queue_url(self._project, self._queue)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue)
                 raw_task = retry(
                     pull_task_sqs_dynamo,
+                    self._session,
                     self._project,
                     self._queue,
                     self._queue_url,
@@ -105,8 +132,9 @@ class Hero:
                 raw_task["claimed_resource_name"] = self._resource_name
                 raw_task["status"] = CLAIMED
                 task = Task(**raw_task)
+                return task
 
-        return task
+        
 
     def update_task(self, task, results):
         """Updates a task in the queue"""

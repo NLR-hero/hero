@@ -1,13 +1,25 @@
-# Gantry
+# Hero Python Client
 
 This is for testing the scaling version of `hero`.
 
 ## Install
 
-    python3 -m venv env
-    source env/bin/activate
-    pip install -r requirements.txt
-    python setup.py develop
+```
+python3 -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+python setup.py develop
+```
+
+If you are using `pyenv` then the virtual environment will automaticall load if available from the `.python-version` file.
+
+To create a new venv through pyenv run:
+
+```
+pyenv virtualenv 3.9 hero_3.9
+pyenv activate hero_3.9
+```
+    
 
 ## Execute
 
@@ -34,3 +46,8 @@ On eagle, you'll need to load the following modules.
 
 
 
+## Infrastructure
+
+`nvm use 18`
+`npm install -g aws-cdk`
+`cdk synth`

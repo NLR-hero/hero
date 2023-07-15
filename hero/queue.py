@@ -12,44 +12,44 @@ logging.basicConfig(level=os.environ.get("LOGLEVEL", "ERROR"))
 log = logging.getLogger("gantry:sqs")
 
 
-def receive_messages(queue_url, num=1):
-    client = boto3.client("sqs")
+def receive_messages(session, queue_url, num=1):
+    client = session.client("sqs")
     message_packet = client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=num)
     return message_packet
 
 
-def delete_message(queue_url, message):
-    client = boto3.client("sqs")
+def delete_message(session, queue_url, message):
+    client = session.client("sqs")
     response = client.delete_message(
         QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"]
     )
     assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
 
 
-def list_queues(project=None, queue=None):
+def list_queues(session, project=None, queue=None):
     project = get_project(project)
     queue = get_queue(queue)
     queue_prefix = f"hero-{project}-{queue}-"
-    client = boto3.client("sqs")
+    client = session.client("sqs")
     response = client.list_queues(QueueNamePrefix=queue_prefix)
     for queue_url in response.get("QueueUrls", []):
         yield queue_url
 
 
-def delete_other_queues(queue_url, project=None, queue=None):
-    queue_list = list(list_queues(project, queue))
+def delete_other_queues(session, queue_url, project=None, queue=None):
+    queue_list = list(list_queues(session, project, queue))
     for temp_queue_url in queue_list:
         temp_queue_name = temp_queue_url.split("/")[-1]
         if temp_queue_name != queue_url:
             try:
                 log.info(f"deleting {temp_queue_url}")
-                client = boto3.client("sqs")
+                client = session.client("sqs")
                 client.delete_queue(QueueUrl=temp_queue_url)
             except botocore.exceptions.ClientError as err:
                 log.error(str(err))
 
 
-def create_queue(project=None, queue=None):
+def create_queue(session, project=None, queue=None):
     """Creates virtual queue"""
     project = get_project(project)
     queue = get_queue(queue)
@@ -57,8 +57,8 @@ def create_queue(project=None, queue=None):
 
     queue_name = f"hero-{project}-{queue}-{str(uuid.uuid4())}"
 
-    client = boto3.client("sqs")
-    delete_other_queues(queue_name, project, queue)
+    client = session.client("sqs")
+    delete_other_queues(session, queue_name, project, queue)
     client.create_queue(
         QueueName=queue_name,
         Attributes={"VisibilityTimeout": visibility_timeout},

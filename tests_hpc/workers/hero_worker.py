@@ -4,7 +4,7 @@ import time
 hr.session.get_session()
 
 if __name__ == "__main__":
-    hero = hr.Hero("test-project", "queue-001")
+    hero = hr.Hero("test-project-2", "queue-001")
     while True:
         task = hero.pull_task(attempts=5)
         print(task)
