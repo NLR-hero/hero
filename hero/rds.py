@@ -10,8 +10,7 @@ from .task import READY, CLAIMED, COMPLETE, FAILED
 def rds_connection():
     # send to DB
     credentials = {
-        # "host": "hero-database-2.cluster-c5rea6ohaa0g.us-west-2.rds.amazonaws.com",
-        "host": "dev-hero-db.c5rea6ohaa0g.us-west-2.rds.amazonaws.com",
+        "host": "hero-database-2.cluster-c5rea6ohaa0g.us-west-2.rds.amazonaws.com",
         "database": "hero",
         "user": "heroops",
         "application_name": "hero-python",

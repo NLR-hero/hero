@@ -92,6 +92,7 @@ class Hero:
     def pull_task(self, attempts=3):
         """Pulls a task from the queue. If the queue is empty, it will return None."""
         try:
+            print('Reading from quere:', self._queue_url)
             raw_task = retry(
                 pull_task_sqs_dynamo,
                 self._session,
@@ -100,6 +101,7 @@ class Hero:
                 self._queue_url,
                 attempts=attempts,
             )
+            print(raw_task)
             ## TODO: clean up dynamo description
             if raw_task is None:
                 # queue may not exist..

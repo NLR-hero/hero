@@ -86,7 +86,7 @@ def get_item(table, job_id, queue):
     return table.get_item(Key={"id": job_id, "queue": queue})
 
 
-def update_item_claimed(table, job_id, queue):
+def update_item_claimed(session, table, job_id, queue):
     """Updates the status of an item to claimed only if it is ready.
     Returns True if the item was updated, False if it was not.
     """
