@@ -29,7 +29,7 @@ get_session()
 class Hero:
     def __init__(self, project=None, queue=None):
         client_id, client_secret = get_client_credentials()
-        scopes = ['hero-api/user']
+        scopes = ['hero-api/user', f'project/{project}']
         self.access_token = get_token_from_cognito(client_id=client_id, client_secret=client_secret, scopes=scopes)
         self.aws_credentials = assume_role(self.access_token)
 
