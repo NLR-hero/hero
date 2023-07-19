@@ -1,6 +1,11 @@
-import json
+"""
+Welcome to Hero.
+
+
+"""
 import time
 import requests
+import socket
 from botocore.exceptions import ClientError
 
 from .task import Task, COMPLETE, CLAIMED, READY
@@ -12,51 +17,50 @@ from .dynamo import (
     update_queue_url,
     update_item_results,
 )
-from .queue import create_queue, receive_messages
+from .queue import create_queue, receive_messages, delete_other_queues
 from .session import get_project, get_queue, get_session, get_client_credentials
 from .pull import retry, pull_task_sqs_dynamo
 from .auth import get_token_from_cognito, assume_role
 
-import socket
 
-get_session()
 
-# class SuperHero:
-# - clear_tasks
-# - create_tables, dynamo_streams, lambda_functions with tagging
-
+def required_login(func):
+    def wrapper(self, *args, **kwargs):
+        self.login()
+        return func(self, *args, **kwargs)
+    return wrapper
 
 class Hero:
     def __init__(self, project=None, queue=None):
-        client_id, client_secret = get_client_credentials()
-        scopes = ['hero-api/user', f'project/{project}']
-        self.access_token = get_token_from_cognito(client_id=client_id, client_secret=client_secret, scopes=scopes)
-        self.aws_credentials = assume_role(self.access_token)
-
-        self._session = get_session(self.aws_credentials)
+        self.aws_credentials = None
         self._project = get_project(project)
         self._queue = get_queue(queue)
-
-        #TODO: This fails if the queue doesn't exist.
-        try:
-            self._queue_url = get_queue_url(self._session, self._project, self._queue)
-        except KeyError as e:
-            print('Queue not found, you need to create the queue first.')
-            # self._queue_url = create_queue(self._session, self._project, self._queue)
-        self._table = get_project_table(self._session, self._project)
         self._resource_name = socket.gethostname()
 
+
+    @property
+    def logged_in(self):
+        if self.aws_credentials is not None:
+            return True
+        return False
         
+    def login(self):
+        if not self.logged_in:
+            client_id, client_secret = get_client_credentials()
+            scopes = ['hero-api/user', f'project/{self._project}']
+            self.access_token = get_token_from_cognito(client_id=client_id, client_secret=client_secret, scopes=scopes)
+            self.aws_credentials = assume_role(self.access_token)
+            self._session = get_session(self.aws_credentials)
 
-    # def get_queue_url(self):
-    #     endpoint = f'{API_URL}/hero/api/v2/project/{self.project}/queue/{self.queue}'
-    #     response = requests.get(endpoint,
-    #         headers={
-    #             'Authorization': f'Bearer {self.access_token}'
-    #         },
-    #         verify=False)
-    #     return response.json()['QueueUrl']
+            #TODO: This fails if the queue doesn't exist.
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue)
+            except KeyError as e:
+                print('Queue not found, you need to create the queue first.')
+                # self._queue_url = create_queue(self._session, self._project, self._queue)
+            self._table = get_project_table(self._session, self._project)
 
+    @required_login
     def put_task(self, item):
         task = Task(
             project=self._project,
@@ -69,6 +73,7 @@ class Hero:
         task_id = put_item(self._table, task)
         return task_id
 
+    @required_login
     def put_tasks(self, items):
         tasks = [
             Task(
@@ -84,15 +89,21 @@ class Hero:
         task_ids = put_items(self._table, tasks)
         return task_ids
 
+    @required_login
     def clear_tasks(self):
         """Clears the queue of all messages by deleting queue"""
         self._queue_url = create_queue(self._session, self._project, self._queue)
+        delete_other_queues(self._session, self._queue_url, self._project, self._queue)
         update_queue_url(self._session, self._project, self._queue, self._queue_url)
 
+    @required_login
     def pull_task(self, attempts=3):
-        """Pulls a task from the queue. If the queue is empty, it will return None."""
+        """
+        Pulls a task from the queue. If the queue is empty, it will return None.
+
+        If the queue doesn't exist it fails
+        """
         try:
-            print('Reading from quere:', self._queue_url)
             raw_task = retry(
                 pull_task_sqs_dynamo,
                 self._session,
@@ -137,7 +148,7 @@ class Hero:
                 return task
 
         
-
+    @required_login
     def update_task(self, task, results):
         """Updates a task in the queue"""
         # task.completed_resource_name = self._resource_name
@@ -148,6 +159,7 @@ class Hero:
         )
         return task
 
+    @required_login
     def get_task(self, task_id):
         """Gets a task from the queue"""
         response = self._table.get_item(Key={"id": task_id, "queue": self._queue})

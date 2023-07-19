@@ -10,9 +10,6 @@ logging.getLogger("botocore").setLevel(logging.CRITICAL)
 def get_session(aws_credentials=None, region_name='us-west-2'):
     """Returns a boto3 session"""
     if aws_credentials is not None:
-    #     os.environ['AWS_ACCESS_KEY_ID'] = aws_credentials['AccessKeyId']
-    #     os.environ['AWS_SECRET_ACCESS_KEY'] = aws_credentials['SecretAccessKey']
-    #     os.environ['AWS_SESSION_TOKEN'] = aws_credentials['SessionToken']
         session = boto3.Session(
             region_name=region_name,
             aws_access_key_id=aws_credentials['AccessKeyId'],

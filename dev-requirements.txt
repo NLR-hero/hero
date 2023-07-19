@@ -3,3 +3,4 @@ mpi4py
 psycopg2-binary
 pytest
 pyyaml
+pydoc3

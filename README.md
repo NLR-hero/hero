@@ -18,6 +18,7 @@ To create a new venv through pyenv run:
 ```
 pyenv virtualenv 3.9 hero_3.9
 pyenv activate hero_3.9
+pip install -r requirements.txt
 ```
     
 

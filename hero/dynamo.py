@@ -60,6 +60,7 @@ def update_queue_url(session, project, queue, queue_url, table_name="hero-dynamo
 def get_queue_url(session, project, queue, table_name="hero-dynamodb-project-queue-names"):
     table = get_table(session, table_name)
     response = table.get_item(Key={"queue_prefix": queue, "project_name": project})
+    print(response)
     return response["Item"]["queue_url"]
 
 
@@ -86,8 +87,9 @@ def get_item(table, job_id, queue):
     return table.get_item(Key={"id": job_id, "queue": queue})
 
 
-def update_item_claimed(session, table, job_id, queue):
-    """Updates the status of an item to claimed only if it is ready.
+def update_item_claimed(table, job_id, queue):
+    """
+    Updates the status of an item to claimed only if it is ready.
     Returns True if the item was updated, False if it was not.
     """
     try:

@@ -7,8 +7,9 @@ from hero.task import COMPLETE
 hr.session.get_session()
 
 if __name__ == "__main__":
-    hero = hr.Hero("test-project-2", "queue-001")
+    hero = hr.Hero()
     hero.clear_tasks()
+    #TODO: can you remind me...oh this is deleting tasks from Postgres. maybe rename this function
     hr.rds.delete_queue(hero._project, hero._queue)
 
     # push items
