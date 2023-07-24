@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>hero API documentation</title>
+<title>hero.auth.azure API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,75 +19,32 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Package <code>hero</code></h1>
+<h1 class="title">Module <code>hero.auth.azure</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from . import session
-from . import dynamo
-from . import queue
-from . import rds
-from . import task
-from . import auth
-from .timer import timer
-from .hero import Hero
+<pre><code class="python">TENANT = &#39;a0f29d7e-28cd-4f54-8442-7885aee7c080&#39;
+AZURE_AUTH_URL = f&#39;https://login.microsoftonline.com/{TENANT}/oauth2/v2.0/token&#39;
 
-import urllib3
-from urllib3.exceptions import InsecureRequestWarning
-urllib3.disable_warnings(InsecureRequestWarning)</code></pre>
+def _get_token_from_azure(client_id, client_secret, scopes, auth_url=AZURE_AUTH_URL):
+    &#39;&#39;&#39;
+    scopes = &#39;https://graph.microsoft.com/.default&#39;
+    &#39;&#39;&#39;
+    # Request access_token following client credentials grant flow
+    response = requests.post(auth_url,
+                                data=f&#39;client_id={client_id}&amp;client_secret={client_secret}&amp;grant_type=client_credentials&amp;scope={scopes}&#39;,
+                                headers={
+                                    &#39;Content-Type&#39;: &#39;application/x-www-form-urlencoded&#39;
+                                })
+    response.raise_for_status()
+                
+    return response.json()[&#39;access_token&#39;]</code></pre>
 </details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
-<dl>
-<dt><code class="name"><a title="hero.auth" href="auth/index.html">hero.auth</a></code></dt>
-<dd>
-<div class="desc"><p>Authentication is centrally managed by Amazon Cognito. Authorization depends on what you access and how you get to it. For direct access to AWS via …</p></div>
-</dd>
-<dt><code class="name"><a title="hero.dynamo" href="dynamo.html">hero.dynamo</a></code></dt>
-<dd>
-<div class="desc"><p>Contains wrappers for dynamodb functions</p></div>
-</dd>
-<dt><code class="name"><a title="hero.hero" href="hero.html">hero.hero</a></code></dt>
-<dd>
-<div class="desc"><p>Welcome to Hero.</p></div>
-</dd>
-<dt><code class="name"><a title="hero.hero_api" href="hero_api/index.html">hero.hero_api</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.pull" href="pull.html">hero.pull</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.queue" href="queue.html">hero.queue</a></code></dt>
-<dd>
-<div class="desc"><p>Queues are a main component of the Task Engine. This modules provides direct access to SQS via boto3 …</p></div>
-</dd>
-<dt><code class="name"><a title="hero.rds" href="rds.html">hero.rds</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.session" href="session.html">hero.session</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.task" href="task.html">hero.task</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.timer" href="timer.html">hero.timer</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.triggers" href="triggers/index.html">hero.triggers</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </section>
 <section>
 </section>
@@ -102,19 +59,9 @@ urllib3.disable_warnings(InsecureRequestWarning)</code></pre>
 <ul></ul>
 </div>
 <ul id="index">
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<li><h3>Super-module</h3>
 <ul>
-<li><code><a title="hero.auth" href="auth/index.html">hero.auth</a></code></li>
-<li><code><a title="hero.dynamo" href="dynamo.html">hero.dynamo</a></code></li>
-<li><code><a title="hero.hero" href="hero.html">hero.hero</a></code></li>
-<li><code><a title="hero.hero_api" href="hero_api/index.html">hero.hero_api</a></code></li>
-<li><code><a title="hero.pull" href="pull.html">hero.pull</a></code></li>
-<li><code><a title="hero.queue" href="queue.html">hero.queue</a></code></li>
-<li><code><a title="hero.rds" href="rds.html">hero.rds</a></code></li>
-<li><code><a title="hero.session" href="session.html">hero.session</a></code></li>
-<li><code><a title="hero.task" href="task.html">hero.task</a></code></li>
-<li><code><a title="hero.timer" href="timer.html">hero.timer</a></code></li>
-<li><code><a title="hero.triggers" href="triggers/index.html">hero.triggers</a></code></li>
+<li><code><a title="hero.auth" href="index.html">hero.auth</a></code></li>
 </ul>
 </li>
 </ul>

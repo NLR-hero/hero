@@ -35,10 +35,10 @@ from .dynamo import update_item_claimed, get_project_table
 from .rds import get_next_available_job
 
 
-def retry(pull_function, session, project, queue, queue_url, attempts=1):
+def retry(pull_function, session, project, queue_url, attempts=1):
     retries = 0
     while retries &lt; attempts:
-        task = pull_function(session, project, queue, queue_url)
+        task = pull_function(session, project, queue_url)
         if task is None:
             retries += 1
             if retries &gt;= attempts:
@@ -48,22 +48,27 @@ def retry(pull_function, session, project, queue, queue_url, attempts=1):
             return task
 
 
-def pull_task_sqs_dynamo(session, project, queue, queue_url):
-    table = get_project_table(session, project)
-    message_packet = receive_messages(session, queue_url)
+def pull_task_sqs_dynamo(session, project_table, queue_url):
+    &#34;&#34;&#34;
+    Returns a task froma queue if availabe and it is not already claimed, otherwise returns None.
+    &#34;&#34;&#34;
+    messages = receive_messages(session, queue_url)
 
-    if &#34;Messages&#34; in message_packet.keys():
-        for m in message_packet[&#34;Messages&#34;]:
-            task = json.loads(m[&#34;Body&#34;])
-            # either way we need to delete the message from the queue
-            delete_message(session, queue_url, m)
-            if update_item_claimed(session, table, task[&#34;id&#34;], task[&#34;queue&#34;]) == True:
-                return task
-            else:
-                print(f&#34;task {task[&#39;id&#39;]} already claimed&#34;)
+    for message in messages:
+        task = json.loads(message[&#34;Body&#34;])
+        # either way we need to delete the message from the queue
+        delete_message(session, queue_url, message)
+        if update_item_claimed(project_table, task[&#34;id&#34;], task[&#34;queue&#34;]) == True:
+            return task
+        else:
+            print(f&#34;task {task[&#39;id&#39;]} already claimed&#34;)
+            return None
 
 
 def pull_task_rds(project, queue, queue_url):
+    &#34;&#34;&#34;
+    Not currently in use.
+    &#34;&#34;&#34;
     task = get_next_available_job(queue_url)
     return task</code></pre>
 </details>
@@ -79,42 +84,47 @@ def pull_task_rds(project, queue, queue_url):
 <span>def <span class="ident">pull_task_rds</span></span>(<span>project, queue, queue_url)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Not currently in use.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def pull_task_rds(project, queue, queue_url):
+    &#34;&#34;&#34;
+    Not currently in use.
+    &#34;&#34;&#34;
     task = get_next_available_job(queue_url)
     return task</code></pre>
 </details>
 </dd>
 <dt id="hero.pull.pull_task_sqs_dynamo"><code class="name flex">
-<span>def <span class="ident">pull_task_sqs_dynamo</span></span>(<span>session, project, queue, queue_url)</span>
+<span>def <span class="ident">pull_task_sqs_dynamo</span></span>(<span>session, project_table, queue_url)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Returns a task froma queue if availabe and it is not already claimed, otherwise returns None.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def pull_task_sqs_dynamo(session, project, queue, queue_url):
-    table = get_project_table(session, project)
-    message_packet = receive_messages(session, queue_url)
+<pre><code class="python">def pull_task_sqs_dynamo(session, project_table, queue_url):
+    &#34;&#34;&#34;
+    Returns a task froma queue if availabe and it is not already claimed, otherwise returns None.
+    &#34;&#34;&#34;
+    messages = receive_messages(session, queue_url)
 
-    if &#34;Messages&#34; in message_packet.keys():
-        for m in message_packet[&#34;Messages&#34;]:
-            task = json.loads(m[&#34;Body&#34;])
-            # either way we need to delete the message from the queue
-            delete_message(session, queue_url, m)
-            if update_item_claimed(session, table, task[&#34;id&#34;], task[&#34;queue&#34;]) == True:
-                return task
-            else:
-                print(f&#34;task {task[&#39;id&#39;]} already claimed&#34;)</code></pre>
+    for message in messages:
+        task = json.loads(message[&#34;Body&#34;])
+        # either way we need to delete the message from the queue
+        delete_message(session, queue_url, message)
+        if update_item_claimed(project_table, task[&#34;id&#34;], task[&#34;queue&#34;]) == True:
+            return task
+        else:
+            print(f&#34;task {task[&#39;id&#39;]} already claimed&#34;)
+            return None</code></pre>
 </details>
 </dd>
 <dt id="hero.pull.retry"><code class="name flex">
-<span>def <span class="ident">retry</span></span>(<span>pull_function, session, project, queue, queue_url, attempts=1)</span>
+<span>def <span class="ident">retry</span></span>(<span>pull_function, session, project, queue_url, attempts=1)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -122,10 +132,10 @@ def pull_task_rds(project, queue, queue_url):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def retry(pull_function, session, project, queue, queue_url, attempts=1):
+<pre><code class="python">def retry(pull_function, session, project, queue_url, attempts=1):
     retries = 0
     while retries &lt; attempts:
-        task = pull_function(session, project, queue, queue_url)
+        task = pull_function(session, project, queue_url)
         if task is None:
             retries += 1
             if retries &gt;= attempts:

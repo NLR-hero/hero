@@ -1,32 +1,10 @@
-"""
-Contains wrappers for dynamodb functions
-"""
-import os
 import boto3
-import logging
 import botocore
-from botocore.exceptions import ClientError
+import logging
 
-from .session import get_project, get_queue
-from .task import READY, CLAIMED, COMPLETE
+from ..api.task import READY, CLAIMED, COMPLETE, FAILED
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
-log = logging.getLogger("gantry:dynamo")
-
-
-class Dynamo:
-    def __init__(self, session):
-        self.session = session
-        self.table_name = 'hero-table'
-
-    def get_table(self, table_name):
-        """Gets the table opject for table_name"""
-        dyn_resource = self.session.resource('dynamodb')
-        table = dyn_resource.Table(table_name)
-        table.load()
-        return table
-
-
+log = logging.getLogger('hero:aws:dynamodb')
 
 def get_table(session, table_name):
     """Gets the table opject for table_name"""
@@ -36,34 +14,14 @@ def get_table(session, table_name):
     return table
 
 
+#TODO: this goes in <???>
 def get_project_table(session, project):
     """Gets the table opject for a specific project"""
     table_name = f"hero-{project}"
     return get_table(session, table_name)
 
 
-def update_queue_url(session, project, queue, queue_url, table_name="hero-dynamodb-project-queue-names"):
-    """Sets the current queue_url in the dynamodb table"""
-    table = get_table(session, table_name)
-    response = table.update_item(
-        Key={"queue_prefix": queue, "project_name": project},
-        UpdateExpression="set  #queue_url=:s",
-        ExpressionAttributeNames={
-            "#queue_url": "queue_url",
-        },
-        ExpressionAttributeValues={":s": queue_url},
-        ReturnValues="UPDATED_NEW",
-    )
-    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
-
-
-def get_queue_url(session, project, queue, table_name="hero-dynamodb-project-queue-names"):
-    table = get_table(session, table_name)
-    response = table.get_item(Key={"queue_prefix": queue, "project_name": project})
-    print(response)
-    return response["Item"]["queue_url"]
-
-
+#TODO: this has logic for dynamo and the task, can we make this more focused?
 def put_item(table, item):
     """Puts an item into the table"""
     print(item.data)
@@ -72,6 +30,7 @@ def put_item(table, item):
     return item.task_id
 
 
+#TODO: this has logic for dynamo and the task, can we make this more focused?
 def put_items(table, items):
     """Puts a list of items into the table using batch writer"""
     ids = []
@@ -82,11 +41,13 @@ def put_items(table, items):
     return ids
 
 
+#TODO: this has logic for dynamo and the task, can we make this more focused?
 def get_item(table, job_id, queue):
     """Gets an item from the table"""
     return table.get_item(Key={"id": job_id, "queue": queue})
 
 
+#TODO: this has logic for dynamo and the task, can we make this more focused?
 def update_item_claimed(table, job_id, queue):
     """
     Updates the status of an item to claimed only if it is ready.
@@ -100,14 +61,14 @@ def update_item_claimed(table, job_id, queue):
             ExpressionAttributeNames={"#status": "status"},
             ConditionExpression="#status = :ready",
         )
-    except ClientError as e:
+    except botocore.exceptions.ClientError as e:
         if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
             return False
         else:
             raise e.response["Error"]
     return True
 
-
+#TODO: this has logic for dynamo and the task, can we make this more focused?
 def update_item_results(table, job_id, queue, results={}):
     """Updates the status of an item to done and adds the results"""
     response = table.update_item(
@@ -125,6 +86,7 @@ def update_item_results(table, job_id, queue, results={}):
     )
 
 
+#TODO: this probably doesn't belong anymore since we are managing infra in the CDK
 def delete_table(table, tototal_segments=1, rank=0):
     """deletes the table in batches of up to 10 parallel workers"""
     tableKeyNames = [key.get("AttributeName") for key in table.key_schema]

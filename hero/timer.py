@@ -1,8 +1,6 @@
 from time import time
-import os
 import logging
 
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 log = logging.getLogger("hero:timer")
 
 

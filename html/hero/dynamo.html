@@ -116,8 +116,9 @@ def get_item(table, job_id, queue):
     return table.get_item(Key={&#34;id&#34;: job_id, &#34;queue&#34;: queue})
 
 
-def update_item_claimed(session, table, job_id, queue):
-    &#34;&#34;&#34;Updates the status of an item to claimed only if it is ready.
+def update_item_claimed(table, job_id, queue):
+    &#34;&#34;&#34;
+    Updates the status of an item to claimed only if it is ready.
     Returns True if the item was updated, False if it was not.
     &#34;&#34;&#34;
     try:
@@ -346,7 +347,7 @@ def delete_table(table, tototal_segments=1, rank=0):
 </details>
 </dd>
 <dt id="hero.dynamo.update_item_claimed"><code class="name flex">
-<span>def <span class="ident">update_item_claimed</span></span>(<span>session, table, job_id, queue)</span>
+<span>def <span class="ident">update_item_claimed</span></span>(<span>table, job_id, queue)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Updates the status of an item to claimed only if it is ready.
@@ -355,8 +356,9 @@ Returns True if the item was updated, False if it was not.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def update_item_claimed(session, table, job_id, queue):
-    &#34;&#34;&#34;Updates the status of an item to claimed only if it is ready.
+<pre><code class="python">def update_item_claimed(table, job_id, queue):
+    &#34;&#34;&#34;
+    Updates the status of an item to claimed only if it is ready.
     Returns True if the item was updated, False if it was not.
     &#34;&#34;&#34;
     try:

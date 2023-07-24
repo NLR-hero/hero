@@ -4,7 +4,10 @@ import json
 import psycopg2
 from psycopg2 import sql
 
-from .task import READY, CLAIMED, COMPLETE, FAILED
+from ..api.task import READY, CLAIMED, COMPLETE, FAILED
+import logging
+
+log = logging.getLogger('hero:aws:rds')
 
 
 def rds_connection():

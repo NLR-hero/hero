@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>hero.hero API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Welcome to Hero." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -22,13 +22,19 @@
 <h1 class="title">Module <code>hero.hero</code></h1>
 </header>
 <section id="section-intro">
+<p>Welcome to Hero.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import json
+<pre><code class="python">&#34;&#34;&#34;
+Welcome to Hero.
+
+
+&#34;&#34;&#34;
 import time
 import requests
+import socket
 from botocore.exceptions import ClientError
 
 from .task import Task, COMPLETE, CLAIMED, READY
@@ -43,15 +49,10 @@ from .dynamo import (
 from .queue import create_queue, receive_messages, delete_other_queues
 from .session import get_project, get_queue, get_session, get_client_credentials
 from .pull import retry, pull_task_sqs_dynamo
-from .auth import get_token_from_cognito, assume_role
+from .auth import cognito
+from .hero_api import role
 
-import socket
 
-get_session()
-
-# class SuperHero:
-# - clear_tasks
-# - create_tables, dynamo_streams, lambda_functions with tagging
 
 def required_login(func):
     def wrapper(self, *args, **kwargs):
@@ -59,12 +60,7 @@ def required_login(func):
         return func(self, *args, **kwargs)
     return wrapper
 
-
-
 class Hero:
-    &#34;&#34;&#34;
-    Welcome to Hero.
-    &#34;&#34;&#34;
     def __init__(self, project=None, queue=None):
         self.aws_credentials = None
         self._project = get_project(project)
@@ -82,8 +78,8 @@ class Hero:
         if not self.logged_in:
             client_id, client_secret = get_client_credentials()
             scopes = [&#39;hero-api/user&#39;, f&#39;project/{self._project}&#39;]
-            self.access_token = get_token_from_cognito(client_id=client_id, client_secret=client_secret, scopes=scopes)
-            self.aws_credentials = assume_role(self.access_token)
+            self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
+            self.aws_credentials = role.assume_role(self.access_token)
             self._session = get_session(self.aws_credentials)
 
             #TODO: This fails if the queue doesn&#39;t exist.
@@ -109,7 +105,6 @@ class Hero:
 
     @required_login
     def put_tasks(self, items):
-        print(&#39;put_tasks&#39;, items)
         tasks = [
             Task(
                 project=self._project,
@@ -131,22 +126,24 @@ class Hero:
         delete_other_queues(self._session, self._queue_url, self._project, self._queue)
         update_queue_url(self._session, self._project, self._queue, self._queue_url)
 
+    @property
+    def project_table(self):
+        return get_project_table(self._session, self._project)
+
     @required_login
     def pull_task(self, attempts=3):
         &#34;&#34;&#34;
         Pulls a task from the queue. If the queue is empty, it will return None.
 
-        If the queue doesn&#39;t exist
+        If the queue doesn&#39;t exist it fails
         &#34;&#34;&#34;
         try:
-            print(&#39;Reading from queue:&#39;, self._queue_url)
             raw_task = retry(
                 pull_task_sqs_dynamo,
                 self._session,
-                self._project,
-                self._queue,
+                self.project_table,
                 self._queue_url,
-                attempts=attempts,
+                attempts=attempts
             )
             print(raw_task)
             ## TODO: clean up dynamo description
@@ -169,10 +166,9 @@ class Hero:
                 raw_task = retry(
                     pull_task_sqs_dynamo,
                     self._session,
-                    self._project,
-                    self._queue,
+                    self.project_table,
                     self._queue_url,
-                    attempts=attempts,
+                    attempts=attempts
                 )
                 if raw_task is None:
                     return None
@@ -235,15 +231,12 @@ class Hero:
 <span>(</span><span>project=None, queue=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Welcome to Hero.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Hero:
-    &#34;&#34;&#34;
-    Welcome to Hero.
-    &#34;&#34;&#34;
     def __init__(self, project=None, queue=None):
         self.aws_credentials = None
         self._project = get_project(project)
@@ -261,8 +254,8 @@ class Hero:
         if not self.logged_in:
             client_id, client_secret = get_client_credentials()
             scopes = [&#39;hero-api/user&#39;, f&#39;project/{self._project}&#39;]
-            self.access_token = get_token_from_cognito(client_id=client_id, client_secret=client_secret, scopes=scopes)
-            self.aws_credentials = assume_role(self.access_token)
+            self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
+            self.aws_credentials = role.assume_role(self.access_token)
             self._session = get_session(self.aws_credentials)
 
             #TODO: This fails if the queue doesn&#39;t exist.
@@ -288,7 +281,6 @@ class Hero:
 
     @required_login
     def put_tasks(self, items):
-        print(&#39;put_tasks&#39;, items)
         tasks = [
             Task(
                 project=self._project,
@@ -310,22 +302,24 @@ class Hero:
         delete_other_queues(self._session, self._queue_url, self._project, self._queue)
         update_queue_url(self._session, self._project, self._queue, self._queue_url)
 
+    @property
+    def project_table(self):
+        return get_project_table(self._session, self._project)
+
     @required_login
     def pull_task(self, attempts=3):
         &#34;&#34;&#34;
         Pulls a task from the queue. If the queue is empty, it will return None.
 
-        If the queue doesn&#39;t exist
+        If the queue doesn&#39;t exist it fails
         &#34;&#34;&#34;
         try:
-            print(&#39;Reading from queue:&#39;, self._queue_url)
             raw_task = retry(
                 pull_task_sqs_dynamo,
                 self._session,
-                self._project,
-                self._queue,
+                self.project_table,
                 self._queue_url,
-                attempts=attempts,
+                attempts=attempts
             )
             print(raw_task)
             ## TODO: clean up dynamo description
@@ -348,10 +342,9 @@ class Hero:
                 raw_task = retry(
                     pull_task_sqs_dynamo,
                     self._session,
-                    self._project,
-                    self._queue,
+                    self.project_table,
                     self._queue_url,
-                    attempts=attempts,
+                    attempts=attempts
                 )
                 if raw_task is None:
                     return None
@@ -394,6 +387,18 @@ def logged_in(self):
     if self.aws_credentials is not None:
         return True
     return False</code></pre>
+</details>
+</dd>
+<dt id="hero.hero.Hero.project_table"><code class="name">var <span class="ident">project_table</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def project_table(self):
+    return get_project_table(self._session, self._project)</code></pre>
 </details>
 </dd>
 </dl>
@@ -440,8 +445,8 @@ def logged_in(self):
     if not self.logged_in:
         client_id, client_secret = get_client_credentials()
         scopes = [&#39;hero-api/user&#39;, f&#39;project/{self._project}&#39;]
-        self.access_token = get_token_from_cognito(client_id=client_id, client_secret=client_secret, scopes=scopes)
-        self.aws_credentials = assume_role(self.access_token)
+        self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
+        self.aws_credentials = role.assume_role(self.access_token)
         self._session = get_session(self.aws_credentials)
 
         #TODO: This fails if the queue doesn&#39;t exist.
@@ -539,6 +544,7 @@ def logged_in(self):
 <li><code><a title="hero.hero.Hero.get_task" href="#hero.hero.Hero.get_task">get_task</a></code></li>
 <li><code><a title="hero.hero.Hero.logged_in" href="#hero.hero.Hero.logged_in">logged_in</a></code></li>
 <li><code><a title="hero.hero.Hero.login" href="#hero.hero.Hero.login">login</a></code></li>
+<li><code><a title="hero.hero.Hero.project_table" href="#hero.hero.Hero.project_table">project_table</a></code></li>
 <li><code><a title="hero.hero.Hero.pull_task" href="#hero.hero.Hero.pull_task">pull_task</a></code></li>
 <li><code><a title="hero.hero.Hero.put_task" href="#hero.hero.Hero.put_task">put_task</a></code></li>
 <li><code><a title="hero.hero.Hero.put_tasks" href="#hero.hero.Hero.put_tasks">put_tasks</a></code></li>

@@ -1,8 +1,8 @@
-# Hero Python Client
+# Hero
 
-This is for testing the scaling version of `hero`.
+This is the Python client for Hero.
 
-## Install
+## Development
 
 ```
 python3 -m venv env
@@ -19,36 +19,30 @@ To create a new venv through pyenv run:
 pyenv virtualenv 3.9 hero_3.9
 pyenv activate hero_3.9
 pip install -r requirements.txt
+python setup.py develop
 ```
-    
 
 ## Execute
 
 You need to have the following environment variables defined.
 
+```
+export HERO_PROJECT="test-project"
+export HERO_QUEUE="queue-001"
+export HERO_QUEUE_VISIBILITY_TIMEOUT=300
 
-        export HERO_PROJECT="test-project"
-        export HERO_QUEUE="queue-001"
-        export HERO_QUEUE_VISIBILITY_TIMEOUT=300
+export HERO_DATABASE_PASSWORD=""
 
-        export HERO_DATABASE_PASSWORD=""
+export AWS_DEFAULT_OUTPUT=json
+export AWS_DEFAULT_REGION=us-west-2
 
-        export AWS_DEFAULT_OUTPUT=json
-        export AWS_DEFAULT_REGION=us-west-2
-
-        export AWS_ACCESS_KEY_ID=""
-        export AWS_SECRET_ACCESS_KEY=""
-        export AWS_SESSION_TOKEN=""
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
+export AWS_SESSION_TOKEN=""
+```
 
 On eagle, you'll need to load the following modules.
 
-        module load openmpi
-
-
-
-
-## Infrastructure
-
-`nvm use 18`
-`npm install -g aws-cdk`
-`cdk synth`
+```
+module load openmpi
+```

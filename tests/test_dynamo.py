@@ -25,7 +25,7 @@ def test_get_queue_url(aws_session, queue_prefix):
     
 
 def test_dynamo_put_item(aws_session, queue_prefix):
-    queue = hq.session.get_queue()
+    queue = hq.config.get_queue()
     queue_url = hq.dynamo.get_queue_url(aws_session, f'hero-{HERO_PROJECT}', queue_prefix)
     data = {"name": "test-packet"}
     task = hq.task.Task(HERO_PROJECT, queue, queue_url, data)
@@ -36,7 +36,7 @@ def test_dynamo_put_item(aws_session, queue_prefix):
 
 def test_dynamo_update_status(aws_session, queue_prefix):
     project = HERO_PROJECT
-    queue = hq.session.get_queue()
+    queue = hq.config.get_queue()
     queue_url = hq.dynamo.get_queue_url(aws_session, f'hero-{HERO_PROJECT}', queue_prefix)
 
     data = {"name": "test-packet"}

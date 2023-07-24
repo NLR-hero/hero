@@ -4,7 +4,7 @@ import hero as hq
 from testing_environment import HERO_CLIENT_ID, HERO_CLIENT_SECRET, HERO_PROJECT, HERO_QUEUE, HERO_QUEUE_VISIBILITY_TIMEOUT
 
 def test_get_token_from_cognito(access_token):
-    claims = hq.auth.parse_token(access_token)
+    claims = hq.auth.utils.parse_token(access_token)
 
     assert 'sub' in claims
     scopes = claims['scope'].split(' ')
