@@ -1,0 +1,1 @@
+pdoc --html hero --force --template-dir ./pdoc/templates

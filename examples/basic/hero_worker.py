@@ -1,8 +1,7 @@
-import hero as hr
-import time
+from hero import Hero
 
 if __name__ == "__main__":
-    hero = hr.Hero()
+    hero = Hero()
     while True:
         task = hero.pull_task(attempts=1)
         print('Task:', task)
@@ -11,4 +10,4 @@ if __name__ == "__main__":
             hero.update_task(task, {"results": "complete"})
         else:
             print("No tasks")
-        time.sleep(1)
+        hero.wait(1)

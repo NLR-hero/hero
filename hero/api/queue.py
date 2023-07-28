@@ -103,6 +103,6 @@ def create_queue(project=None, queue=None):
         result = aws.sqs.get_queue_url(session, queue_name)
         return result
 
-    queue_url = retry(_get_queue_url, project, queue, attempts=1)
+    queue_url = retry(_get_queue_url, project, queue, attempts=10)
     update_queue_url(queue_url, project, queue)
     return queue_url

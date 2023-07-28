@@ -1,6 +1,17 @@
 import pytest
 import hero as hq
 
+def test_update_queue_url(aws_credentials):
+    result = hq.api.queue.update_queue_url('unit-test')
+    assert result['queue_url'] == 'unit-test'
+
+def test_get_queue_url(aws_credentials):
+    result = hq.api.queue.get_queue_url()
+    assert result == 'unit-test'
+
+import pytest
+import hero as hq
+
 from testing_environment import HERO_CLIENT_ID, HERO_CLIENT_SECRET, HERO_PROJECT, HERO_QUEUE, HERO_QUEUE_VISIBILITY_TIMEOUT
 
 @pytest.fixture

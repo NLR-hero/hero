@@ -5,15 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>hero API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="What is HERO? …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}#lunr-search{width:100%;font-size:1em;padding:6px 9px 5px 9px;border:1px solid silver}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
 <script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/hero/">
+<link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
 </head>
 <body>
 <main>
@@ -22,68 +25,126 @@
 <h1 class="title">Package <code>hero</code></h1>
 </header>
 <section id="section-intro">
+<h1 id="what-is-hero">What is HERO?</h1>
+<p>HERO are Hybrid Environment Resources and Operations which consists of a set of systems, tools, infrastructure code, and micro frontend web applications. With HERO you can run your code autonoumously and asynchronously in any compute environment with an internet connection, monitor the progress of a workflow, and share your work with collaborators.</p>
+<p>This Python client lets you tie your code into the HERO Task Engine which is a scalable system that decouples task descriptions from task execution. With the Task Engine you can easily manage complex workflows by tracking the state of tasks and dynamically defining new tasks.</p>
+<h1 id="getting-started">Getting Started</h1>
+<p>Install the HERO Python client by running <code>pip install <a title="hero.hero" href="hero.html">hero.hero</a></code>.</p>
+<p>Next, setup a simple script:</p>
+<pre><code class="language-python">from hero import Hero
+
+hr = Hero()
+</code></pre>
+<p>Next, set these required environment variables:</p>
+<pre><code class="language-shell">export HERO_PROJECT=&quot;&lt;PROJECT&gt;&quot;
+export HERO_QUEUE=&quot;&lt;QUEUE&gt;&quot;
+export HERO_CLIENT_ID=&quot;&lt;CLIENT_ID&gt;&quot;
+export HERO_CLIENT_SECRET=&quot;&lt;CLIENT_SECRET&gt;&quot;
+</code></pre>
+<p><strong><code>HERO_PROJECT</code></strong> is the name of your project's workload. This is a fixed value and is tied to your app client.</p>
+<p><strong><code>HERO_QUEUE</code></strong> is the name you give a queue for the current run of your workload. These queues are ephemeral and may be created and destroyed at anytime. When you create a queue it is given a unique identifier prefixed with this name.</p>
+<p><strong><code>HERO_CLIENT_ID</code></strong> and <strong><code>HERO_CLIENT_SECRET</code></strong> are your credentials to work with the set of HERO systems including the Task Engine.</p>
+<h1 id="example-worker">Example Worker</h1>
+<pre><code class="language-python">from hero import Hero
+
+if __name__ == &quot;__main__&quot;:
+    hero = Hero()
+    while True:
+        task = hero.pull_task(attempts=1)
+        print('Task:', task)
+        if task:
+            hero.claim_task(task)
+            hero.update_task(task, {&quot;results&quot;: &quot;complete&quot;})
+        else:
+            print(&quot;No tasks&quot;)
+        hero.wait(1)
+</code></pre>
+<h1 id="example-controller">Example Controller</h1>
+<pre><code class="language-python">from hero import Hero
+from hero.api.task import COMPLETE
+
+if __name__ == &quot;__main__&quot;:
+    hero = Hero()
+    hero.clear_tasks()
+
+    # push items
+    items = [
+        {&quot;name&quot;: &quot;test_1&quot;},
+        {&quot;name&quot;: &quot;test_2&quot;},
+        {&quot;name&quot;: &quot;test_3&quot;},
+        {&quot;name&quot;: &quot;test_4&quot;},
+        {&quot;name&quot;: &quot;test_5&quot;},
+    ]
+
+    task_ids = hero.put_tasks(items)
+    print(task_ids)
+
+    # wait for tasks to be available
+    while True:
+        done = hero.get_task_status_count(COMPLETE)
+        print(f&quot;done: {done}&quot;)
+        if done == 5:
+            break
+        hero.wait(1)
+
+    # tasks are done
+    print(&quot;tasks done&quot;)
+
+</code></pre>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from . import session
-from . import dynamo
-from . import queue
-from . import rds
-from . import task
+<pre><code class="python">&#34;&#34;&#34;
+.. include:: ./documentation.md
+&#34;&#34;&#34;
+from . import api
+from . import aws
 from . import auth
-from .timer import timer
+from . import config
 from .hero import Hero
+
+from time import time
 
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
-urllib3.disable_warnings(InsecureRequestWarning)</code></pre>
+urllib3.disable_warnings(InsecureRequestWarning)
+
+import logging
+logging.basicConfig(level=logging.INFO)
+
+def timer(func):
+    &#34;&#34;&#34;Prints the runtime of the decorated function&#34;&#34;&#34;
+
+    def wrap_func(*args, **kwargs):
+        tic = time()
+        result = func(*args, **kwargs)
+        log.into(f&#34;Function {func.__name__!r} executed in {(time()-tic):.4f}s&#34;)
+        return result
+
+    return wrap_func</code></pre>
 </details>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
+<dt><code class="name"><a title="hero.api" href="api/index.html">hero.api</a></code></dt>
+<dd>
+<div class="desc"><p>HERO API resources</p></div>
+</dd>
 <dt><code class="name"><a title="hero.auth" href="auth/index.html">hero.auth</a></code></dt>
 <dd>
-<div class="desc"><p>Authentication is centrally managed by Amazon Cognito. Authorization depends on what you access and how you get to it. For direct access to AWS via …</p></div>
+<div class="desc"><p>Connect your code to secure APIs …</p></div>
 </dd>
-<dt><code class="name"><a title="hero.dynamo" href="dynamo.html">hero.dynamo</a></code></dt>
+<dt><code class="name"><a title="hero.aws" href="aws/index.html">hero.aws</a></code></dt>
 <dd>
-<div class="desc"><p>Contains wrappers for dynamodb functions</p></div>
+<div class="desc"><p>AWS Module</p></div>
+</dd>
+<dt><code class="name"><a title="hero.config" href="config/index.html">hero.config</a></code></dt>
+<dd>
+<div class="desc"><p>Configuration for HERO is set via environment variables. These include: …</p></div>
 </dd>
 <dt><code class="name"><a title="hero.hero" href="hero.html">hero.hero</a></code></dt>
-<dd>
-<div class="desc"><p>Welcome to Hero.</p></div>
-</dd>
-<dt><code class="name"><a title="hero.hero_api" href="hero_api/index.html">hero.hero_api</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.pull" href="pull.html">hero.pull</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.queue" href="queue.html">hero.queue</a></code></dt>
-<dd>
-<div class="desc"><p>Queues are a main component of the Task Engine. This modules provides direct access to SQS via boto3 …</p></div>
-</dd>
-<dt><code class="name"><a title="hero.rds" href="rds.html">hero.rds</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.session" href="session.html">hero.session</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.task" href="task.html">hero.task</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.timer" href="timer.html">hero.timer</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="hero.triggers" href="triggers/index.html">hero.triggers</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -92,29 +153,108 @@ urllib3.disable_warnings(InsecureRequestWarning)</code></pre>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hero.timer"><code class="name flex">
+<span>def <span class="ident">timer</span></span>(<span>func)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Prints the runtime of the decorated function</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def timer(func):
+    &#34;&#34;&#34;Prints the runtime of the decorated function&#34;&#34;&#34;
+
+    def wrap_func(*args, **kwargs):
+        tic = time()
+        result = func(*args, **kwargs)
+        log.into(f&#34;Function {func.__name__!r} executed in {(time()-tic):.4f}s&#34;)
+        return result
+
+    return wrap_func</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 </section>
 </article>
 <nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="pdoc Home" href="https://pdoc3.github.io/pdoc/">
+<img src="https://pdoc3.github.io/pdoc/logo.png" alt=""> HERO
+</a>
+</header>
+<form>
+<input id="lunr-search" name="q" placeholder="🔎 Search ..." aria-label="Search"
+disabled minlength="2">
+</form>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.3/tingle.min.css" integrity="sha512-j1u8eUJ4f23xPPxwOrLUPQaCD2dwzNqqmDDcWS4deWsMv2ohLqmXXuP3hU7g8TyzbMSakP/mMqoNBYWj8AEIFg==" crossorigin>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.3/tingle.min.js" integrity="sha512-plGUER9JkeEWPPqQBE4sdLqBoQug5Ap+BCGMc7bJ8BXkm+VVj6QzkpBz5Yv2yPkkq+cqg9IpkBaGCas6uDbW8g==" crossorigin></script>
+<style>
+.modal-dialog iframe {
+width: 100vw;
+height: calc(100vh - 80px);
+}
+@media screen and (min-width: 700px) {
+.modal-dialog iframe {
+width: 70vw;
+height: 80vh;
+}
+}
+.modal-dialog .tingle-modal-box {width: auto;}
+.modal-dialog .tingle-modal-box__content {padding: 0;}
+</style>
+<script>
+const input = document.getElementById('lunr-search');
+input.disabled = false;
+input.form.addEventListener('submit', (ev) => {
+ev.preventDefault();
+const url = new URL(window.location);
+url.searchParams.set('q', input.value);
+history.replaceState({}, null, url.toString());
+search(input.value);
+});
+const query = new URL(window.location).searchParams.get('q');
+if (query)
+search(query);
+function search(query) {
+const url = '../doc-search.html#' + encodeURIComponent(query);
+new tingle.modal({
+cssClass: ['modal-dialog'],
+onClose: () => {
+const url = new URL(window.location);
+url.searchParams.delete('q');
+history.replaceState({}, null, url.toString());
+setTimeout(() => input.focus(), 100);
+}
+}).setContent('<iframe src="' + url + '"></iframe>').open();
+}
+</script>
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#what-is-hero">What is HERO?</a></li>
+<li><a href="#getting-started">Getting Started</a></li>
+<li><a href="#example-worker">Example Worker</a></li>
+<li><a href="#example-controller">Example Controller</a></li>
+</ul>
 </div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
+<li><code><a title="hero.api" href="api/index.html">hero.api</a></code></li>
 <li><code><a title="hero.auth" href="auth/index.html">hero.auth</a></code></li>
-<li><code><a title="hero.dynamo" href="dynamo.html">hero.dynamo</a></code></li>
+<li><code><a title="hero.aws" href="aws/index.html">hero.aws</a></code></li>
+<li><code><a title="hero.config" href="config/index.html">hero.config</a></code></li>
 <li><code><a title="hero.hero" href="hero.html">hero.hero</a></code></li>
-<li><code><a title="hero.hero_api" href="hero_api/index.html">hero.hero_api</a></code></li>
-<li><code><a title="hero.pull" href="pull.html">hero.pull</a></code></li>
-<li><code><a title="hero.queue" href="queue.html">hero.queue</a></code></li>
-<li><code><a title="hero.rds" href="rds.html">hero.rds</a></code></li>
-<li><code><a title="hero.session" href="session.html">hero.session</a></code></li>
-<li><code><a title="hero.task" href="task.html">hero.task</a></code></li>
-<li><code><a title="hero.timer" href="timer.html">hero.timer</a></code></li>
-<li><code><a title="hero.triggers" href="triggers/index.html">hero.triggers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="hero.timer" href="#hero.timer">timer</a></code></li>
 </ul>
 </li>
 </ul>

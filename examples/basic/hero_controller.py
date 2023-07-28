@@ -1,13 +1,10 @@
-import hero as hr
-import time
+from hero import Hero
 
 from hero.api.task import COMPLETE
 
 if __name__ == "__main__":
-    hero = hr.Hero()
+    hero = Hero()
     hero.clear_tasks()
-    #TODO: can you remind me...oh this is deleting tasks from Postgres. maybe rename this function
-    hr.aws.rds.delete_queue(hero._project, hero._queue)
 
     # push items
     items = [
@@ -23,11 +20,11 @@ if __name__ == "__main__":
 
     # wait for tasks to be available
     while True:
-        done = hr.aws.rds.get_jobs_status_count_by_queue_url(hero._project, hero._queue, COMPLETE)
+        done = hero.get_task_status_count(COMPLETE)
         print(f"done: {done}")
         if done == 5:
             break
-        time.sleep(1)
+        hero.wait(1)
 
     # tasks are done
     print("tasks done")

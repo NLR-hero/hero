@@ -1,9 +1,11 @@
 """
-Authentication is centrally managed by Amazon Cognito. Authorization depends on what you access and how you get to it. For direct access to AWS via boto3, AWS credentials are required. For access to the Hero API you will need the correct groups and scopes set in the Cognito User Pool.
+Connect your code to secure APIs.
+
+HERO uses the identity provider Amazon Cognito. For direct access to AWS via boto3, AWS credentials are required which you get through a secure API. For access to the Hero API you will need the correct groups and scopes set in the Cognito User Pool.
 
 Either way you access Hero, you will first need to sign into the user pool. For machine-to-machine auth, we follow the client creentials grant flow. You will need a CLIENT_ID, CLIENT_SECRET, and list of scopes.
 
-To request a new app client with client id and client secret, contact us.
+Contact us to request a new app client with client id and client secret.
 
 Scopes are used to grant access to specific API resources. Each scope follows a similar structure `<RESOURCE>/<THING>`, e.g. `hero-api/user` or `project/example`. These roles are request when you authenticate. For example:
 

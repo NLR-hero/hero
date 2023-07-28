@@ -1,8 +1,6 @@
 """
-Welcome to Hero.
-
-
 """
+
 import time
 import socket
 import logging
@@ -13,7 +11,7 @@ from .auth import cognito
 from .api import role, queue, task
 from .api.utils import RetryAttemptsExceeded, retry
 from .config import config
-from .aws import dynamodb
+from .aws import dynamodb, rds
 from .aws.utils import get_session
 
 log = logging.getLogger("hero:hero")
@@ -94,6 +92,8 @@ class Hero:
         self._queue_url = queue.create_queue(self._project, self._queue)
         queue.delete_other_queues(self._queue_url, self._project, self._queue)
         queue.update_queue_url(self._project, self._queue, self._queue_url)
+        #TODO: can you remind me...oh this is deleting tasks from Postgres. maybe rename this function
+        rds.delete_queue(self._project, self._queue)
 
     @property
     def project_table(self):
@@ -157,3 +157,10 @@ class Hero:
         """Gets a task from the queue"""
         response = self._table.get_item(Key={"id": task_id, "queue": self._queue})
         return response["Item"]
+    
+    def wait(self, seconds):
+        """A simple wrapper for time.sleep"""
+        time.sleep(seconds)
+
+    def get_task_status_count(self, status):
+        return rds.get_jobs_status_count_by_queue_url(self._project, self._queue, status)
