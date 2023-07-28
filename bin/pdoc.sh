@@ -1,1 +1,1 @@
-pdoc --html hero --force --template-dir ./pdoc/templates
+pdoc --html hero --force --template-dir ./pdoc/templates --output-dir docs
