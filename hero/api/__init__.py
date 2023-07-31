@@ -1,5 +1,5 @@
 """
-HERO API resources
+.. include:: ./documentation.md
 """
 from . import queue
 from . import role

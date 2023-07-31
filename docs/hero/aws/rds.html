@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>hero.aws.rds API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}#lunr-search{width:100%;font-size:1em;padding:6px 9px 5px 9px;border:1px solid silver}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/hero/aws/rds.html">
+<link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hero.aws.rds</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import os
+import json
+
+import psycopg2
+from psycopg2 import sql
+
+from ..api.task import READY, CLAIMED, COMPLETE, FAILED
+import logging
+
+log = logging.getLogger(&#39;hero:aws:rds&#39;)
+
+
+def rds_connection():
+    # send to DB
+    credentials = {
+        &#34;host&#34;: &#34;hero-database-2.cluster-c5rea6ohaa0g.us-west-2.rds.amazonaws.com&#34;,
+        &#34;database&#34;: &#34;hero&#34;,
+        &#34;user&#34;: &#34;heroops&#34;,
+        &#34;application_name&#34;: &#34;hero-python&#34;,
+        &#34;port&#34;: &#34;5432&#34;,
+        &#34;password&#34;: os.environ[&#34;HERO_DATABASE_PASSWORD&#34;],
+    }
+    return psycopg2.connect(**credentials, connect_timeout=30)
+
+
+def delete_queue(project: str, queue: str):
+    &#34;&#34;&#34;Deletes a queue based on queue_url&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        delete from hero.jobs
+        where queue_name=&#39;{queue}&#39; and name=&#39;{project}&#39;
+    &#34;&#34;&#34;.format(
+        queue=queue, project=project
+    )
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        connection.commit()
+        connection.close()
+
+
+def put_item(task):
+    &#34;&#34;&#34;Puts a job into the jobs table&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        insert into hero.jobs (id, queue_name, status, name, job_description)
+        values (&#39;{id}&#39;, &#39;{queue_name}&#39;, &#39;{status}&#39;, &#39;{name}&#39;, &#39;{job_description}&#39;)
+    &#34;&#34;&#34;.format(
+        id=task.task_id,
+        queue_name=task.queue_url,
+        status=READY,
+        name=task.project,
+        job_description=json.dumps(task.inputs, default=str),
+    )
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        connection.commit()
+        connection.close()
+
+
+def get_item(job_id: str, queue: str):
+    &#34;&#34;&#34;Gets an item from the table&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        select id, queue_name, status, name, job_description
+        from hero.jobs
+        where id=&#39;{job_id}&#39; and queue_name=&#39;{queue}&#39;
+    &#34;&#34;&#34;.format(
+        job_id=job_id, queue=queue
+    )
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        res = [x for x in cursor]
+        connection.close()
+        return res
+
+
+def put_items(tasks):
+    &#34;&#34;&#34;Puts a list of items into the table&#34;&#34;&#34;
+    jobs = []
+    for task in tasks:
+        tmp = (
+            task.task_id,
+            task.queue_url,
+            READY,
+            task.project,
+            json.dumps(task.inputs, default=str),
+        )
+        jobs.append(tmp)
+
+    if len(jobs) &gt; 0:
+        argument_string = &#34;,&#34;.join(
+            &#34;(&#39;%s&#39;, &#39;%s&#39;, &#39;%s&#39;, &#39;%s&#39;, &#39;%s&#39;)&#34; % (b, a, x, y, z)
+            for (b, a, x, y, z) in jobs
+        )
+        connection = rds_connection()
+        connection.autocommit = True
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute(
+                    &#34;INSERT INTO hero.jobs  (id, queue_name, status, name, job_description) VALUES &#34;
+                    + argument_string
+                )
+            except Exception as e:
+                print(str(e))
+
+
+def get_items(job_ids: list[str]):
+    &#34;&#34;&#34;Gets a set of jobs based on [job_id] list&#34;&#34;&#34;
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        tuple_ids = tuple(job_ids)
+
+        cmd = &#34;&#34;&#34;
+            select job_description
+            from hero.jobs
+            where id in {job_ids}
+        &#34;&#34;&#34;.format(
+            job_ids=tuple_ids
+        )
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        connection.close()
+        res = [x for x in cursor]
+        return res
+
+
+def get_jobs_status_count_by_queue_url(
+    project: str, queue_name: str, status: str = &#34;working&#34;
+):
+    &#34;&#34;&#34;Gets the job description based on job_id&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        select count(*)
+        from hero.jobs
+        where name=&#39;{project}&#39; and queue_name=&#39;{queue_name}&#39; and status=&#39;{status}&#39;
+    &#34;&#34;&#34;.format(
+        project=project, queue_name=queue_name, status=status
+    )
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        result = cursor.fetchone()
+        connection.close()
+        return result[0] if len(result) &gt; 0 else 0
+
+
+def get_jobs(job_ids: list[str]):
+    &#34;&#34;&#34;Gets a set of jobs based on [job_id] list&#34;&#34;&#34;
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        tuple_ids = tuple(job_ids)
+
+        cmd = &#34;&#34;&#34;
+            select id, queue_name, status, name, job_description
+            from hero.jobs
+            where id in {job_ids}
+        &#34;&#34;&#34;.format(
+            job_ids=tuple_ids
+        )
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        res = [x for x in cursor]
+        connection.close()
+        return res
+
+
+def get_job(job_id: str):
+    &#34;&#34;&#34;Gets the job description based on job_id&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        select queue_name, id,  name, status, job_description, job_result
+        from hero.jobs
+        where id=&#39;{job_id}&#39;
+    &#34;&#34;&#34;.format(
+        job_id=job_id
+    )
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        res = [x for x in cursor]
+        connection.close()
+        return res
+
+
+def delete_job(job_id: str):
+    &#34;&#34;&#34;Deletes all jobs in queue&#34;&#34;&#34;
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        cmd = &#34;&#34;&#34;
+            delete FROM hero.jobs
+            where id = &#39;{job_id}&#39;
+        &#34;&#34;&#34;.format(
+            job_id=job_id
+        )
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+
+
+def get_next_available_job(queue_name: str, n: int = 1):
+    &#34;&#34;&#34;Gets the next job based on priority and status == READY
+    It does not wait for all jobs in a priority level to complete.
+    &#34;&#34;&#34;
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        query = sql.SQL(
+            &#34;&#34;&#34;
+        WITH p as (
+            SELECT * FROM hero.jobs
+            WHERE queue_name = {queue_name} AND
+                  status = {queued_status}
+            LIMIT {n} FOR UPDATE SKIP LOCKED
+        ),
+        u AS (
+        UPDATE hero.jobs as q
+        SET
+            status = {claimed_status},
+            start_time = NOW(),
+            updated_on = NOW()
+        FROM p
+        WHERE p.id = q.id)
+        SELECT
+            p.id AS id
+        FROM p
+        &#34;&#34;&#34;
+        ).format(
+            queue_name=sql.Literal(queue_name),
+            queued_status=sql.Literal(READY),
+            claimed_status=sql.Literal(CLAIMED),
+            n=sql.Literal(n),
+        )
+        cursor.execute(query)
+        job_ids = [x[0] for x in cursor]
+        connection.close()
+        return job_ids
+
+
+def set_job_status_sqscheck(job_id: str, status: str):
+    &#34;&#34;&#34;Sets the status of a job&#34;&#34;&#34;
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        query = sql.SQL(
+            &#34;&#34;&#34;
+        UPDATE hero.jobs
+        SET
+            status = {status},
+            updated_on = NOW()
+        WHERE id = {job_id} and
+              status = {queued}
+        returning id
+        &#34;&#34;&#34;
+        ).format(
+            status=sql.Literal(status),
+            job_id=sql.Literal(job_id),
+            queued=sql.Literal(&#34;pending&#34;),
+        )
+        cursor.execute(query)
+        res = [x[0] for x in cursor]
+        connection.close()
+        return res
+
+
+def update_item(task_id, status):
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        cmd = &#34;&#34;&#34;
+            UPDATE hero.jobs
+            SET
+                status = &#39;{status}&#39;,
+                updated_on = NOW()
+            WHERE id = &#39;{job_id}&#39;
+            &#34;&#34;&#34;.format(
+            status=status, job_id=task_id
+        )
+        cursor.execute(cmd)
+    connection.close()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hero.aws.rds.delete_job"><code class="name flex">
+<span>def <span class="ident">delete_job</span></span>(<span>job_id: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deletes all jobs in queue</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_job(job_id: str):
+    &#34;&#34;&#34;Deletes all jobs in queue&#34;&#34;&#34;
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        cmd = &#34;&#34;&#34;
+            delete FROM hero.jobs
+            where id = &#39;{job_id}&#39;
+        &#34;&#34;&#34;.format(
+            job_id=job_id
+        )
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.delete_queue"><code class="name flex">
+<span>def <span class="ident">delete_queue</span></span>(<span>project: str, queue: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deletes a queue based on queue_url</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_queue(project: str, queue: str):
+    &#34;&#34;&#34;Deletes a queue based on queue_url&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        delete from hero.jobs
+        where queue_name=&#39;{queue}&#39; and name=&#39;{project}&#39;
+    &#34;&#34;&#34;.format(
+        queue=queue, project=project
+    )
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        connection.commit()
+        connection.close()</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.get_item"><code class="name flex">
+<span>def <span class="ident">get_item</span></span>(<span>job_id: str, queue: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets an item from the table</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_item(job_id: str, queue: str):
+    &#34;&#34;&#34;Gets an item from the table&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        select id, queue_name, status, name, job_description
+        from hero.jobs
+        where id=&#39;{job_id}&#39; and queue_name=&#39;{queue}&#39;
+    &#34;&#34;&#34;.format(
+        job_id=job_id, queue=queue
+    )
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        res = [x for x in cursor]
+        connection.close()
+        return res</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.get_items"><code class="name flex">
+<span>def <span class="ident">get_items</span></span>(<span>job_ids: list[str])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets a set of jobs based on [job_id] list</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_items(job_ids: list[str]):
+    &#34;&#34;&#34;Gets a set of jobs based on [job_id] list&#34;&#34;&#34;
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        tuple_ids = tuple(job_ids)
+
+        cmd = &#34;&#34;&#34;
+            select job_description
+            from hero.jobs
+            where id in {job_ids}
+        &#34;&#34;&#34;.format(
+            job_ids=tuple_ids
+        )
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        connection.close()
+        res = [x for x in cursor]
+        return res</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.get_job"><code class="name flex">
+<span>def <span class="ident">get_job</span></span>(<span>job_id: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets the job description based on job_id</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_job(job_id: str):
+    &#34;&#34;&#34;Gets the job description based on job_id&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        select queue_name, id,  name, status, job_description, job_result
+        from hero.jobs
+        where id=&#39;{job_id}&#39;
+    &#34;&#34;&#34;.format(
+        job_id=job_id
+    )
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        res = [x for x in cursor]
+        connection.close()
+        return res</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.get_jobs"><code class="name flex">
+<span>def <span class="ident">get_jobs</span></span>(<span>job_ids: list[str])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets a set of jobs based on [job_id] list</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_jobs(job_ids: list[str]):
+    &#34;&#34;&#34;Gets a set of jobs based on [job_id] list&#34;&#34;&#34;
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        tuple_ids = tuple(job_ids)
+
+        cmd = &#34;&#34;&#34;
+            select id, queue_name, status, name, job_description
+            from hero.jobs
+            where id in {job_ids}
+        &#34;&#34;&#34;.format(
+            job_ids=tuple_ids
+        )
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        res = [x for x in cursor]
+        connection.close()
+        return res</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.get_jobs_status_count_by_queue_url"><code class="name flex">
+<span>def <span class="ident">get_jobs_status_count_by_queue_url</span></span>(<span>project: str, queue_name: str, status: str = 'working')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets the job description based on job_id</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_jobs_status_count_by_queue_url(
+    project: str, queue_name: str, status: str = &#34;working&#34;
+):
+    &#34;&#34;&#34;Gets the job description based on job_id&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        select count(*)
+        from hero.jobs
+        where name=&#39;{project}&#39; and queue_name=&#39;{queue_name}&#39; and status=&#39;{status}&#39;
+    &#34;&#34;&#34;.format(
+        project=project, queue_name=queue_name, status=status
+    )
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        result = cursor.fetchone()
+        connection.close()
+        return result[0] if len(result) &gt; 0 else 0</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.get_next_available_job"><code class="name flex">
+<span>def <span class="ident">get_next_available_job</span></span>(<span>queue_name: str, n: int = 1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gets the next job based on priority and status == READY
+It does not wait for all jobs in a priority level to complete.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_next_available_job(queue_name: str, n: int = 1):
+    &#34;&#34;&#34;Gets the next job based on priority and status == READY
+    It does not wait for all jobs in a priority level to complete.
+    &#34;&#34;&#34;
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        query = sql.SQL(
+            &#34;&#34;&#34;
+        WITH p as (
+            SELECT * FROM hero.jobs
+            WHERE queue_name = {queue_name} AND
+                  status = {queued_status}
+            LIMIT {n} FOR UPDATE SKIP LOCKED
+        ),
+        u AS (
+        UPDATE hero.jobs as q
+        SET
+            status = {claimed_status},
+            start_time = NOW(),
+            updated_on = NOW()
+        FROM p
+        WHERE p.id = q.id)
+        SELECT
+            p.id AS id
+        FROM p
+        &#34;&#34;&#34;
+        ).format(
+            queue_name=sql.Literal(queue_name),
+            queued_status=sql.Literal(READY),
+            claimed_status=sql.Literal(CLAIMED),
+            n=sql.Literal(n),
+        )
+        cursor.execute(query)
+        job_ids = [x[0] for x in cursor]
+        connection.close()
+        return job_ids</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.put_item"><code class="name flex">
+<span>def <span class="ident">put_item</span></span>(<span>task)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Puts a job into the jobs table</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def put_item(task):
+    &#34;&#34;&#34;Puts a job into the jobs table&#34;&#34;&#34;
+    cmd = &#34;&#34;&#34;
+        insert into hero.jobs (id, queue_name, status, name, job_description)
+        values (&#39;{id}&#39;, &#39;{queue_name}&#39;, &#39;{status}&#39;, &#39;{name}&#39;, &#39;{job_description}&#39;)
+    &#34;&#34;&#34;.format(
+        id=task.task_id,
+        queue_name=task.queue_url,
+        status=READY,
+        name=task.project,
+        job_description=json.dumps(task.inputs, default=str),
+    )
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        connection.commit()
+        connection.close()</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.put_items"><code class="name flex">
+<span>def <span class="ident">put_items</span></span>(<span>tasks)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Puts a list of items into the table</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def put_items(tasks):
+    &#34;&#34;&#34;Puts a list of items into the table&#34;&#34;&#34;
+    jobs = []
+    for task in tasks:
+        tmp = (
+            task.task_id,
+            task.queue_url,
+            READY,
+            task.project,
+            json.dumps(task.inputs, default=str),
+        )
+        jobs.append(tmp)
+
+    if len(jobs) &gt; 0:
+        argument_string = &#34;,&#34;.join(
+            &#34;(&#39;%s&#39;, &#39;%s&#39;, &#39;%s&#39;, &#39;%s&#39;, &#39;%s&#39;)&#34; % (b, a, x, y, z)
+            for (b, a, x, y, z) in jobs
+        )
+        connection = rds_connection()
+        connection.autocommit = True
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute(
+                    &#34;INSERT INTO hero.jobs  (id, queue_name, status, name, job_description) VALUES &#34;
+                    + argument_string
+                )
+            except Exception as e:
+                print(str(e))</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.rds_connection"><code class="name flex">
+<span>def <span class="ident">rds_connection</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def rds_connection():
+    # send to DB
+    credentials = {
+        &#34;host&#34;: &#34;hero-database-2.cluster-c5rea6ohaa0g.us-west-2.rds.amazonaws.com&#34;,
+        &#34;database&#34;: &#34;hero&#34;,
+        &#34;user&#34;: &#34;heroops&#34;,
+        &#34;application_name&#34;: &#34;hero-python&#34;,
+        &#34;port&#34;: &#34;5432&#34;,
+        &#34;password&#34;: os.environ[&#34;HERO_DATABASE_PASSWORD&#34;],
+    }
+    return psycopg2.connect(**credentials, connect_timeout=30)</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.set_job_status_sqscheck"><code class="name flex">
+<span>def <span class="ident">set_job_status_sqscheck</span></span>(<span>job_id: str, status: str)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sets the status of a job</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_job_status_sqscheck(job_id: str, status: str):
+    &#34;&#34;&#34;Sets the status of a job&#34;&#34;&#34;
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        query = sql.SQL(
+            &#34;&#34;&#34;
+        UPDATE hero.jobs
+        SET
+            status = {status},
+            updated_on = NOW()
+        WHERE id = {job_id} and
+              status = {queued}
+        returning id
+        &#34;&#34;&#34;
+        ).format(
+            status=sql.Literal(status),
+            job_id=sql.Literal(job_id),
+            queued=sql.Literal(&#34;pending&#34;),
+        )
+        cursor.execute(query)
+        res = [x[0] for x in cursor]
+        connection.close()
+        return res</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.rds.update_item"><code class="name flex">
+<span>def <span class="ident">update_item</span></span>(<span>task_id, status)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update_item(task_id, status):
+    connection = rds_connection()
+    connection.autocommit = True
+    with connection.cursor() as cursor:
+        cmd = &#34;&#34;&#34;
+            UPDATE hero.jobs
+            SET
+                status = &#39;{status}&#39;,
+                updated_on = NOW()
+            WHERE id = &#39;{job_id}&#39;
+            &#34;&#34;&#34;.format(
+            status=status, job_id=task_id
+        )
+        cursor.execute(cmd)
+    connection.close()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="hero Home" href="https://pdoc3.github.io/pdoc/">
+<img src="https://pdoc3.github.io/pdoc/logo.png" alt=""> HERO
+</a>
+</header>
+<form>
+<input id="lunr-search" name="q" placeholder="🔎 Search ..." aria-label="Search"
+disabled minlength="2">
+</form>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.3/tingle.min.css" integrity="sha512-j1u8eUJ4f23xPPxwOrLUPQaCD2dwzNqqmDDcWS4deWsMv2ohLqmXXuP3hU7g8TyzbMSakP/mMqoNBYWj8AEIFg==" crossorigin>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.3/tingle.min.js" integrity="sha512-plGUER9JkeEWPPqQBE4sdLqBoQug5Ap+BCGMc7bJ8BXkm+VVj6QzkpBz5Yv2yPkkq+cqg9IpkBaGCas6uDbW8g==" crossorigin></script>
+<style>
+.modal-dialog iframe {
+width: 100vw;
+height: calc(100vh - 80px);
+}
+@media screen and (min-width: 700px) {
+.modal-dialog iframe {
+width: 70vw;
+height: 80vh;
+}
+}
+.modal-dialog .tingle-modal-box {width: auto;}
+.modal-dialog .tingle-modal-box__content {padding: 0;}
+</style>
+<script>
+const input = document.getElementById('lunr-search');
+input.disabled = false;
+input.form.addEventListener('submit', (ev) => {
+ev.preventDefault();
+const url = new URL(window.location);
+url.searchParams.set('q', input.value);
+history.replaceState({}, null, url.toString());
+search(input.value);
+});
+const query = new URL(window.location).searchParams.get('q');
+if (query)
+search(query);
+function search(query) {
+const url = '../../doc-search.html#' + encodeURIComponent(query);
+new tingle.modal({
+cssClass: ['modal-dialog'],
+onClose: () => {
+const url = new URL(window.location);
+url.searchParams.delete('q');
+history.replaceState({}, null, url.toString());
+setTimeout(() => input.focus(), 100);
+}
+}).setContent('<iframe src="' + url + '"></iframe>').open();
+}
+</script>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hero.aws" href="index.html">hero.aws</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="hero.aws.rds.delete_job" href="#hero.aws.rds.delete_job">delete_job</a></code></li>
+<li><code><a title="hero.aws.rds.delete_queue" href="#hero.aws.rds.delete_queue">delete_queue</a></code></li>
+<li><code><a title="hero.aws.rds.get_item" href="#hero.aws.rds.get_item">get_item</a></code></li>
+<li><code><a title="hero.aws.rds.get_items" href="#hero.aws.rds.get_items">get_items</a></code></li>
+<li><code><a title="hero.aws.rds.get_job" href="#hero.aws.rds.get_job">get_job</a></code></li>
+<li><code><a title="hero.aws.rds.get_jobs" href="#hero.aws.rds.get_jobs">get_jobs</a></code></li>
+<li><code><a title="hero.aws.rds.get_jobs_status_count_by_queue_url" href="#hero.aws.rds.get_jobs_status_count_by_queue_url">get_jobs_status_count_by_queue_url</a></code></li>
+<li><code><a title="hero.aws.rds.get_next_available_job" href="#hero.aws.rds.get_next_available_job">get_next_available_job</a></code></li>
+<li><code><a title="hero.aws.rds.put_item" href="#hero.aws.rds.put_item">put_item</a></code></li>
+<li><code><a title="hero.aws.rds.put_items" href="#hero.aws.rds.put_items">put_items</a></code></li>
+<li><code><a title="hero.aws.rds.rds_connection" href="#hero.aws.rds.rds_connection">rds_connection</a></code></li>
+<li><code><a title="hero.aws.rds.set_job_status_sqscheck" href="#hero.aws.rds.set_job_status_sqscheck">set_job_status_sqscheck</a></code></li>
+<li><code><a title="hero.aws.rds.update_item" href="#hero.aws.rds.update_item">update_item</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

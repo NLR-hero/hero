@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>hero.aws.sqs API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}#lunr-search{width:100%;font-size:1em;padding:6px 9px 5px 9px;border:1px solid silver}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/hero/aws/sqs.html">
+<link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hero.aws.sqs</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import botocore
+from botocore.exceptions import ClientError
+import logging
+
+# Types
+from boto3.session import Session
+
+log = logging.getLogger(&#39;hero:aws:sqs&#39;)
+
+def create_queue(session: Session, queue_name: str, visibility_timeout: str=&#39;60&#39;) -&gt; dict[str, any]:
+    &#39;&#39;&#39;
+    Creates a new SQS Queue.
+    &#39;&#39;&#39;
+    log.debug(&#39;create_queue&#39;)
+    client = session.client(&#34;sqs&#34;)
+    result = client.create_queue(
+        QueueName=queue_name,
+        Attributes={&#34;VisibilityTimeout&#34;: visibility_timeout},
+    )
+    return result
+
+def receive_messages(session: Session, queue_url: str, max_number_of_messages: int=1):
+    &#34;&#34;&#34;
+    Call this from a worker to get a task.
+
+    Returns some number of messages from a specific `queue_url`.
+    &#34;&#34;&#34;
+    log.debug(&#39;receive_messages&#39;)
+    client = session.client(&#34;sqs&#34;)
+    message_packet = client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=max_number_of_messages)
+
+    if &#34;Messages&#34; in message_packet.keys():
+        return message_packet[&#34;Messages&#34;]
+
+    return []
+
+
+def delete_message(session, queue_url, message):
+    &#34;&#34;&#34;
+    Call this from a worker after a task is clamied by that worker.
+
+    Deletes a message from a specific `queue_url`.
+    &#34;&#34;&#34;
+    log.debug(&#39;delete_message&#39;)
+    client = session.client(&#34;sqs&#34;)
+    response = client.delete_message(
+        QueueUrl=queue_url, ReceiptHandle=message[&#34;ReceiptHandle&#34;]
+    )
+    assert response[&#34;ResponseMetadata&#34;][&#34;HTTPStatusCode&#34;] == 200
+
+
+def list_queues(session, queue_prefix):
+    log.debug(&#39;list_queues&#39;)
+    client = session.client(&#34;sqs&#34;)
+    response = client.list_queues(QueueNamePrefix=queue_prefix)
+    for queue_url in response.get(&#34;QueueUrls&#34;, []):
+        yield queue_url
+
+
+def delete_queue(session: Session, queue_url: str) -&gt; None:
+    &#34;&#34;&#34;
+    Delete a queue
+    &#34;&#34;&#34;
+    log.debug(&#39;delete_queue&#39;)
+    try:
+        log.info(f&#34;deleting {queue_url}&#34;)
+        client = session.client(&#34;sqs&#34;)
+        client.delete_queue(QueueUrl=queue_url)
+        return True
+    except botocore.exceptions.ClientError as err:
+        log.error(str(err))
+        return False
+
+
+def get_queue_url(session: Session, queue_name: str) -&gt; str:
+    &#39;&#39;&#39;
+    Returns the queue url for a given `queue_name`.
+
+    Attributes:
+        session (str): A preconfigured boto3 session.
+        queue_name (str): An error code representing the type of error.
+
+    Returns:
+        str: The queue url for the given queue name if it exists, None otherwise.
+    &#39;&#39;&#39;
+    log.debug(&#39;get_queue_url&#39;)
+    try:
+        client = session.client(&#34;sqs&#34;)
+        response = client.get_queue_url(QueueName=queue_name)
+        return response.get(&#39;QueueUrl&#39;)
+    except ClientError as e:
+            if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+                return None</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="hero.aws.sqs.create_queue"><code class="name flex">
+<span>def <span class="ident">create_queue</span></span>(<span>session: boto3.session.Session, queue_name: str, visibility_timeout: str = '60') ‑> dict[str, any]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates a new SQS Queue.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_queue(session: Session, queue_name: str, visibility_timeout: str=&#39;60&#39;) -&gt; dict[str, any]:
+    &#39;&#39;&#39;
+    Creates a new SQS Queue.
+    &#39;&#39;&#39;
+    log.debug(&#39;create_queue&#39;)
+    client = session.client(&#34;sqs&#34;)
+    result = client.create_queue(
+        QueueName=queue_name,
+        Attributes={&#34;VisibilityTimeout&#34;: visibility_timeout},
+    )
+    return result</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.sqs.delete_message"><code class="name flex">
+<span>def <span class="ident">delete_message</span></span>(<span>session, queue_url, message)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Call this from a worker after a task is clamied by that worker.</p>
+<p>Deletes a message from a specific <code>queue_url</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_message(session, queue_url, message):
+    &#34;&#34;&#34;
+    Call this from a worker after a task is clamied by that worker.
+
+    Deletes a message from a specific `queue_url`.
+    &#34;&#34;&#34;
+    log.debug(&#39;delete_message&#39;)
+    client = session.client(&#34;sqs&#34;)
+    response = client.delete_message(
+        QueueUrl=queue_url, ReceiptHandle=message[&#34;ReceiptHandle&#34;]
+    )
+    assert response[&#34;ResponseMetadata&#34;][&#34;HTTPStatusCode&#34;] == 200</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.sqs.delete_queue"><code class="name flex">
+<span>def <span class="ident">delete_queue</span></span>(<span>session: boto3.session.Session, queue_url: str) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Delete a queue</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_queue(session: Session, queue_url: str) -&gt; None:
+    &#34;&#34;&#34;
+    Delete a queue
+    &#34;&#34;&#34;
+    log.debug(&#39;delete_queue&#39;)
+    try:
+        log.info(f&#34;deleting {queue_url}&#34;)
+        client = session.client(&#34;sqs&#34;)
+        client.delete_queue(QueueUrl=queue_url)
+        return True
+    except botocore.exceptions.ClientError as err:
+        log.error(str(err))
+        return False</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.sqs.get_queue_url"><code class="name flex">
+<span>def <span class="ident">get_queue_url</span></span>(<span>session: boto3.session.Session, queue_name: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the queue url for a given <code>queue_name</code>.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>session</code></strong> :&ensp;<code>str</code></dt>
+<dd>A preconfigured boto3 session.</dd>
+<dt><strong><code>queue_name</code></strong> :&ensp;<code>str</code></dt>
+<dd>An error code representing the type of error.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>str</code></dt>
+<dd>The queue url for the given queue name if it exists, None otherwise.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_queue_url(session: Session, queue_name: str) -&gt; str:
+    &#39;&#39;&#39;
+    Returns the queue url for a given `queue_name`.
+
+    Attributes:
+        session (str): A preconfigured boto3 session.
+        queue_name (str): An error code representing the type of error.
+
+    Returns:
+        str: The queue url for the given queue name if it exists, None otherwise.
+    &#39;&#39;&#39;
+    log.debug(&#39;get_queue_url&#39;)
+    try:
+        client = session.client(&#34;sqs&#34;)
+        response = client.get_queue_url(QueueName=queue_name)
+        return response.get(&#39;QueueUrl&#39;)
+    except ClientError as e:
+            if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+                return None</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.sqs.list_queues"><code class="name flex">
+<span>def <span class="ident">list_queues</span></span>(<span>session, queue_prefix)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def list_queues(session, queue_prefix):
+    log.debug(&#39;list_queues&#39;)
+    client = session.client(&#34;sqs&#34;)
+    response = client.list_queues(QueueNamePrefix=queue_prefix)
+    for queue_url in response.get(&#34;QueueUrls&#34;, []):
+        yield queue_url</code></pre>
+</details>
+</dd>
+<dt id="hero.aws.sqs.receive_messages"><code class="name flex">
+<span>def <span class="ident">receive_messages</span></span>(<span>session: boto3.session.Session, queue_url: str, max_number_of_messages: int = 1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Call this from a worker to get a task.</p>
+<p>Returns some number of messages from a specific <code>queue_url</code>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def receive_messages(session: Session, queue_url: str, max_number_of_messages: int=1):
+    &#34;&#34;&#34;
+    Call this from a worker to get a task.
+
+    Returns some number of messages from a specific `queue_url`.
+    &#34;&#34;&#34;
+    log.debug(&#39;receive_messages&#39;)
+    client = session.client(&#34;sqs&#34;)
+    message_packet = client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=max_number_of_messages)
+
+    if &#34;Messages&#34; in message_packet.keys():
+        return message_packet[&#34;Messages&#34;]
+
+    return []</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="hero Home" href="https://pdoc3.github.io/pdoc/">
+<img src="https://pdoc3.github.io/pdoc/logo.png" alt=""> HERO
+</a>
+</header>
+<form>
+<input id="lunr-search" name="q" placeholder="🔎 Search ..." aria-label="Search"
+disabled minlength="2">
+</form>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.3/tingle.min.css" integrity="sha512-j1u8eUJ4f23xPPxwOrLUPQaCD2dwzNqqmDDcWS4deWsMv2ohLqmXXuP3hU7g8TyzbMSakP/mMqoNBYWj8AEIFg==" crossorigin>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.3/tingle.min.js" integrity="sha512-plGUER9JkeEWPPqQBE4sdLqBoQug5Ap+BCGMc7bJ8BXkm+VVj6QzkpBz5Yv2yPkkq+cqg9IpkBaGCas6uDbW8g==" crossorigin></script>
+<style>
+.modal-dialog iframe {
+width: 100vw;
+height: calc(100vh - 80px);
+}
+@media screen and (min-width: 700px) {
+.modal-dialog iframe {
+width: 70vw;
+height: 80vh;
+}
+}
+.modal-dialog .tingle-modal-box {width: auto;}
+.modal-dialog .tingle-modal-box__content {padding: 0;}
+</style>
+<script>
+const input = document.getElementById('lunr-search');
+input.disabled = false;
+input.form.addEventListener('submit', (ev) => {
+ev.preventDefault();
+const url = new URL(window.location);
+url.searchParams.set('q', input.value);
+history.replaceState({}, null, url.toString());
+search(input.value);
+});
+const query = new URL(window.location).searchParams.get('q');
+if (query)
+search(query);
+function search(query) {
+const url = '../../doc-search.html#' + encodeURIComponent(query);
+new tingle.modal({
+cssClass: ['modal-dialog'],
+onClose: () => {
+const url = new URL(window.location);
+url.searchParams.delete('q');
+history.replaceState({}, null, url.toString());
+setTimeout(() => input.focus(), 100);
+}
+}).setContent('<iframe src="' + url + '"></iframe>').open();
+}
+</script>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hero.aws" href="index.html">hero.aws</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="two-column">
+<li><code><a title="hero.aws.sqs.create_queue" href="#hero.aws.sqs.create_queue">create_queue</a></code></li>
+<li><code><a title="hero.aws.sqs.delete_message" href="#hero.aws.sqs.delete_message">delete_message</a></code></li>
+<li><code><a title="hero.aws.sqs.delete_queue" href="#hero.aws.sqs.delete_queue">delete_queue</a></code></li>
+<li><code><a title="hero.aws.sqs.get_queue_url" href="#hero.aws.sqs.get_queue_url">get_queue_url</a></code></li>
+<li><code><a title="hero.aws.sqs.list_queues" href="#hero.aws.sqs.list_queues">list_queues</a></code></li>
+<li><code><a title="hero.aws.sqs.receive_messages" href="#hero.aws.sqs.receive_messages">receive_messages</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

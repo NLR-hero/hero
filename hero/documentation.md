@@ -31,7 +31,11 @@ export HERO_CLIENT_SECRET="<CLIENT_SECRET>"
 
 **`HERO_CLIENT_ID`** and **`HERO_CLIENT_SECRET`** are your credentials to work with the set of HERO systems including the Task Engine.
 
-# Example Worker
+# Examples 
+
+## Basic Setup
+
+### Basic Worker
 
 ```python
 from hero import Hero
@@ -49,7 +53,7 @@ if __name__ == "__main__":
         hero.wait(1)
 ```
 
-# Example Controller
+### Basic Controller
 
 ```python
 from hero import Hero
@@ -84,3 +88,8 @@ if __name__ == "__main__":
 
 ```
 
+## Optimization
+
+```python
+#TODO
+```
