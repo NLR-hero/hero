@@ -6,7 +6,9 @@ This Python client lets you tie your code into the HERO Task Engine which is a s
 
 # Getting Started
 
-Install the HERO Python client by running `pip install hero`.
+Install the HERO Python client:
+
+`pip install git+https://github.nrel.gov/Hero/hero.git`
 
 Next, setup a simple script:
 
