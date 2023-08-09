@@ -1,10 +1,10 @@
 """
 .. include:: ./documentation.md
 """
-# from . import api
-# from . import aws
-# from . import auth
-# from . import config
+from . import api
+from . import aws
+from . import auth
+from . import config
 from .hero import Hero
 
 from time import time

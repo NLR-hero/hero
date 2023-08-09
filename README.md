@@ -49,10 +49,10 @@ module load openmpi
 
 ### Building Pdoc in CodeBuild
 
-aws codebuild start-build
---project-name "REDACTED_CODEBUILD_PROJECT"
---source-version "main"
---buildspec-override "pdoc/buildspec.yml"
---environment-variables-override
-name=GITHUB_TOKEN_ARN,value='arn:aws:secretsmanager:us-west-2:REDACTED_AWS_ACCOUNT_ID㊙️/nrel/github_packages/REDACTED_SECRET_PATH:GITHUB_TOKEN',type=PLAINTEXT
+aws codebuild start-build \
+--project-name "REDACTED_CODEBUILD_PROJECT" \
+--source-version "scaling-nw" \
+--buildspec-override "pdoc/buildspec.yml" \
+--environment-variables-override \
+name=GITHUB_TOKEN_ARN,value='arn:aws:secretsmanager:us-west-2:REDACTED_AWS_ACCOUNT_ID:secret:/nrel/github_packages/REDACTED_SECRET_PATH:GITHUB_TOKEN',type=PLAINTEXT \
 name=DISTRIBUTION_ID,value=REDACTED_CF_DIST_ID,type=PLAINTEXT
