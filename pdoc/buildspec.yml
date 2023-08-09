@@ -1,0 +1,26 @@
+version: 0.2
+env:
+  secrets-manager:
+    GITHUB_TOKEN: $GITHUB_TOKEN_ARN
+phases:
+  install:
+    runtime-versions:
+      python: 3
+    commands:
+      - pip install -r requirements.txt
+      - pip install -r requirements-dev.txt
+  pre_build:
+    commands:
+      - npm set //npm.github.nrel.gov/:_authToken --location project $GITHUB_TOKEN
+      - NODE_ENV=development yarn install
+  build:
+    commands:
+      - ./bin/pdoc.sh
+  post_build:
+    commands:
+      - aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+artifacts:
+  files:
+    - '**/*'
+  base-directory: 'docs'
+  s3-prefix: '/'

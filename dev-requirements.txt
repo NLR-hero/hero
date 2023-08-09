@@ -1,6 +1,3 @@
 boto3
-mpi4py
 psycopg2-binary
-pytest
-pyyaml
-pydoc3
+pdoc3
