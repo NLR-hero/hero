@@ -6,13 +6,11 @@ phases:
   install:
     runtime-versions:
       python: 3.9
+    # commands:
+  pre_build:
     commands:
       - pip install -r requirements.txt
       - pip install -r requirements-dev.txt
-  pre_build:
-    commands:
-      - npm set //npm.github.nrel.gov/:_authToken --location project $GITHUB_TOKEN
-      - NODE_ENV=development yarn install
   build:
     commands:
       - ./bin/pdoc.sh
