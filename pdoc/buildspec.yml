@@ -21,4 +21,4 @@ artifacts:
   files:
     - '**/*'
   base-directory: 'docs'
-  s3-prefix: '/'
+  s3-prefix: '/docs/'
