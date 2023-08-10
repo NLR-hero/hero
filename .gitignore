@@ -1,3 +1,7 @@
 *.egg-info
 env.sh
+env
 __pycache__
+.pytest_cache
+.python-version
+docs

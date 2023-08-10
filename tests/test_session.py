@@ -1,0 +1,1 @@
+import hero as hq
