@@ -1,6 +1,8 @@
 import boto3
 import botocore
 import logging
+from decimal import Decimal
+import json
 
 from ..api.task import READY, CLAIMED, COMPLETE, FAILED
 
@@ -24,19 +26,21 @@ def get_project_table(session, project):
 #TODO: this has logic for dynamo and the task, can we make this more focused?
 def put_item(table, item):
     """Puts an item into the table"""
-    print(item.data)
-    response = table.put_item(Item=item.data)
+    tmp = json.loads(json.dumps(item), parse_float=Decimal)
+    response = table.put_item(Item=tmp)
     assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
     return item.task_id
 
 
 #TODO: this has logic for dynamo and the task, can we make this more focused?
+#TODO: use boto3 dyanmodb marshaler?
 def put_items(table, items):
     """Puts a list of items into the table using batch writer"""
     ids = []
     with table.batch_writer() as batch:
         for item in items:
-            batch.put_item(Item=item.data)
+            tmp = json.loads(json.dumps(item.data), parse_float=Decimal)
+            batch.put_item(Item=tmp)
             ids.append(item.task_id)
     return ids
 
@@ -48,7 +52,7 @@ def get_item(table, job_id, queue):
 
 
 #TODO: this has logic for dynamo and the task, can we make this more focused?
-def update_item_claimed(table, job_id, queue):
+def update_item_claimed(table, job_id, queue, resource_name):
     """
     Updates the status of an item to claimed only if it is ready.
     Returns True if the item was updated, False if it was not.
@@ -56,9 +60,9 @@ def update_item_claimed(table, job_id, queue):
     try:
         response = table.update_item(
             Key={"id": job_id, "queue": queue},
-            UpdateExpression="SET #status = :val",
-            ExpressionAttributeValues={":val": CLAIMED, ":ready": READY},
-            ExpressionAttributeNames={"#status": "status"},
+            UpdateExpression="SET #status = :val, #claimed_resource_name = :val2",
+            ExpressionAttributeValues={":val": CLAIMED, ":ready": READY, ":val2": resource_name},
+            ExpressionAttributeNames={"#status": "status", "#claimed_resource_name": "claimed_resource_name"},
             ConditionExpression="#status = :ready",
         )
     except botocore.exceptions.ClientError as e:

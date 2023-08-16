@@ -99,7 +99,7 @@ def create_queue(project=None, queue=None):
     visibility_timeout = config.get_queue_visibility_timeout()
     aws.sqs.create_queue(session, queue_name, visibility_timeout)
 
-    def _get_queue_url(project, queue):
+    def _get_queue_url(project, queue, resource_name=None):
         result = aws.sqs.get_queue_url(session, queue_name)
         return result
 

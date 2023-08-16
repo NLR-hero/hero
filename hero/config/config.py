@@ -1,6 +1,6 @@
 #TODO: Use https://github.com/theskumar/python-dotenv
 #TODO: setup so any module can import config and get the json for the config.
-
+import socket
 import os
 import logging
 
@@ -25,6 +25,12 @@ def get_queue(queue=None):
     if queue is None:
         queue = os.environ["HERO_QUEUE"]
     return queue
+
+def get_resource_name(resource_name=None):
+    """Returns the resource name from the socket.gethostname()"""
+    if resource_name is None:
+        resource_name = socket.gethostname()
+    return resource_name
 
 
 def get_queue_visibility_timeout():

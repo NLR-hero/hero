@@ -7,10 +7,10 @@ class RetryAttemptsExceeded(Exception):
     def __init__(self):
         super().__init__('Failed due to number of retry attempts.')
 
-def retry(retry_function, project, queue_url, attempts=1):
+def retry(retry_function, project, queue_url, resource_name=None, attempts=1):
     retries = 0
     while retries < attempts:
-        result = retry_function(project, queue_url)
+        result = retry_function(project, queue_url, resource_name)
         print('result', result)
         if result is None:
             retries += 1

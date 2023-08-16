@@ -32,6 +32,7 @@ def delete_queue(project: str, queue: str):
         queue=queue, project=project
     )
     connection = rds_connection()
+    connection.autocommit = True
     with connection.cursor() as cursor:
         cmd = sql.SQL(cmd)
         cursor.execute(cmd)
@@ -123,10 +124,32 @@ def get_items(job_ids: list[str]):
         )
         cmd = sql.SQL(cmd)
         cursor.execute(cmd)
-        connection.close()
         res = [x for x in cursor]
+        connection.close()
         return res
 
+def get_items_detail(job_ids: list[str]):
+    """Gets a set of jobs based on [job_id] list"""
+    connection = rds_connection()
+    with connection.cursor() as cursor:
+        tuple_ids = tuple(job_ids)
+
+        cmd = """
+            select *
+            from hero.jobs
+            where id in {job_ids}
+        """.format(
+            job_ids=tuple_ids
+        )
+        cmd = sql.SQL(cmd)
+        cursor.execute(cmd)
+        res = [x for x in cursor]
+        col_names = [desc[0] for desc in cursor.description]
+        connection.close()
+        long_res = []
+        for row in res:
+            long_res.append(dict(zip(col_names, row)))
+        return long_res
 
 def get_jobs_status_count_by_queue_url(
     project: str, queue_name: str, status: str = "working"

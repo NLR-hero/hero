@@ -23,13 +23,13 @@ def required_login(func):
     return wrapper
 
 class Hero:
-    def __init__(self, project=None, queue=None):
-        log.info('Initializing HERO')
+    def __init__(self, project=None, queue=None, resource_name=None):
+        
         self.aws_credentials = None
         self._project = config.get_project(project)
         self._queue = config.get_queue(queue)
-        self._resource_name = socket.gethostname()
-
+        self._resource_name = config.get_resource_name(resource_name)
+        log.info(f'Initializing HERO {self._resource_name}')
 
     @property
     def logged_in(self):
@@ -108,6 +108,7 @@ class Hero:
             task.pull_task_sqs_dynamo,
             self.project_table,
             self._queue_url,
+            self._resource_name,
             attempts=attempts
         )
 
@@ -137,6 +138,9 @@ class Hero:
     def create_task(self, raw_task):
         if raw_task is None:
             return None
+        # Do we need this?
+        # raw_task['task_id'] = raw_task['id']
+        # raw_task['queue_name'] = raw_task['queue']
         del raw_task['id']
         del raw_task['queue']
         return Task(**raw_task)
