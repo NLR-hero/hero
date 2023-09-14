@@ -5,7 +5,7 @@ from . import api
 from . import aws
 from . import auth
 from . import config
-from .hero import Hero
+from .hero_client import Hero
 
 from time import time
 
