@@ -118,7 +118,7 @@ class Hero:
         Pulls a task from the queue. Returns None otherwise.
         """
         try:
-            print('queue_url', self._queue_url)
+            # print('queue_url', self._queue_url)
             raw_task = self.poll(attempts)
             return self.create_task(raw_task)
         except ClientError as e:
@@ -168,3 +168,17 @@ class Hero:
 
     def get_task_status_count(self, status):
         return rds.get_jobs_status_count_by_queue_url(self._project, self._queue, status)
+
+    def send_exit_key_value(self, key, value, num_tasks=100):
+
+        def create_task(index):
+            return {
+                "name": f"test_{index:02d}",
+                "stream_db": False,
+                key: value
+            }
+        
+        items = [ create_task(i) for i in range(int(num_tasks)) ]
+        # print(items)
+        self.put_tasks(items)
+        
