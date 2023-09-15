@@ -11,7 +11,7 @@ def retry(retry_function, project, queue_url, resource_name=None, attempts=1):
     retries = 0
     while retries < attempts:
         result = retry_function(project, queue_url, resource_name)
-        print('result', result)
+        # print('result', result)
         if result is None:
             retries += 1
             if retries >= attempts:

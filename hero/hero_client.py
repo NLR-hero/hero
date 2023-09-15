@@ -32,6 +32,10 @@ class Hero:
         log.info(f'Initializing HERO {self._resource_name}')
 
     @property
+    def resource_name(self):
+        return self._resource_name
+
+    @property
     def logged_in(self):
         if self.aws_credentials is not None:
             return True
@@ -130,7 +134,7 @@ class Hero:
         except RetryAttemptsExceeded as e:
             ## TODO: clean up dynamo description
             # queue may not exist..
-            print(e)
+            #print(e)
             self._queue_url = queue.get_queue_url(self._project, self._queue)
             return None
 
@@ -179,6 +183,13 @@ class Hero:
             }
         
         items = [ create_task(i) for i in range(int(num_tasks)) ]
-        # print(items)
         self.put_tasks(items)
         
+    def map(self, items, sleep=5):
+        task_ids = self.put_tasks(items)
+        # wait for tasks to be available
+        while True:
+            results = rds.get_items_detail(task_ids)
+            if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
+                return results
+            time.sleep(sleep)
