@@ -2,6 +2,13 @@
 
 This is the Python client for Hero.
 
+## Installation
+
+```
+pip install git+https://github.nrel.gov/Hero/hero@master#egg=hero
+```
+
+
 ## Development
 
 ```
