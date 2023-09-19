@@ -1,8 +1,6 @@
 """
 .. include:: ./documentation.md
 """
-
-
 from time import time
 
 import urllib3
@@ -13,11 +11,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-# from . import api
-# from . import aws
-# from . import auth
-# from . import config
-from .hero_client import Hero
+from . import api
+from . import aws
+from . import auth
+from . import config
+from .client import Hero
 
 # def timer(func):
 #     """Prints the runtime of the decorated function"""
