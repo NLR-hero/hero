@@ -8,7 +8,7 @@ This Python client lets you tie your code into the HERO Task Engine which is a s
 
 Install the HERO Python client:
 
-`pip install git+https://github.nrel.gov/Hero/hero.git`
+`pip install git+https://github.nrel.gov/Hero/hero@master#egg=hero`
 
 Next, setup a simple script:
 
