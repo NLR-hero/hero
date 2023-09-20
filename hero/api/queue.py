@@ -18,6 +18,11 @@ import logging
 
 log = logging.getLogger('hero:api:queue')
 
+class QueueDoesNotExits(Exception):
+    def __init__(self):
+        super().__init__('Queue does not exist.')
+
+
 def update_queue_url(queue_url, project=None, queue=None):
     """
     Sets the current queue_url in the dynamodb table
@@ -55,8 +60,7 @@ def get_queue_url(project=None, queue=None):
 
     response = table.get_item(Key={"queue_prefix": queue, "project_name": project})
     return response["Item"]["queue_url"]
-
-
+ 
 def list_queues(project=None, queue=None):
     '''
     Each time a queue is created a UUID is attached to the end of the full queue name. This allows clients to create multiple unique queues with a consistent and predictable prefix.

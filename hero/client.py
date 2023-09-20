@@ -8,7 +8,8 @@ from botocore.exceptions import ClientError
 
 from .api.task import Task, COMPLETE, CLAIMED, READY
 from .auth import cognito
-from .api import role, queue, task
+from .api import role, queue, task, QueueDoesNotExits
+from .api import queue as sqsqueue
 from .api.utils import RetryAttemptsExceeded, retry, retry_task
 from .config import config
 from .aws import dynamodb, rds
@@ -31,13 +32,13 @@ def pull_execptions(func):
             if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
                 print("queue does not exist, getting new queue")
                 time.sleep(1)
-                self._queue_url = queue.get_queue_url(self._project, self._queue)
+                self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
                 return None
         except RetryAttemptsExceeded as e:
             ## TODO: clean up dynamo description
             # queue may not exist..
             #print(e)
-            self._queue_url = queue.get_queue_url(self._project, self._queue)
+            self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
             return None
     return wrapper
 
@@ -48,11 +49,24 @@ class Hero:
         self._project = config.get_project(project)
         self._queue = config.get_queue(queue)
         self._resource_name = config.get_resource_name(resource_name)
-        log.info(f'Initializing HERO {self._resource_name}')
+        self._queue_url = None
+        log.info(f'Initializing HERO {self._resource_name} {self._queue}')
 
+    @required_login
+    def create_queue(self):
+        self._queue_url = sqsqueue.create_queue(self._project, self._queue)
+        return self._queue_url
+    
     @property
     def resource_name(self):
         return self._resource_name
+
+    @property
+    @required_login
+    def queue_url(self):
+        if self._queue_url is None:
+            self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
+        return self._queue_url
 
     @property
     def logged_in(self):
@@ -72,8 +86,10 @@ class Hero:
             #TODO: This fails if the queue doesn't exist.
             try:
                 self._queue_url = queue.get_queue_url(self._project, self._queue)
-            except KeyError as e:
+            except Exception as e:
                 print('Queue not found, you need to create the queue first.')
+            # except Exception as e:
+            #     print(str(e))
                 # self._queue_url = create_queue(self._session, self._project, self._queue)
             self._table = dynamodb.get_project_table(self._session, self._project)
 
@@ -82,7 +98,7 @@ class Hero:
         task = Task(
             project=self._project,
             queue_name=self._queue,
-            queue_url=self._queue_url,
+            queue_url=self.queue_url,
             inputs=item,
             status=READY,
             insert_resource_name=self._resource_name,
@@ -96,7 +112,7 @@ class Hero:
             Task(
                 project=self._project,
                 queue_name=self._queue,
-                queue_url=self._queue_url,
+                queue_url=self.queue_url,
                 inputs=i,
                 status=READY,
                 insert_resource_name=self._resource_name,
@@ -130,7 +146,7 @@ class Hero:
         return retry_task(
             task.pull_task_sqs_dynamo,
             self.project_table,
-            self._queue_url,
+            self.queue_url,
             self._resource_name,
             attempts=attempts,
             num_tasks=num_tasks
