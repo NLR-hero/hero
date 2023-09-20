@@ -1,5 +1,6 @@
 import os
 import json
+from typing import List
 
 import psycopg2
 from psycopg2 import sql
@@ -109,7 +110,7 @@ def put_items(tasks):
                 print(str(e))
 
 
-def get_items(job_ids: list[str]):
+def get_items(job_ids: List[str]):
     """Gets a set of jobs based on [job_id] list"""
     connection = rds_connection()
     with connection.cursor() as cursor:
@@ -128,7 +129,7 @@ def get_items(job_ids: list[str]):
         connection.close()
         return res
 
-def get_items_detail(job_ids: list[str]):
+def get_items_detail(job_ids: List[str]):
     """Gets a set of jobs based on [job_id] list"""
     connection = rds_connection()
     with connection.cursor() as cursor:
@@ -171,7 +172,7 @@ def get_jobs_status_count_by_queue_url(
         return result[0] if len(result) > 0 else 0
 
 
-def get_jobs(job_ids: list[str]):
+def get_jobs(job_ids: List[str]):
     """Gets a set of jobs based on [job_id] list"""
     connection = rds_connection()
     with connection.cursor() as cursor:

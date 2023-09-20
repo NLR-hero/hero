@@ -1,13 +1,13 @@
 import botocore
 from botocore.exceptions import ClientError
 import logging
-
+from typing import Dict
 # Types
 from boto3.session import Session
 
 log = logging.getLogger('hero:aws:sqs')
 
-def create_queue(session: Session, queue_name: str, visibility_timeout: str='60') -> dict[str, any]:
+def create_queue(session: Session, queue_name: str, visibility_timeout: str='60') -> Dict[str, any]:
     '''
     Creates a new SQS Queue.
     '''
