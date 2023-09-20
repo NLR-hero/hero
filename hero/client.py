@@ -9,7 +9,7 @@ from botocore.exceptions import ClientError
 from .api.task import Task, COMPLETE, CLAIMED, READY
 from .auth import cognito
 from .api import role, queue, task
-from .api.utils import RetryAttemptsExceeded, retry
+from .api.utils import RetryAttemptsExceeded, retry, retry_task
 from .config import config
 from .aws import dynamodb, rds
 from .aws.utils import get_session
@@ -20,6 +20,25 @@ def required_login(func):
     def wrapper(self, *args, **kwargs):
         self.login()
         return func(self, *args, **kwargs)
+    return wrapper
+
+def pull_execptions(func):
+    def wrapper(self, *args, **kwargs):
+        try:
+            self.login()
+            return func(self, *args, **kwargs)
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
+                print("queue does not exist, getting new queue")
+                time.sleep(1)
+                self._queue_url = queue.get_queue_url(self._project, self._queue)
+                return None
+        except RetryAttemptsExceeded as e:
+            ## TODO: clean up dynamo description
+            # queue may not exist..
+            #print(e)
+            self._queue_url = queue.get_queue_url(self._project, self._queue)
+            return None
     return wrapper
 
 class Hero:
@@ -107,38 +126,36 @@ class Hero:
         task.claimed_resource_name = self._resource_name
         task.status = CLAIMED
     
-    def poll(self, attempts):
-        return retry(
+    def poll(self, attempts, num_tasks=1):
+        return retry_task(
             task.pull_task_sqs_dynamo,
             self.project_table,
             self._queue_url,
             self._resource_name,
-            attempts=attempts
+            attempts=attempts,
+            num_tasks=num_tasks
         )
 
-    @required_login
+
+    @pull_execptions
     def pull_task(self, attempts=3):
         """
         Pulls a task from the queue. Returns None otherwise.
+        """   
+        raw_task = self.poll(attempts, num_tasks=1)
+        return self.create_task(raw_task[0])
+       
+
+    @pull_execptions
+    def pull_tasks(self, attempts=3, num_tasks=1):
         """
-        try:
-            # print('queue_url', self._queue_url)
-            raw_task = self.poll(attempts)
-            return self.create_task(raw_task)
-        except ClientError as e:
-            if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
-                print("queue does not exist, getting new queue")
-                time.sleep(1)
-                self._queue_url = queue.get_queue_url(self._project, self._queue)
-                return None
-        except RetryAttemptsExceeded as e:
-            ## TODO: clean up dynamo description
-            # queue may not exist..
-            #print(e)
-            self._queue_url = queue.get_queue_url(self._project, self._queue)
-            return None
-
-
+        Pulls tasks from the queue. Returns None otherwise.
+        """
+        # for AWS SQS, max num_tasks is 10
+        num_tasks = min(10, num_tasks)
+        raw_tasks = self.poll(attempts, num_tasks=num_tasks)
+        return [ self.create_task(raw_task) for raw_task in raw_tasks ]
+    
     def create_task(self, raw_task):
         if raw_task is None:
             return None

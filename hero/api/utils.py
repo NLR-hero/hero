@@ -19,3 +19,16 @@ def retry(retry_function, project, queue_url, resource_name=None, attempts=1):
             time.sleep(retries)
         else:
             return result
+        
+def retry_task(retry_function, project, queue_url, resource_name=None, attempts=1, num_tasks=1):
+    retries = 0
+    while retries < attempts:
+        result = retry_function(project, queue_url, resource_name, num_tasks=num_tasks)
+        # print('result', result)
+        if result is None:
+            retries += 1
+            if retries >= attempts:
+                raise RetryAttemptsExceeded()
+            time.sleep(retries)
+        else:
+            return result

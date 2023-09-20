@@ -25,23 +25,33 @@ from .. import config
 
 
 
-def pull_task_sqs_dynamo(project_table, queue_url, resource_name):
+def pull_task_sqs_dynamo(project_table, queue_url, resource_name, num_tasks=1):
     """
     Returns a task froma queue if availabe and it is not already claimed, otherwise returns None.
     """
+    if queue_url is None:
+        return None
+    
     session = aws.utils.get_session()
-    messages = aws.sqs.receive_messages(session, queue_url)
+    messages = aws.sqs.receive_messages(session, queue_url, max_number_of_messages=num_tasks)
 
+    tasks = []
     for message in messages:
         task = json.loads(message["Body"])
         task['claimed_resource_name'] = resource_name
         # either way we need to delete the message from the queue
         aws.sqs.delete_message(session, queue_url, message)
         if aws.dynamodb.update_item_claimed(project_table, task["id"], task["queue"], task['claimed_resource_name']) == True:
-            return task
+            if num_tasks == 1:
+                return [task]
+            tasks.append(task)
         else:
             print(f"task {task['id']} already claimed")
-            return None
+            
+    if len(tasks) > 0:
+        return tasks
+
+    return None
 
 
 def pull_task_rds(project, queue, queue_url):
