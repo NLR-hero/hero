@@ -14,6 +14,7 @@ from .api.utils import RetryAttemptsExceeded, retry, retry_task
 from .config import config
 from .aws import dynamodb, rds
 from .aws.utils import get_session
+import uuid 
 
 log = logging.getLogger("hero:hero")
 
@@ -49,6 +50,7 @@ class Hero:
         self._project = config.get_project(project)
         self._queue = config.get_queue(queue)
         self._resource_name = config.get_resource_name(resource_name)
+        self._worker_id = f"hero-{str(uuid.uuid4())}"
         self._queue_url = None
         log.info(f'Initializing HERO {self._resource_name} {self._queue}')
 
@@ -102,6 +104,7 @@ class Hero:
             inputs=item,
             status=READY,
             insert_resource_name=self._resource_name,
+            insert_worker_id=self._worker_id,
         )
         task_id = dynamodb.put_item(self._table, task)
         return task_id
@@ -116,6 +119,7 @@ class Hero:
                 inputs=i,
                 status=READY,
                 insert_resource_name=self._resource_name,
+                insert_worker_id=self._worker_id,
             )
             for i in items
         ]
@@ -132,7 +136,7 @@ class Hero:
         queue.delete_other_queues(self._queue_url, self._project, self._queue)
         queue.update_queue_url(self._project, self._queue, self._queue_url)
         #TODO: can you remind me...oh this is deleting tasks from Postgres. maybe rename this function
-        rds.delete_queue(self._project, self._queue)
+        # rds.delete_queue(self._project, self._queue)
 
     @property
     def project_table(self):
@@ -148,6 +152,7 @@ class Hero:
             self.project_table,
             self.queue_url,
             self._resource_name,
+            self._worker_id,
             attempts=attempts,
             num_tasks=num_tasks
         )
@@ -226,3 +231,12 @@ class Hero:
             if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
                 return results
             time.sleep(sleep)
+
+
+    def wait_for_tasks(self, task_ids):
+        while True:
+            results = rds.get_items_detail(task_ids)
+            if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
+                return results
+            time.sleep(5)
+

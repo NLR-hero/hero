@@ -25,7 +25,7 @@ from .. import config
 
 
 
-def pull_task_sqs_dynamo(project_table, queue_url, resource_name, num_tasks=1):
+def pull_task_sqs_dynamo(project_table, queue_url, resource_name, worker_id, num_tasks=1):
     """
     Returns a task froma queue if availabe and it is not already claimed, otherwise returns None.
     """
@@ -39,9 +39,14 @@ def pull_task_sqs_dynamo(project_table, queue_url, resource_name, num_tasks=1):
     for message in messages:
         task = json.loads(message["Body"])
         task['claimed_resource_name'] = resource_name
+        task['claimed_worker_id'] = worker_id
         # either way we need to delete the message from the queue
         aws.sqs.delete_message(session, queue_url, message)
-        if aws.dynamodb.update_item_claimed(project_table, task["id"], task["queue"], task['claimed_resource_name']) == True:
+        if aws.dynamodb.update_item_claimed(project_table, 
+                                            task["id"], 
+                                            task["queue"], 
+                                            task['claimed_resource_name'], 
+                                            task['claimed_worker_id']) == True:
             if num_tasks == 1:
                 return [task]
             tasks.append(task)
@@ -89,6 +94,10 @@ class Task:
     insert_resource_name: str = None
     claimed_resource_name: str = None
     complete_resource_name: str = None
+    
+    insert_worker_id: str = None
+    claimed_worker_id: str = None
+    complete_worker_id: str = None
 
     attempts: int = 0
     inputs_s3: str = None

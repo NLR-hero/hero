@@ -52,7 +52,7 @@ def get_item(table, job_id, queue):
 
 
 #TODO: this has logic for dynamo and the task, can we make this more focused?
-def update_item_claimed(table, job_id, queue, resource_name):
+def update_item_claimed(table, job_id, queue, resource_name, worker_id):
     """
     Updates the status of an item to claimed only if it is ready.
     Returns True if the item was updated, False if it was not.
@@ -60,9 +60,18 @@ def update_item_claimed(table, job_id, queue, resource_name):
     try:
         response = table.update_item(
             Key={"id": job_id, "queue": queue},
-            UpdateExpression="SET #status = :val, #claimed_resource_name = :val2",
-            ExpressionAttributeValues={":val": CLAIMED, ":ready": READY, ":val2": resource_name},
-            ExpressionAttributeNames={"#status": "status", "#claimed_resource_name": "claimed_resource_name"},
+            UpdateExpression="SET #status = :val, #claimed_resource_name = :val2,  #claimed_worker_id = :val3", 
+            ExpressionAttributeValues={
+                ":val": CLAIMED, 
+                ":ready": READY, 
+                ":val2": resource_name,
+                ":val3": worker_id
+            },
+            ExpressionAttributeNames={
+                "#status": "status", 
+                "#claimed_resource_name": "claimed_resource_name",
+                "#claimed_worker_id": "claimed_worker_id"
+            },
             ConditionExpression="#status = :ready",
         )
     except botocore.exceptions.ClientError as e:
