@@ -5,6 +5,7 @@
 import json
 import boto3
 import psycopg2
+import os
 
 from boto3.dynamodb.types import TypeDeserializer
 deserializer = TypeDeserializer()
@@ -18,7 +19,7 @@ def rds_connection():
         "user": "heroops",
         "application_name": "hero-python",
         "port": "5432",
-        "password": "8fc2a2e2-ed9e-413d-996a-72da94e11c5c"
+        "password": os.environ["HERO_DATABASE_PASSWORD"]
     }
     return psycopg2.connect(**credentials, connect_timeout=30)
     
@@ -66,7 +67,7 @@ def update_records(connection, records):
             jobs[tmp_status] = jobs.get(tmp_status, [])
             jobs[tmp_status].append(job_description)
         
-        print("UPDATE", job_description['status'], job_description['claimed_resource_name'])
+        print("UPDATE", job_description['status'], job_description['claimed_resource_name'], job_description['claimed_worker_id'])
    
    
     if len(jobs.get('Unknown', [])) > 0:
@@ -76,7 +77,7 @@ def update_records(connection, records):
     if len(jobs.get('claimed', [])) > 0:
         print("RDS claimed =====> ", len(jobs['claimed']))
         
-        argument_string = ",".join(f"('{job['task_id']}', '{job.get('claimed_resource_name')}')" for job in jobs['claimed']) 
+        argument_string = ",".join(f"('{job['task_id']}', '{job.get('claimed_resource_name')}', '{job.get('claimed_worker_id')}')" for job in jobs['claimed']) 
         print("argument_string", argument_string)
         with connection.cursor() as cursor:
             cmd = """
@@ -85,8 +86,9 @@ def update_records(connection, records):
                     status = 'claimed',
                     updated_on = NOW(),
                     start_time = NOW(),
-                    resource_name = c.resource_name
-                FROM ( values {values}) as c(id, resource_name) 
+                    resource_name = c.resource_name,
+                    worker = c.worker
+                FROM ( values {values}) as c(id, resource_name, worker) 
                 where c.id = t.id::text  
             """.format(values=argument_string)
             cursor.execute(cmd)
@@ -114,6 +116,7 @@ def update_records(connection, records):
             """.format(values=argument_string)
             cursor.execute(cmd)
         
+
 
 def lambda_handler(event, context):
     
