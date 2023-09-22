@@ -20,8 +20,16 @@ log = logging.getLogger("hero:hero")
 
 def required_login(func):
     def wrapper(self, *args, **kwargs):
-        self.login()
-        return func(self, *args, **kwargs)
+        try:
+            self.login()
+            return func(self, *args, **kwargs)
+        except ClientError as e:
+            print("ClientError", e.response["Error"]["Code"])
+            if e.response["Error"]["Code"] == "ExpiredTokenException":
+                print("token expired, getting new token")
+                self.logged_in = False
+                self.login()
+                return func(self, *args, **kwargs)
     return wrapper
 
 def pull_execptions(func):
