@@ -36,7 +36,7 @@ def pull_execptions(func):
                 time.sleep(1)
                 self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
                 return None
-            if e.response["Error"]["Code"] == "AWS.ExpiredTokenException":
+            if e.response["Error"]["Code"] == "ExpiredTokenException":
                 print("token expired, getting new token")
                 self.logged_in = False
                 self.login()
