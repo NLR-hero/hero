@@ -20,6 +20,7 @@ def retry(retry_function, project, queue_url, resource_name=None, attempts=1):
         else:
             return result
         
+
 def retry_task(retry_function, project, queue_url, resource_name=None, worker_id=None, attempts=1, num_tasks=1):
     retries = 0
     while retries < attempts:

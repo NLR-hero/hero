@@ -27,7 +27,7 @@ def required_login(func):
             print("ClientError", e.response["Error"]["Code"])
             if e.response["Error"]["Code"] == "ExpiredTokenException":
                 print("token expired, getting new token")
-                self.logged_in = False
+                self.aws_credentials = None
                 self.login()
                 return func(self, *args, **kwargs)
     return wrapper
@@ -46,7 +46,7 @@ def pull_execptions(func):
                 return None
             if e.response["Error"]["Code"] == "ExpiredTokenException":
                 print("token expired, getting new token")
-                self.logged_in = False
+                self.aws_credentials = None
                 self.login()
                 return func(self, *args, **kwargs)
         except RetryAttemptsExceeded as e:
@@ -67,6 +67,7 @@ class Hero:
         self._worker_id = f"hero-{str(uuid.uuid4())}"
         self._queue_url = None
         log.info(f'Initializing HERO {self._resource_name} {self._queue}')
+    
 
     @required_login
     def create_queue(self):
@@ -157,16 +158,30 @@ class Hero:
         task.claimed_resource_name = self._resource_name
         task.status = CLAIMED
     
+    @required_login
     def poll(self, attempts, num_tasks=1):
-        return retry_task(
-            task.pull_task_sqs_dynamo,
-            self.project_table,
-            self.queue_url,
-            self._resource_name,
-            self._worker_id,
-            attempts=attempts,
-            num_tasks=num_tasks
-        )
+        retries = 0
+        while retries < attempts:
+            result = task.pull_task_sqs_dynamo(self.project_table, self.queue_url, 
+                                               self._resource_name, self._worker_id, num_tasks=num_tasks)
+            # print('result', result)
+            if result is None:
+                retries += 1
+                if retries >= attempts:
+                    raise RetryAttemptsExceeded()
+                time.sleep(retries)
+            else:
+                return result
+
+        # return retry_task(
+        #     task.pull_task_sqs_dynamo,
+        #     self.project_table,
+        #     self.queue_url,
+        #     self._resource_name,
+        #     self._worker_id,
+        #     attempts=attempts,
+        #     num_tasks=num_tasks
+        # )
 
 
     @pull_execptions
