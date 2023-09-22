@@ -35,6 +35,11 @@ def pull_execptions(func):
                 time.sleep(1)
                 self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
                 return None
+            if e.response["Error"]["Code"] == "AWS.ExpiredTokenException":
+                print("token expired, getting new token")
+                self.logged_in = False
+                self.login()
+                return None
         except RetryAttemptsExceeded as e:
             ## TODO: clean up dynamo description
             # queue may not exist..
