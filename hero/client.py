@@ -30,6 +30,7 @@ def pull_execptions(func):
             self.login()
             return func(self, *args, **kwargs)
         except ClientError as e:
+            print("ClientError", e.response["Error"]["Code"])
             if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
                 print("queue does not exist, getting new queue")
                 time.sleep(1)
@@ -39,7 +40,7 @@ def pull_execptions(func):
                 print("token expired, getting new token")
                 self.logged_in = False
                 self.login()
-                return None
+                return func(self, *args, **kwargs)
         except RetryAttemptsExceeded as e:
             ## TODO: clean up dynamo description
             # queue may not exist..
@@ -95,9 +96,6 @@ class Hero:
                 self._queue_url = queue.get_queue_url(self._project, self._queue)
             except Exception as e:
                 print('Queue not found, you need to create the queue first.')
-            # except Exception as e:
-            #     print(str(e))
-                # self._queue_url = create_queue(self._session, self._project, self._queue)
             self._table = dynamodb.get_project_table(self._session, self._project)
 
     @required_login
