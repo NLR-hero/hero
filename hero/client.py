@@ -191,6 +191,8 @@ class Hero:
         Pulls a task from the queue. Returns None otherwise.
         """   
         raw_task = self.poll(attempts, num_tasks=1)
+        if raw_task is None:
+            return None
         return self.create_task(raw_task[0])
        
 
