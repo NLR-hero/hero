@@ -93,6 +93,7 @@ class Hero:
         
     def login(self):
         if not self.logged_in:
+            print("Hero.login()")
             client_id, client_secret = config.get_client_credentials()
             scopes = ['hero-api/user', f'project/{self._project}']
             self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
