@@ -98,15 +98,16 @@ class Hero:
             self.aws_credentials = role.assume_role(self.access_token)
             config.export_session_to_env(self.aws_credentials)
             self._session = get_session(self.aws_credentials)
+
+            self._table = dynamodb.get_project_table(self._session, self._project)
+
             #TODO: This fails if the queue doesn't exist.
             try:
                 self._queue_url = queue.get_queue_url(self._project, self._queue)
                 self._queue_count = 0
             except Exception as e:
                 print('Queue not found, you need to create the queue first.')
-            self._table = dynamodb.get_project_table(self._session, self._project)
-
-            print(self._session, self._queue_url, self._table)
+  
 
     @required_login
     def create_queue(self):
