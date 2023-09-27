@@ -17,6 +17,7 @@ def create_queue(session: Session, queue_name: str, visibility_timeout: str='60'
         QueueName=queue_name,
         Attributes={"VisibilityTimeout": visibility_timeout},
     )
+    log.info(f"created queue {queue_name}")
     return result
 
 def receive_messages(session: Session, queue_url: str, max_number_of_messages: int=1):
@@ -89,5 +90,5 @@ def get_queue_url(session: Session, queue_name: str) -> str:
         response = client.get_queue_url(QueueName=queue_name)
         return response.get('QueueUrl')
     except ClientError as e:
-            if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
-                return None
+        if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
+            return None

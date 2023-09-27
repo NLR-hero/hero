@@ -16,6 +16,8 @@ from .aws import dynamodb, rds
 from .aws.utils import get_session
 import uuid 
 
+from . import __version__ as version
+
 log = logging.getLogger("hero:hero")
 
 def required_login(func):
@@ -30,6 +32,12 @@ def required_login(func):
                 self.aws_credentials = None
                 self.login()
                 return func(self, *args, **kwargs)
+            if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
+                time.sleep(1)
+                self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
+                self._queue_count = 0
+                print("new queue url", self._queue_url)
+                return func(self, *args, **kwargs)
     return wrapper
 
 def pull_execptions(func):
@@ -38,40 +46,72 @@ def pull_execptions(func):
             self.login()
             return func(self, *args, **kwargs)
         except ClientError as e:
-            print("ClientError", e.response["Error"]["Code"])
+            print("ClientError for worker", self._worker_id, e.response["Error"]["Code"])
             if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
                 print("queue does not exist, getting new queue")
                 time.sleep(1)
                 self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
-                return None
+                self._queue_count = 0
+                print("new queue url", self._queue_url)
+                return func(self, *args, **kwargs)
             if e.response["Error"]["Code"] == "ExpiredTokenException":
                 print("token expired, getting new token")
                 self.aws_credentials = None
                 self.login()
                 return func(self, *args, **kwargs)
         except RetryAttemptsExceeded as e:
-            ## TODO: clean up dynamo description
-            # queue may not exist..
-            #print(e)
             self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
+            self._queue_count = 0
+            print(f"RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}")
             return None
     return wrapper
 
 class Hero:
     def __init__(self, project=None, queue=None, resource_name=None):
         
+        self._version = version
         self.aws_credentials = None
         self._project = config.get_project(project)
         self._queue = config.get_queue(queue)
         self._resource_name = config.get_resource_name(resource_name)
         self._worker_id = f"hero-{str(uuid.uuid4())}"
         self._queue_url = None
-        log.info(f'Initializing HERO {self._resource_name} {self._queue}')
+        self._queue_count = 0
+        log.info(f'Initializing HERO {self._version}: {self._resource_name} {self._queue} {self._project}')
     
+    @property
+    def logged_in(self):
+        if self.aws_credentials is not None:
+            return True
+        return False
+
+    @property
+    def queue_url(self):
+        return self._queue_url
+
+    def login(self):
+        if not self.logged_in:
+          
+            client_id, client_secret = config.get_client_credentials()
+            scopes = ['hero-api/user', f'project/{self._project}']
+            self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
+            self.aws_credentials = role.assume_role(self.access_token)
+            config.export_session_to_env(self.aws_credentials)
+            self._session = get_session(self.aws_credentials)
+            #TODO: This fails if the queue doesn't exist.
+            try:
+                self._queue_url = queue.get_queue_url(self._project, self._queue)
+                self._queue_count = 0
+            except Exception as e:
+                print('Queue not found, you need to create the queue first.')
+            self._table = dynamodb.get_project_table(self._session, self._project)
+
+            print(self._session, self._queue_url, self._table)
 
     @required_login
     def create_queue(self):
         self._queue_url = sqsqueue.create_queue(self._project, self._queue)
+        self._queue_count = 0
         return self._queue_url
     
     @property
@@ -79,34 +119,17 @@ class Hero:
         return self._resource_name
 
     @property
+    def count(self):
+        return self._queue_count
+
+    @property
     @required_login
     def queue_url(self):
         if self._queue_url is None:
             self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
+            self._queue_count = 0
         return self._queue_url
 
-    @property
-    def logged_in(self):
-        if self.aws_credentials is not None:
-            return True
-        return False
-        
-    def login(self):
-        if not self.logged_in:
-            print("Hero.login()")
-            client_id, client_secret = config.get_client_credentials()
-            scopes = ['hero-api/user', f'project/{self._project}']
-            self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
-            self.aws_credentials = role.assume_role(self.access_token)
-            config.export_session_to_env(self.aws_credentials)
-            self._session = get_session(self.aws_credentials)
-
-            #TODO: This fails if the queue doesn't exist.
-            try:
-                self._queue_url = queue.get_queue_url(self._project, self._queue)
-            except Exception as e:
-                print('Queue not found, you need to create the queue first.')
-            self._table = dynamodb.get_project_table(self._session, self._project)
 
     @required_login
     def put_task(self, item):
@@ -145,9 +168,13 @@ class Hero:
         Clears the queue of all messages by deleting queue
         """
         log.debug('clear_tasks')
+        
         self._queue_url = queue.create_queue(self._project, self._queue)
+        self._queue_count = 0
         queue.delete_other_queues(self._queue_url, self._project, self._queue)
         queue.update_queue_url(self._project, self._queue, self._queue_url)
+        print(f"Queue {self._queue} cleared.  New queue url {self._queue_url} is ready")
+
         #TODO: can you remind me...oh this is deleting tasks from Postgres. maybe rename this function
         # rds.delete_queue(self._project, self._queue)
 
@@ -186,25 +213,28 @@ class Hero:
 
 
     @pull_execptions
-    def pull_task(self, attempts=3):
+    def pull_task(self, attempts=10):
         """
         Pulls a task from the queue. Returns None otherwise.
         """   
         raw_task = self.poll(attempts, num_tasks=1)
         if raw_task is None:
             return None
+        self._queue_count += 1
         return self.create_task(raw_task[0])
        
 
     @pull_execptions
-    def pull_tasks(self, attempts=3, num_tasks=1):
+    def pull_tasks(self, attempts=10, num_tasks=1):
         """
         Pulls tasks from the queue. Returns None otherwise.
         """
         # for AWS SQS, max num_tasks is 10
         num_tasks = min(10, num_tasks)
         raw_tasks = self.poll(attempts, num_tasks=num_tasks)
-        return [ self.create_task(raw_task) for raw_task in raw_tasks ]
+        results = [ self.create_task(raw_task) for raw_task in raw_tasks if raw_task is not None ]
+        self._queue_count += len(results)
+        return results
     
     def create_task(self, raw_task):
         if raw_task is None:
@@ -265,6 +295,9 @@ class Hero:
     def wait_for_tasks(self, task_ids):
         while True:
             results = rds.get_items_detail(task_ids)
+            print(len(results))
+            print([r["status"] for r in results if r["status"] != COMPLETE ])
+            print([ r['job_description']['name'] for r in results if r["status"] != COMPLETE ])
             if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
                 return results
             time.sleep(5)

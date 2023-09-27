@@ -1,6 +1,8 @@
 """
 .. include:: ./documentation.md
 """
+__version__ = "0.0.2"
+
 from time import time
 
 import urllib3
