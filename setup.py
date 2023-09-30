@@ -1,9 +1,9 @@
 from setuptools import setup
-
+from hero import __version__
 
 setup(
     name='hero',
-    version='0.0.1',
+    version=__version__,
     packages=['hero', 'hero.api', 'hero.aws', 'hero.auth', 'hero.config'],
     install_requires=[
         'boto3>=1.28.3',

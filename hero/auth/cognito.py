@@ -23,7 +23,7 @@ class ResilientSession(Session):
     def request(self, method, url, **kwargs):
 
         counter = 0
-        max_retries = 5
+        max_retries = 10
 
         # # add random delay, so that not all requests come at once
         # delay_start = np.random.uniform(low=0.0, high=20.0)

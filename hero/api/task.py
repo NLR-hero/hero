@@ -25,14 +25,14 @@ from .. import config
 
 
 
-def pull_task_sqs_dynamo(project_table, queue_url, resource_name, worker_id, num_tasks=1):
+def pull_task_sqs_dynamo(session, project, queue_url, resource_name, worker_id, num_tasks=1):
     """
     Returns a task froma queue if availabe and it is not already claimed, otherwise returns None.
     """
     if queue_url is None:
         return None
     
-    session = aws.utils.get_session()
+    project_table = aws.dynamodb.get_project_table(session, project)
     messages = aws.sqs.receive_messages(session, queue_url, max_number_of_messages=num_tasks)
 
     tasks = []
