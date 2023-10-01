@@ -9,15 +9,15 @@ Key Features:
 """
 from .. import aws
 from ..config import config
-from . import utils
+from . import retry
 import time
 import json
 import uuid
 import logging
 
-log = logging.getLogger('hero:api:queue')
+log = logging.getLogger(__name__)
 
-from ..integrity import QueueNotInDynamo
+from .integrity import QueueNotInDynamo
 # class QueueDoesNotExits(Exception):
 #     def __init__(self):
 #         super().__init__('Queue does not exist.')
@@ -67,29 +67,29 @@ def list_queues(session, project=None, queue=None):
     return aws.sqs.list_queues(session, queue_prefix)
 
 
-def delete_other_queues(session, queue_url, project, queue_name):
+def delete_other_queues(session, queue_url, project, queue_name, worker_id):
     """
     Workers can optionally remove all previously created queues to start a fresh campaign. This will remove all other queues with a hero-project prefix.
 
     For example, say in campaign A you created a queue "hero-project-queue000". This campaign completed but the queue was not cleaned up. Then you want to start a new campaign with the same input parameters, but you don't want to reuse an old queue. Calling this function will find all of the queues that start with "hero-project-queue000" and delete them as long as they are not the current queue. Remember, each time a queue is crated a uuid is attached to the end of the queue name.
     """
     log.debug('delete_other_queues')
+
+    print(f"{worker_id} ==> delete_other_queues()")
     queue_list = list(list_queues(session, project, queue_name))
     for temp_queue_url in queue_list:
         if temp_queue_url != queue_url:
-            aws.sqs.delete_queue(session, temp_queue_url)
+            aws.sqs.delete_queue(session, temp_queue_url, worker_id)
 
 
 def create_queue(session, project=None, queue=None):
     """
     Creates a new unique queue.
     """
-    project = config.get_project(project)
-    queue = config.get_queue(queue)
 
     queue_name = f"hero-{project}-{queue}-{str(uuid.uuid4())}"
     visibility_timeout = config.get_queue_visibility_timeout()
     aws.sqs.create_queue(session, queue_name, visibility_timeout)
-    queue_url = utils.Retry().retry(aws.sqs.get_queue_url, session, queue_name)
+    queue_url = retry.Retry().retry(aws.sqs.get_queue_url, session, queue_name)
     update_queue_url(session, queue_url, project, queue)
     return queue_url

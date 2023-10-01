@@ -100,6 +100,8 @@ def update_item_results(session, project, job_id, queue, results={}):
         },
         ReturnValues="UPDATED_NEW",
     )
+    if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+        return True
 
 
 #TODO: this probably doesn't belong anymore since we are managing infra in the CDK
@@ -140,3 +142,4 @@ def delete_table(table, tototal_segments=1, rank=0):
                 break
 
     log.info(f"{rank}     Deleted {counter}")
+    return True

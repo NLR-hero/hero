@@ -15,6 +15,7 @@ import logging
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", logging.INFO))
 logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger("hero").setLevel(logging.DEBUG)
 
 log = logging.getLogger("worker")
 

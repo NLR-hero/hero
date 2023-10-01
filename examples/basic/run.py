@@ -9,7 +9,7 @@ try:
 
     os.environ['HERO_QUEUE'] = 'test23443'
 
-    # clear the queue
+    # clear the queue if you are using exit messages
     subprocess.Popen("hero_clear_queue", shell=True, env=os.environ).wait()
 
 

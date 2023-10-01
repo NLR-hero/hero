@@ -13,11 +13,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-from . import integrity
-from . import api
-from . import aws
-from . import auth
-from . import config
+
 from .client import Hero
 
 

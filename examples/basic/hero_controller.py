@@ -8,6 +8,9 @@ import random
 from functools import partial
 
 random.seed(0)
+import logging
+
+logging.getLogger("hero").setLevel(logging.DEBUG)
 
 def create_task(index, lower=2, upper=4):
     return {

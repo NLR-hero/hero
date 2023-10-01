@@ -2,9 +2,11 @@ import time
 from botocore.exceptions import ClientError
 from . integrity import QueueDoesNotExits, RetryAttemptsExceeded, QueueNotInDynamo
 
-from . import api
+from . queue import get_queue_url
 
+import logging
 
+log = logging.getLogger(__name__)
 
 def integrity_check(func):
     def wrapper(self, *args, **kwargs):
@@ -13,9 +15,9 @@ def integrity_check(func):
             return func(self, *args, **kwargs)
         
         except ClientError as e:
-            print("ClientError", e.response["Error"]["Code"])
+            log.debug(f"ClientError {e.response['Error']['Code']}")
             if e.response["Error"]["Code"] == "ExpiredTokenException":
-                print("token expired, getting new token")
+                log.error(f"AWS token expired ")
                 self.aws_credentials = None
                 self.login()
                 return func(self, *args, **kwargs)
@@ -23,39 +25,39 @@ def integrity_check(func):
             if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
                 time.sleep(1)
                 try:
-                    self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+                    self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
                     self._queue_count = 0
-                    print("new queue url", self._queue_url)
+                    log.debug("new queue url", self._queue_url)
                     return func(self, *args, **kwargs)
                 except QueueDoesNotExits as e:
-                    print("QueueDoesNotExits")
+                    log.debug("QueueDoesNotExits")
                     return None 
                 
         except RetryAttemptsExceeded as e:
             try:
-                self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
                 self._queue_count = 0
-                print(f"RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}")
+                log.debug(f"RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}")
                 return None
             except QueueDoesNotExits as e:
-                    print("QueueDoesNotExits")
-                    self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+                    log.debug("QueueDoesNotExits")
+                    self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
                     self._queue_count = 0
                     return None 
             except QueueNotInDynamo as e:
-                print("QueueNotInDynamo")
+                log.debug("QueueNotInDynamo")
                 self._queue_url = None
                 self._queue_count = 0
                 return None
                 
         except QueueDoesNotExits as e:
-            print("QueueDoesNotExits")
-            self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+            log.debug("QueueDoesNotExits")
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
             self._queue_count = 0
             return None
         
         except QueueNotInDynamo as e:
-            print("QueueDoesNotExits")
+            log.debug("QueueDoesNotExits")
             self._queue_url = None
             self._queue_count = 0
             return None

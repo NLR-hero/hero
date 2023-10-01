@@ -1,7 +1,14 @@
 import argparse
+import os
 
 from hero import Hero
 import random
+
+import logging
+logging.basicConfig(level=os.environ.get("LOGLEVEL", logging.INFO))
+logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+logging.getLogger("hero").setLevel(logging.DEBUG)
 
 def parse_args():
     parser = argparse.ArgumentParser(

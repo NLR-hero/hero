@@ -11,6 +11,6 @@ setup(
         'requests>=2.28.2'
     ],
     entry_points={ "console_scripts": [
-                        "hero_clear_queue=hero.hero_clear_queue:main",
+                        "hero_clear_queue=hero.bin.hero_clear_queue:main",
             ]},
 )

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from decimal import Decimal
 import logging
 
-log = logging.getLogger('hero:api:task')
+log = logging.getLogger(__name__)
 
 READY = "ready"
 CLAIMED = "claimed"

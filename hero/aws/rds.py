@@ -8,7 +8,7 @@ from psycopg2 import sql
 from ..api.task import READY, CLAIMED, COMPLETE, FAILED
 import logging
 
-log = logging.getLogger('hero:aws:rds')
+log = logging.getLogger(__name__)
 
 
 def rds_connection():

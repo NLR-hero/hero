@@ -23,24 +23,24 @@ from . import api
 
 from . import __version__ 
 
-log = logging.getLogger("hero:hero")
+log = logging.getLogger(__name__)
 
-from . integrity import QueueDoesNotExits, QueueNotInDynamo, RetryAttemptsExceeded
-from . integrity_check import integrity_check
+from .api.integrity import QueueDoesNotExits, QueueNotInDynamo, RetryAttemptsExceeded
+from .api.integrity_check import integrity_check
 
 
 class Hero:
-    def __init__(self, queue=None, resource_name=None):
+    def __init__(self, queue=None, resource_name=None, worker_id=None):
         
         self._version = __version__
         self.aws_credentials = None
         self._project = config.get_project()
         self._queue_name = config.get_queue(queue)
         self._resource_name = config.get_resource_name(resource_name)
-        self._worker_id = f"hero-{str(uuid.uuid4())}"
+        self._worker_id = f"hero-{str(uuid.uuid4())}" if worker_id is None else worker_id
         self._queue_url = None
         self._queue_count = 0
-        log.info(f'Initializing HERO {self._version}: {self._resource_name} {self._queue_name} {self._project}')
+        log.debug(f'Initializing HERO: {self._worker_id} {self._resource_name} {self._queue_name} {self._project}')
     
     @property
     def logged_in(self):
@@ -69,13 +69,14 @@ class Hero:
                 self._queue_count = 0
             except QueueDoesNotExits as e:
                 self._queue_url = None
-                print('Queue not found, you need to create the queue first.')
+                log.debug(f'Queue {self._queue_name} not found, you need to create the queue first.')
             except QueueNotInDynamo as e:
                 self._queue_url = None
-                print('Queue not found in Dynamo')
-
-        # print("expiration = ", (self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds()) 
-
+                log.debug(f'Queue {self._queue_name} not found in Dynamo.  You need to create the queue first.')
+                
+        total_seconds = round((self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+        if total_seconds % 60 == 0:
+            log.debug(f"AWS session {self._worker_id} will expire in {str(datetime.timedelta(seconds=total_seconds))}")
 
     @integrity_check
     def clear_tasks(self):
@@ -86,10 +87,11 @@ class Hero:
         self._queue_url = api.queue.create_queue(self._session, self._project, self._queue_name)
         self._queue_count = 0
         
-        api.queue.delete_other_queues(self._session, self._queue_url, self._project, self._queue_name)
+        api.queue.delete_other_queues(self._session, self._queue_url, self._project, self._queue_name, self._worker_id)
         api.queue.update_queue_url(self._session, self._queue_url, self._project, self._queue_name)
         self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
-        print(f"Queue {self._queue_name} cleared.  New queue url {self._queue_url} is ready")
+        log.debug(f"Queue {self._queue_name} cleared.  New queue url {self._queue_url} is ready")
+    
 
     
     @property
@@ -120,7 +122,11 @@ class Hero:
             insert_resource_name=self._resource_name,
             insert_worker_id=self._worker_id,
         )
-        task_id = aws.dynamodb.put_item(self._session, self._project, task)
+        task_id = api.retry.Retry(attempts=10, sleep=1).retry(
+            aws.dynamodb.put_item,
+            self._session, 
+            self._project, 
+            task)
         return task_id
 
     @integrity_check
@@ -137,7 +143,11 @@ class Hero:
             )
             for i in items
         ]
-        task_ids = aws.dynamodb.put_items(self._session, self._project, tasks)
+        task_ids = api.retry.Retry(attempts=10, sleep=1).retry(
+            aws.dynamodb.put_items,
+            self._session, 
+            self._project, 
+            tasks)
         return task_ids
 
     @integrity_check
@@ -145,46 +155,46 @@ class Hero:
         """
         Pulls a task from the queue. Returns None otherwise.  Run this as a process.
         """  
-        def retry(): 
-            retries = 0
-            while retries < attempts:
-                try:
-                    result = task.pull_task_sqs_dynamo(self._session,
-                                                self._project,
-                                                self._resource_name, 
-                                                self._worker_id, 
-                                                num_tasks=1,
-                                                queue_url=self.queue_url, 
-                                                )
-                except Exception as e:
-                    print(str(e))
+        # def retry(): 
+        #     retries = 0
+        #     while retries < attempts:
+        #         try:
+        #             result = task.pull_task_sqs_dynamo(self._session,
+        #                                         self._project,
+        #                                         self._resource_name, 
+        #                                         self._worker_id, 
+        #                                         num_tasks=1,
+        #                                         queue_url=self.queue_url, 
+        #                                         )
+        #         except Exception as e:
+        #             print("Exception -->", str(e))
 
-                if result is None:
-                    retries += 1
+        #         if result is None:
+        #             retries += 1
                     
-                    if retries >= attempts:
-                        raise RetryAttemptsExceeded()
+        #             if retries >= attempts:
+        #                 raise RetryAttemptsExceeded()
                     
-                    if sleep == "linear":
-                        time.sleep(retries)
-                    elif sleep == "exponential":
-                        time.sleep(2**retries)
-                    elif sleep == "constant":
-                        time.sleep(1)
-                else:
-                    return result
+        #             if sleep == "linear":
+        #                 time.sleep(retries)
+        #             elif sleep == "exponential":
+        #                 time.sleep(2**retries)
+        #             elif sleep == "constant":
+        #                 time.sleep(1)
+        #         else:
+        #             return result
+        # raw_task = retry()
 
-        # raw_task = api.utils.Retry(attempts=attempts, sleep=sleep).retry(
-        #     task.pull_task_sqs_dynamo,
-        #     self._session, 
-        #     self._project,
-        #     self._resource_name, 
-        #     self._worker_id, 
-        #     num_tasks=1,
-        #     queue_url=self.queue_url, 
-        # )
-        raw_task = retry()
-
+        raw_task = api.retry.Retry(attempts=attempts, sleep=sleep).retry(
+            task.pull_task_sqs_dynamo,
+            self._session, 
+            self._project,
+            self._resource_name, 
+            self._worker_id, 
+            num_tasks=1,
+            queue_url=self.queue_url, 
+        )
+        
         if raw_task is None:
             return None
         self._queue_count += 1
@@ -198,7 +208,7 @@ class Hero:
         """
         # for AWS SQS, max num_tasks is 10
         num_tasks = min(10, num_tasks)
-        raw_tasks = api.utils.Retry(attempts=attempts, sleep=sleep).retry(
+        raw_tasks = api.retry.Retry(attempts=attempts, sleep=sleep).retry(
             task.pull_task_sqs_dynamo,
             self._session, 
             self._project,
@@ -214,9 +224,6 @@ class Hero:
     def create_task(self, raw_task):
         if raw_task is None:
             return None
-        # Do we need this?
-        # raw_task['task_id'] = raw_task['id']
-        # raw_task['queue_name'] = raw_task['queue']
         del raw_task['id']
         del raw_task['queue']
         return Task(**raw_task)
@@ -227,9 +234,18 @@ class Hero:
         # task.completed_resource_name = self._resource_name
         task.results = results
         task.status = COMPLETE
-        dynamodb.update_item_results(
-            self._session, self._project, task.task_id, task.queue_name, results=task.results
+        log.debug(f"update_task: {task.task_id} {task.queue_name} {task.status}")
+        api.retry.Retry(attempts=10, sleep=5).retry(
+            dynamodb.update_item_results,
+            self._session,
+            self._project,
+            task.task_id,
+            task.queue_name,
+            results=task.results,
         )
+        # dynamodb.update_item_results(
+        #     self._session, self._project, task.task_id, task.queue_name, results=task.results
+        # )
         return task
 
     def wait(self, seconds):
@@ -248,15 +264,17 @@ class Hero:
             results = rds.get_items_detail(task_ids)
             if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
                 return results
+            log.debug(f"map: {len(results)} {len(task_ids)}")
             time.sleep(sleep)
 
     @integrity_check 
     def wait_for_tasks(self, task_ids):
         while True:
             results = rds.get_items_detail(task_ids)
-            print(len(results))
-            print([r["status"] for r in results if r["status"] != COMPLETE ])
-            print([ r['job_description']['name'] for r in results if r["status"] != COMPLETE ])
+            log.debug(f"wait_for_tasks: {len(results)} {len(task_ids)}")
+            # print(len(results))
+            # print([r["status"] for r in results if r["status"] != COMPLETE ])
+            # print([ r['job_description']['name'] for r in results if r["status"] != COMPLETE ])
             if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
                 return results
             time.sleep(5)

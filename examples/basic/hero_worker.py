@@ -1,6 +1,11 @@
 import os
 import time
 import random
+import logging
+
+logging.getLogger("hero").setLevel(logging.DEBUG)
+#logging.getLogger("hero:api:retry").setLevel(logging.DEBUG)
+
 
 from hero import Hero
 

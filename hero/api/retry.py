@@ -1,12 +1,8 @@
 import time
 import logging
 
-log = logging.getLogger('hero:api:utils')
-from ..integrity import RetryAttemptsExceeded
-
-# class RetryAttemptsExceeded(Exception):
-#     def __init__(self):
-#         super().__init__('Failed due to number of retry attempts.')
+log = logging.getLogger(__name__)
+from .integrity import RetryAttemptsExceeded
 
 class Retry:
 
@@ -16,14 +12,16 @@ class Retry:
 
     def retry(self, retry_function, *args, **kwargs):
         retries = 0
+
         while retries < self._attempts:
+            log.debug(f"Executing {retry_function} #{retries}")
             result = retry_function(*args, **kwargs)
             if result is None:
                 retries += 1
-                queue_url = kwargs.get("queue_url", "xxxxxx")
-                if queue_url is None:
-                    queue_url = "NoneNone"
-                print(f"retries => {retries}    {queue_url[-6:]}")
+                # queue_url = kwargs.get("queue_url", "xxxxxx")
+                # if queue_url is None:
+                #     queue_url = "NoneNone"
+            
                 if retries >= self._attempts:
                     raise RetryAttemptsExceeded()
                 if self._sleep == "linear":

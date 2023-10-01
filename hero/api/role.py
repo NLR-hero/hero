@@ -3,7 +3,7 @@ import logging
 
 from ..auth.cognito import ResilientSession
 
-log = logging.getLogger('hero:api:role')
+log = logging.getLogger(__name__)
 
 API_URL = 'https://dev-hero-api.stratus.nrel.gov'
 
