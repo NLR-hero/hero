@@ -10,6 +10,7 @@ def parse_args():
     
     parser.add_argument('--queue', type=str, help='name of queue') 
     parser.add_argument('--num_tasks', type=int, help='number of tasks to run')
+    parser.add_argument('--time', type=str, help='s')
     args = parser.parse_args()
     return args
 
@@ -32,8 +33,8 @@ def send_exit_command(queue_name, n):
     hero.put_tasks(exit_tasks)
 
 def create_command():
-    rand = random.randint(5, 25)
-    return f"sleep {rand}m"
+    rand = random.randint(1, 3)
+    return f"sleep {rand}"
 
 def edges_hero_execute_commands(queue_name, iteration, commands):
 
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     args = parse_args()
 
     hero = Hero(queue=args.queue)
-    hero.create_queue()
+    hero.clear_tasks()
 
     for iteration in range(5):
         commands = {str(i): create_command() for i in range(args.num_tasks*2)}

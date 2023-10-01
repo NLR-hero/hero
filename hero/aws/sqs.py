@@ -4,6 +4,7 @@ import logging
 from typing import Dict
 # Types
 from boto3.session import Session
+from ..integrity import QueueDoesNotExits
 
 log = logging.getLogger('hero:aws:sqs')
 
@@ -28,10 +29,14 @@ def receive_messages(session: Session, queue_url: str, max_number_of_messages: i
     """
     log.debug('receive_messages')
     client = session.client("sqs")
-    message_packet = client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=max_number_of_messages)
-
-    if "Messages" in message_packet.keys():
-        return message_packet["Messages"]
+    try:
+        message_packet = client.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=max_number_of_messages)
+        if "Messages" in message_packet.keys():
+            return message_packet["Messages"]
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
+            raise QueueDoesNotExits()
+            
 
     return []
 

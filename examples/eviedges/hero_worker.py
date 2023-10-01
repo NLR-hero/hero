@@ -81,7 +81,7 @@ def worker(queue="test", max_wait_time=120):
     while True and total_wait < max_wait_time:
 
         # get the inputs
-        task = hero.pull_task(attempts=10)
+        task = hero.pull_task(attempts=15)
         if task is not None:
             execute_task(hero, task)
             attempts = 0

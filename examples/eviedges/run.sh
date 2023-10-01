@@ -1,4 +1,4 @@
-cd ../; source env.sh; cd 10_eviedges
+cd ../; source env.sh; cd eviedges
 
 
-python run.py --queue "test_queue-001-2" --workers 300
+python run.py --queue "test_queue-001-3344466" --workers 2

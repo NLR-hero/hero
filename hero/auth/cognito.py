@@ -72,3 +72,4 @@ def get_token(client_id, client_secret, scopes, auth_url=COGNITO_AUTH_URL):
     response.raise_for_status()
                 
     return response.json()['access_token']
+

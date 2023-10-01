@@ -7,11 +7,16 @@ WORKERS = 2
 
 try:
 
+    os.environ['HERO_QUEUE'] = 'test23443'
+
+    # clear the queue
+    subprocess.Popen("hero_clear_queue", shell=True, env=os.environ).wait()
+
+
     # launch the controller
     controller = subprocess.Popen(['python', 'hero_controller.py'], 
                                   env=os.environ)
 
-    time.sleep(5)
     # lanch the workers
     workers = subprocess.Popen(f"mpirun -np {WORKERS} python hero_worker.py", 
                                shell=True, 

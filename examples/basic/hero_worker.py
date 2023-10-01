@@ -19,10 +19,13 @@ if __name__ == "__main__":
 
     while True:
         print("--------------- Waiting for tasks ---------------")
-        task = hero.pull_task(attempts=45)
+        task = hero.pull_task(attempts=10)
         if task:
             if task.inputs.get('exit', False):
+                print("hero._queue_count", hero._queue_count)
                 exit()
+                # if hero._queue_count > 5:
+                #     exit()
             else:            
                 execute_task(hero, task)
                 attempts = 0

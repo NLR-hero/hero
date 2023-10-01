@@ -7,15 +7,16 @@ import logging
 import datetime
 from botocore.exceptions import ClientError
 
+
 from .api.task import Task, COMPLETE, CLAIMED, READY
 from .auth import cognito
-from .api import role, queue, task, QueueDoesNotExits
-from .api import queue as sqsqueue
-from .api.utils import RetryAttemptsExceeded
+from .api import role, queue, task
+
 from .config import config
 from .aws import dynamodb, rds
-from .aws.utils import get_session
 import uuid 
+
+from multiprocessing import Process
 
 from . import aws
 from . import api
@@ -24,42 +25,8 @@ from . import __version__
 
 log = logging.getLogger("hero:hero")
 
-def integrity_check(func):
-    def wrapper(self, *args, **kwargs):
-        try:
-            self.login()
-            return func(self, *args, **kwargs)
-        except ClientError as e:
-            print("ClientError", e.response["Error"]["Code"])
-            if e.response["Error"]["Code"] == "ExpiredTokenException":
-                print("token expired, getting new token")
-                self.aws_credentials = None
-                self.login()
-                return func(self, *args, **kwargs)
-            if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
-                time.sleep(1)
-                try:
-                    self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
-                    self._queue_count = 0
-                    print("new queue url", self._queue_url)
-                    return func(self, *args, **kwargs)
-                except QueueDoesNotExits as e:
-                    print("QueueDoesNotExits")
-                    return None 
-        except RetryAttemptsExceeded as e:
-            try:
-                self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
-                self._queue_count = 0
-                print(f"RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}")
-                return None
-            except QueueDoesNotExits as e:
-                    print("QueueDoesNotExits")
-                    return None 
-        except QueueDoesNotExits as e:
-            print("QueueDoesNotExits")
-            return None
-    return wrapper
-
+from . integrity import QueueDoesNotExits, QueueNotInDynamo, RetryAttemptsExceeded
+from . integrity_check import integrity_check
 
 
 class Hero:
@@ -103,8 +70,11 @@ class Hero:
             except QueueDoesNotExits as e:
                 self._queue_url = None
                 print('Queue not found, you need to create the queue first.')
+            except QueueNotInDynamo as e:
+                self._queue_url = None
+                print('Queue not found in Dynamo')
 
-        print("expiration = ", (self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds()) 
+        # print("expiration = ", (self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds()) 
 
 
     @integrity_check
@@ -171,21 +141,50 @@ class Hero:
         return task_ids
 
     @integrity_check
-    def pull_task(self, attempts=10):
+    def pull_task(self, attempts=10, sleep="constant"):
         """
-        Pulls a task from the queue. Returns None otherwise.
-        """   
-        raw_task = api.utils.Retry(attempts=attempts).retry(
-            task.pull_task_sqs_dynamo,
-            self._session, 
-            self._project,
-            self.queue_url, 
-            self._resource_name, 
-            self._worker_id, 
-            num_tasks=1
-        )
+        Pulls a task from the queue. Returns None otherwise.  Run this as a process.
+        """  
+        def retry(): 
+            retries = 0
+            while retries < attempts:
+                try:
+                    result = task.pull_task_sqs_dynamo(self._session,
+                                                self._project,
+                                                self._resource_name, 
+                                                self._worker_id, 
+                                                num_tasks=1,
+                                                queue_url=self.queue_url, 
+                                                )
+                except Exception as e:
+                    print(str(e))
 
-        # raw_task = self.poll(attempts, num_tasks=1)
+                if result is None:
+                    retries += 1
+                    
+                    if retries >= attempts:
+                        raise RetryAttemptsExceeded()
+                    
+                    if sleep == "linear":
+                        time.sleep(retries)
+                    elif sleep == "exponential":
+                        time.sleep(2**retries)
+                    elif sleep == "constant":
+                        time.sleep(1)
+                else:
+                    return result
+
+        # raw_task = api.utils.Retry(attempts=attempts, sleep=sleep).retry(
+        #     task.pull_task_sqs_dynamo,
+        #     self._session, 
+        #     self._project,
+        #     self._resource_name, 
+        #     self._worker_id, 
+        #     num_tasks=1,
+        #     queue_url=self.queue_url, 
+        # )
+        raw_task = retry()
+
         if raw_task is None:
             return None
         self._queue_count += 1
@@ -193,20 +192,20 @@ class Hero:
        
 
     @integrity_check
-    def pull_tasks(self, attempts=10, num_tasks=1):
+    def pull_tasks(self, attempts=10, num_tasks=1, sleep="constant"):
         """
         Pulls tasks from the queue. Returns None otherwise.
         """
         # for AWS SQS, max num_tasks is 10
         num_tasks = min(10, num_tasks)
-        raw_tasks = api.utils.Retry(attempts=attempts).retry(
+        raw_tasks = api.utils.Retry(attempts=attempts, sleep=sleep).retry(
             task.pull_task_sqs_dynamo,
             self._session, 
             self._project,
-            self.queue_url, 
             self._resource_name, 
             self._worker_id, 
-            num_tasks=num_tasks
+            num_tasks=num_tasks,
+            queue_url=self.queue_url, 
         )
         results = [ self.create_task(raw_task) for raw_task in raw_tasks if raw_task is not None ]
         self._queue_count += len(results)

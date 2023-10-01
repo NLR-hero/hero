@@ -26,17 +26,19 @@ if __name__ == "__main__":
 
     try:
 
-        # launch the controller
-        controller = subprocess.Popen(f"python hero_controller.py --queue {QUEUE} --num_tasks {WORKERS}", 
-                                    shell=True, 
-                                    env=os.environ)
-
-        time.sleep(5)
         # lanch the workers
         workers = subprocess.Popen(f"mpirun --oversubscribe -np {WORKERS} python hero_worker.py --queue  {QUEUE} --max_wait_time 1800", 
                                 shell=True, 
                                 env=os.environ)
         
+        time.sleep(10)
+
+        # launch the controller
+        controller = subprocess.Popen(f"python hero_controller.py --queue {QUEUE} --num_tasks {WORKERS}", 
+                                    shell=True, 
+                                    env=os.environ)
+
+    
         controller.wait()
         workers.wait()
 

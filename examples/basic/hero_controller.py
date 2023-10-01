@@ -24,7 +24,10 @@ def create_exit_task(index):
 
 if __name__ == "__main__":
 
+    NUM_WORKERS = 2
     NUM_TASKS = 10
+
+    print(os.environ['HERO_QUEUE'])
  
     # clear the queue
     hero = Hero()
@@ -41,7 +44,7 @@ if __name__ == "__main__":
     print("tasks done")
     
     # send the exit signal to workers
-    items = [ create_exit_task(i) for i in range(int(NUM_TASKS)) ]
+    items = [ create_exit_task(i) for i in range(int(NUM_WORKERS)) ]
     task_ids = hero.put_tasks(items)
 
     

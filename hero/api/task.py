@@ -25,7 +25,7 @@ from .. import config
 
 
 
-def pull_task_sqs_dynamo(session, project, queue_url, resource_name, worker_id, num_tasks=1):
+def pull_task_sqs_dynamo(session, project, resource_name, worker_id, num_tasks=1, queue_url=None):
     """
     Returns a task froma queue if availabe and it is not already claimed, otherwise returns None.
     """

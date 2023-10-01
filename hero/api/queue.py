@@ -17,9 +17,10 @@ import logging
 
 log = logging.getLogger('hero:api:queue')
 
-class QueueDoesNotExits(Exception):
-    def __init__(self):
-        super().__init__('Queue does not exist.')
+from ..integrity import QueueNotInDynamo
+# class QueueDoesNotExits(Exception):
+#     def __init__(self):
+#         super().__init__('Queue does not exist.')
 
 
 def update_queue_url(session, queue_url, project=None, queue=None):
@@ -51,7 +52,7 @@ def get_queue_url(session, project=None, queue=None):
     queue = config.get_queue(queue)
     response = table.get_item(Key={"queue_prefix": queue, "project_name": project})
     if "Item" not in response.keys():
-        raise QueueDoesNotExits()
+        raise QueueNotInDynamo()
     return response["Item"]["queue_url"]
  
 def list_queues(session, project=None, queue=None):
