@@ -6,7 +6,7 @@ import json
 
 from ..api.task import READY, CLAIMED, COMPLETE, FAILED
 
-log = logging.getLogger('hero:aws:dynamodb')
+log = logging.getLogger(__name__)
 
 def get_table(session, table_name):
     """Gets the table opject for table_name"""
