@@ -29,7 +29,10 @@ if __name__ == "__main__":
 
     NUM_WORKERS = 2
     NUM_TASKS = 10
- 
+
+#------------------------------------------------------------------------------
+
+
     # clear the queue
     hero = Hero()
     hero.clear_tasks()
