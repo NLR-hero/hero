@@ -2,7 +2,7 @@ import boto3
 import logging
 from .. import config
 
-log = logging.getLogger('hero:aws:utils')
+log = logging.getLogger(__name__)
 
 def get_session(aws_credentials=None, region_name='us-west-2'):
     """Returns a boto3 session"""

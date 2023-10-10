@@ -1,7 +1,7 @@
 """
 .. include:: ./documentation.md
 """
-__version__ = "0.0.2"
+__version__ = "0.1.2"
 
 from time import time
 
@@ -13,11 +13,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 
-from . import api
-from . import aws
-from . import auth
-from . import config
+
 from .client import Hero
+
+
 
 # def timer(func):
 #     """Prints the runtime of the decorated function"""

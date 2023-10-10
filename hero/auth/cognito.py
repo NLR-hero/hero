@@ -23,7 +23,7 @@ class ResilientSession(Session):
     def request(self, method, url, **kwargs):
 
         counter = 0
-        max_retries = 5
+        max_retries = 10
 
         # # add random delay, so that not all requests come at once
         # delay_start = np.random.uniform(low=0.0, high=20.0)
@@ -40,7 +40,6 @@ class ResilientSession(Session):
                 delay0 = 5*math.pow(2, counter)
 
                 # add some randomness
-                delay1 = np.random.uniform(low=0, high=delay0)
 
                 # effective delay
                 delay = 0.5*(delay0 + delay1)
@@ -72,3 +71,4 @@ def get_token(client_id, client_secret, scopes, auth_url=COGNITO_AUTH_URL):
     response.raise_for_status()
                 
     return response.json()['access_token']
+

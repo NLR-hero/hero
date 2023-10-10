@@ -4,80 +4,43 @@
 import time
 import socket
 import logging
+import datetime
 from botocore.exceptions import ClientError
+
 
 from .api.task import Task, COMPLETE, CLAIMED, READY
 from .auth import cognito
-from .api import role, queue, task, QueueDoesNotExits
-from .api import queue as sqsqueue
-from .api.utils import RetryAttemptsExceeded, retry, retry_task
+from .api import role, queue, task
+
 from .config import config
 from .aws import dynamodb, rds
-from .aws.utils import get_session
 import uuid 
 
-from . import __version__ as version
+from multiprocessing import Process
 
-log = logging.getLogger("hero:hero")
+from . import aws
+from . import api
 
-def required_login(func):
-    def wrapper(self, *args, **kwargs):
-        try:
-            self.login()
-            return func(self, *args, **kwargs)
-        except ClientError as e:
-            print("ClientError", e.response["Error"]["Code"])
-            if e.response["Error"]["Code"] == "ExpiredTokenException":
-                print("token expired, getting new token")
-                self.aws_credentials = None
-                self.login()
-                return func(self, *args, **kwargs)
-            if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
-                time.sleep(1)
-                self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
-                self._queue_count = 0
-                print("new queue url", self._queue_url)
-                return func(self, *args, **kwargs)
-    return wrapper
+from . import __version__ 
 
-def pull_execptions(func):
-    def wrapper(self, *args, **kwargs):
-        try:
-            self.login()
-            return func(self, *args, **kwargs)
-        except ClientError as e:
-            print("ClientError for worker", self._worker_id, e.response["Error"]["Code"])
-            if e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue":
-                print("queue does not exist, getting new queue")
-                time.sleep(1)
-                self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
-                self._queue_count = 0
-                print("new queue url", self._queue_url)
-                return func(self, *args, **kwargs)
-            if e.response["Error"]["Code"] == "ExpiredTokenException":
-                print("token expired, getting new token")
-                self.aws_credentials = None
-                self.login()
-                return func(self, *args, **kwargs)
-        except RetryAttemptsExceeded as e:
-            self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
-            self._queue_count = 0
-            print(f"RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}")
-            return None
-    return wrapper
+log = logging.getLogger(__name__)
+
+from .api.integrity import QueueDoesNotExits, QueueNotInDynamo, RetryAttemptsExceeded
+from .api.integrity_check import integrity_check
+
 
 class Hero:
-    def __init__(self, project=None, queue=None, resource_name=None):
+    def __init__(self, queue=None, resource_name=None, worker_id=None):
         
-        self._version = version
+        self._version = __version__
         self.aws_credentials = None
-        self._project = config.get_project(project)
-        self._queue = config.get_queue(queue)
+        self._project = config.get_project()
+        self._queue_name = config.get_queue(queue)
         self._resource_name = config.get_resource_name(resource_name)
-        self._worker_id = f"hero-{str(uuid.uuid4())}"
+        self._worker_id = f"hero-{str(uuid.uuid4())}" if worker_id is None else worker_id
         self._queue_url = None
         self._queue_count = 0
-        log.info(f'Initializing HERO {self._version}: {self._resource_name} {self._queue} {self._project}')
+        log.debug(f'Initializing HERO: {self._worker_id} {self._resource_name} {self._queue_name} {self._project}')
     
     @property
     def logged_in(self):
@@ -90,30 +53,46 @@ class Hero:
         return self._queue_url
 
     def login(self):
+        
         if not self.logged_in:
           
             client_id, client_secret = config.get_client_credentials()
             scopes = ['hero-api/user', f'project/{self._project}']
             self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
             self.aws_credentials = role.assume_role(self.access_token)
-            config.export_session_to_env(self.aws_credentials)
-            self._session = get_session(self.aws_credentials)
-
-            self._table = dynamodb.get_project_table(self._session, self._project)
-
-            #TODO: This fails if the queue doesn't exist.
+            # config.export_session_to_env(self.aws_credentials)
+            self._session = aws.utils.get_session(self.aws_credentials)
+            self._aws_expiration = datetime.datetime.fromisoformat(self.aws_credentials['Expiration'][:-1]).astimezone(datetime.timezone.utc)
+            
             try:
-                self._queue_url = queue.get_queue_url(self._project, self._queue)
+                self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
                 self._queue_count = 0
-            except Exception as e:
-                print('Queue not found, you need to create the queue first.')
-  
+            except QueueDoesNotExits as e:
+                self._queue_url = None
+                log.debug(f'Queue {self._queue_name} not found, you need to create the queue first.')
+            except QueueNotInDynamo as e:
+                self._queue_url = None
+                log.debug(f'Queue {self._queue_name} not found in Dynamo.  You need to create the queue first.')
+                
+        total_seconds = round((self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+        if total_seconds % 60 == 0:
+            log.debug(f"AWS session {self._worker_id} will expire in {str(datetime.timedelta(seconds=total_seconds))}")
 
-    @required_login
-    def create_queue(self):
-        self._queue_url = sqsqueue.create_queue(self._project, self._queue)
+    @integrity_check
+    def clear_tasks(self):
+        """
+        Clears the queue of all messages by deleting queue
+        """
+        log.debug('clear_tasks')
+        self._queue_url = api.queue.create_queue(self._session, self._project, self._queue_name)
         self._queue_count = 0
-        return self._queue_url
+        
+        api.queue.delete_other_queues(self._session, self._queue_url, self._project, self._queue_name, self._worker_id)
+        api.queue.update_queue_url(self._session, self._queue_url, self._project, self._queue_name)
+        self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+        log.debug(f"Queue {self._queue_name} cleared.  New queue url {self._queue_url} is ready")
+    
+
     
     @property
     def resource_name(self):
@@ -124,34 +103,38 @@ class Hero:
         return self._queue_count
 
     @property
-    @required_login
+    @integrity_check
     def queue_url(self):
         if self._queue_url is None:
-            self._queue_url = sqsqueue.get_queue_url(self._project, self._queue)
+            self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
             self._queue_count = 0
         return self._queue_url
 
 
-    @required_login
+    @integrity_check
     def put_task(self, item):
         task = Task(
             project=self._project,
-            queue_name=self._queue,
+            queue_name=self._queue_name,
             queue_url=self.queue_url,
             inputs=item,
             status=READY,
             insert_resource_name=self._resource_name,
             insert_worker_id=self._worker_id,
         )
-        task_id = dynamodb.put_item(self._table, task)
+        task_id = api.retry.Retry(attempts=10, sleep=1).retry(
+            aws.dynamodb.put_item,
+            self._session, 
+            self._project, 
+            task)
         return task_id
 
-    @required_login
+    @integrity_check
     def put_tasks(self, items):
         tasks = [
             Task(
                 project=self._project,
-                queue_name=self._queue,
+                queue_name=self._queue_name,
                 queue_url=self.queue_url,
                 inputs=i,
                 status=READY,
@@ -160,79 +143,80 @@ class Hero:
             )
             for i in items
         ]
-        task_ids = dynamodb.put_items(self._table, tasks)
+        task_ids = api.retry.Retry(attempts=10, sleep=1).retry(
+            aws.dynamodb.put_items,
+            self._session, 
+            self._project, 
+            tasks)
         return task_ids
 
-    @required_login
-    def clear_tasks(self):
+    @integrity_check
+    def pull_task(self, attempts=10, sleep="constant"):
         """
-        Clears the queue of all messages by deleting queue
-        """
-        log.debug('clear_tasks')
+        Pulls a task from the queue. Returns None otherwise.  Run this as a process.
+        """  
+        # def retry(): 
+        #     retries = 0
+        #     while retries < attempts:
+        #         try:
+        #             result = task.pull_task_sqs_dynamo(self._session,
+        #                                         self._project,
+        #                                         self._resource_name, 
+        #                                         self._worker_id, 
+        #                                         num_tasks=1,
+        #                                         queue_url=self.queue_url, 
+        #                                         )
+        #         except Exception as e:
+        #             print("Exception -->", str(e))
+
+        #         if result is None:
+        #             retries += 1
+                    
+        #             if retries >= attempts:
+        #                 raise RetryAttemptsExceeded()
+                    
+        #             if sleep == "linear":
+        #                 time.sleep(retries)
+        #             elif sleep == "exponential":
+        #                 time.sleep(2**retries)
+        #             elif sleep == "constant":
+        #                 time.sleep(1)
+        #         else:
+        #             return result
+        # raw_task = retry()
+
+        raw_task = api.retry.Retry(attempts=attempts, sleep=sleep).retry(
+            task.pull_task_sqs_dynamo,
+            self._session, 
+            self._project,
+            self._resource_name, 
+            self._worker_id, 
+            num_tasks=1,
+            queue_url=self.queue_url, 
+        )
         
-        self._queue_url = queue.create_queue(self._project, self._queue)
-        self._queue_count = 0
-        queue.delete_other_queues(self._queue_url, self._project, self._queue)
-        queue.update_queue_url(self._project, self._queue, self._queue_url)
-        print(f"Queue {self._queue} cleared.  New queue url {self._queue_url} is ready")
-
-        #TODO: can you remind me...oh this is deleting tasks from Postgres. maybe rename this function
-        # rds.delete_queue(self._project, self._queue)
-
-    @property
-    def project_table(self):
-        return dynamodb.get_project_table(self._session, self._project)
-
-    def claim_task(self, task):
-        task.claimed_resource_name = self._resource_name
-        task.status = CLAIMED
-    
-    @required_login
-    def poll(self, attempts, num_tasks=1):
-        retries = 0
-        while retries < attempts:
-            result = task.pull_task_sqs_dynamo(self.project_table, self.queue_url, 
-                                               self._resource_name, self._worker_id, num_tasks=num_tasks)
-            # print('result', result)
-            if result is None:
-                retries += 1
-                if retries >= attempts:
-                    raise RetryAttemptsExceeded()
-                time.sleep(retries)
-            else:
-                return result
-
-        # return retry_task(
-        #     task.pull_task_sqs_dynamo,
-        #     self.project_table,
-        #     self.queue_url,
-        #     self._resource_name,
-        #     self._worker_id,
-        #     attempts=attempts,
-        #     num_tasks=num_tasks
-        # )
-
-
-    @pull_execptions
-    def pull_task(self, attempts=10):
-        """
-        Pulls a task from the queue. Returns None otherwise.
-        """   
-        raw_task = self.poll(attempts, num_tasks=1)
         if raw_task is None:
             return None
         self._queue_count += 1
         return self.create_task(raw_task[0])
        
 
-    @pull_execptions
-    def pull_tasks(self, attempts=10, num_tasks=1):
+    @integrity_check
+    def pull_tasks(self, attempts=10, num_tasks=1, sleep="constant"):
         """
         Pulls tasks from the queue. Returns None otherwise.
         """
         # for AWS SQS, max num_tasks is 10
         num_tasks = min(10, num_tasks)
-        raw_tasks = self.poll(attempts, num_tasks=num_tasks)
+        raw_tasks = api.retry.Retry(attempts=attempts, sleep=sleep).retry(
+            task.pull_task_sqs_dynamo,
+            self._session, 
+            self._project,
+            self._resource_name, 
+            self._worker_id, 
+            num_tasks=num_tasks,
+            queue_url=self.queue_url, 
+        )
         results = [ self.create_task(raw_task) for raw_task in raw_tasks if raw_task is not None ]
         self._queue_count += len(results)
         return results
@@ -240,49 +224,39 @@ class Hero:
     def create_task(self, raw_task):
         if raw_task is None:
             return None
-        # Do we need this?
-        # raw_task['task_id'] = raw_task['id']
-        # raw_task['queue_name'] = raw_task['queue']
         del raw_task['id']
         del raw_task['queue']
         return Task(**raw_task)
         
-    @required_login
+    @integrity_check
     def update_task(self, task, results):
         """Updates a task in the queue"""
         # task.completed_resource_name = self._resource_name
         task.results = results
         task.status = COMPLETE
-        dynamodb.update_item_results(
-            self._table, task.task_id, task.queue_name, results=task.results
+        log.debug(f"update_task: {task.task_id} {task.queue_name} {task.status}")
+        api.retry.Retry(attempts=10, sleep=5).retry(
+            dynamodb.update_item_results,
+            self._session,
+            self._project,
+            task.task_id,
+            task.queue_name,
+            results=task.results,
         )
+        # dynamodb.update_item_results(
+        #     self._session, self._project, task.task_id, task.queue_name, results=task.results
+        # )
         return task
 
-    @required_login
-    def get_task(self, task_id):
-        """Gets a task from the queue"""
-        response = self._table.get_item(Key={"id": task_id, "queue": self._queue})
-        return response["Item"]
-    
     def wait(self, seconds):
         """A simple wrapper for time.sleep"""
         time.sleep(seconds)
 
+    @integrity_check
     def get_task_status_count(self, status):
         return rds.get_jobs_status_count_by_queue_url(self._project, self._queue, status)
 
-    def send_exit_key_value(self, key, value, num_tasks=100):
-
-        def create_task(index):
-            return {
-                "name": f"test_{index:02d}",
-                "stream_db": False,
-                key: value
-            }
-        
-        items = [ create_task(i) for i in range(int(num_tasks)) ]
-        self.put_tasks(items)
-        
+    @integrity_check 
     def map(self, items, sleep=5):
         task_ids = self.put_tasks(items)
         # wait for tasks to be available
@@ -290,15 +264,17 @@ class Hero:
             results = rds.get_items_detail(task_ids)
             if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
                 return results
+            log.debug(f"map: {len(results)} {len(task_ids)}")
             time.sleep(sleep)
 
-
+    @integrity_check 
     def wait_for_tasks(self, task_ids):
         while True:
             results = rds.get_items_detail(task_ids)
-            print(len(results))
-            print([r["status"] for r in results if r["status"] != COMPLETE ])
-            print([ r['job_description']['name'] for r in results if r["status"] != COMPLETE ])
+            log.debug(f"wait_for_tasks: {len(results)} {len(task_ids)}")
+            # print(len(results))
+            # print([r["status"] for r in results if r["status"] != COMPLETE ])
+            # print([ r['job_description']['name'] for r in results if r["status"] != COMPLETE ])
             if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
                 return results
             time.sleep(5)

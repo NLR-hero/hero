@@ -6,7 +6,7 @@ import json
 
 from ..api.task import READY, CLAIMED, COMPLETE, FAILED
 
-log = logging.getLogger('hero:aws:dynamodb')
+log = logging.getLogger(__name__)
 
 def get_table(session, table_name):
     """Gets the table opject for table_name"""
@@ -24,8 +24,9 @@ def get_project_table(session, project):
 
 
 #TODO: this has logic for dynamo and the task, can we make this more focused?
-def put_item(table, item):
+def put_item(session, project, item):
     """Puts an item into the table"""
+    table = get_project_table(session, project)
     tmp = json.loads(json.dumps(item), parse_float=Decimal)
     response = table.put_item(Item=tmp)
     assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
@@ -34,8 +35,9 @@ def put_item(table, item):
 
 #TODO: this has logic for dynamo and the task, can we make this more focused?
 #TODO: use boto3 dyanmodb marshaler?
-def put_items(table, items):
+def put_items(session, project, items):
     """Puts a list of items into the table using batch writer"""
+    table = get_project_table(session, project)
     ids = []
     with table.batch_writer() as batch:
         for item in items:
@@ -82,8 +84,9 @@ def update_item_claimed(table, job_id, queue, resource_name, worker_id):
     return True
 
 #TODO: this has logic for dynamo and the task, can we make this more focused?
-def update_item_results(table, job_id, queue, results={}):
+def update_item_results(session, project, job_id, queue, results={}):
     """Updates the status of an item to done and adds the results"""
+    table = get_project_table(session, project)
     response = table.update_item(
         Key={"id": job_id, "queue": queue},
         UpdateExpression="set #status=:s, #results=:r",
@@ -97,6 +100,8 @@ def update_item_results(table, job_id, queue, results={}):
         },
         ReturnValues="UPDATED_NEW",
     )
+    if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+        return True
 
 
 #TODO: this probably doesn't belong anymore since we are managing infra in the CDK
@@ -137,3 +142,4 @@ def delete_table(table, tototal_segments=1, rank=0):
                 break
 
     log.info(f"{rank}     Deleted {counter}")
+    return True
