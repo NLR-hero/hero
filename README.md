@@ -1,51 +1,65 @@
-# Gantry
+# Hero
 
-## Install
+This is the Python client for Hero.
 
-    conda env create
-    conda activate gantry
-    python setup.py develop
+## Installation
 
-## Running
-
-You will need to assign the following environment variables:
-
-    export GANTRY_JOB_ID="******"
-    export GANTRY_BASE_API_URL="https://********.execute-api.us-west-2.amazonaws.com/dev"
-    export GANTRY_AUTH_URL="https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token"
-    export GANTRY_APP_CLIENT="********"
-
-    export GANTRY_RESOURCE_NAME="harbor.nrel.gov/dav-data-library/hero_dev_template:0.0.1"
-
-Then you can test `gantry` using the command line interface.
-
-    gantry list
-
-    gantry remove
-
-    gantry create '{"name": "Example", "start_date": "2020-01-01", "number_of_months": 24}'
+```
+pip install git+https://github.nrel.gov/Hero/hero@master#egg=hero
+```
 
 
-## TODO
+## Development
 
-Add notion of project
-- Add resource_name to project table
-- Allow latest resource if not specified
-- Projects should have their own keys?
+```
+python3 -m venv env
+source env/bin/activate
+pip install -r requirements.txt
+python setup.py develop
+```
 
-Should the image continue to process jobs?
-- default param jobs==1, but it could be >1.
-- Constrained jobs based on resource (eagle only, aws memory )
+If you are using `pyenv` then the virtual environment will automaticall load if available from the `.python-version` file.
 
-How big can our results be?
-- super summary for BTMS
-- 256 MB limit
-- May need s3
+To create a new venv through pyenv run:
 
-What about a prophet example for the template?
-- Adds data to docker
-- Must train and predict...
-- Nice plots, even from matplotlib.
+```
+pyenv virtualenv 3.9 hero_3.9
+pyenv activate hero_3.9
+pip install -r requirements.txt
+python setup.py develop
+```
 
+## Execute
 
+You need to have the following environment variables defined.
 
+```
+export HERO_PROJECT="test-project"
+export HERO_QUEUE="queue-001"
+export HERO_QUEUE_VISIBILITY_TIMEOUT=300
+
+export HERO_DATABASE_PASSWORD=""
+
+export AWS_DEFAULT_OUTPUT=json
+export AWS_DEFAULT_REGION=us-west-2
+
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
+export AWS_SESSION_TOKEN=""
+```
+
+On eagle, you'll need to load the following modules.
+
+```
+module load openmpi
+```
+
+### Building Pdoc in CodeBuild
+
+aws codebuild start-build \
+--project-name "REDACTED_CODEBUILD_PROJECT" \
+--source-version "scaling-nw" \
+--buildspec-override "pdoc/buildspec.yml" \
+--environment-variables-override \
+name=GITHUB_TOKEN_ARN,value='arn:aws:secretsmanager:us-west-2:REDACTED_AWS_ACCOUNT_ID:secret:/nrel/github_packages/REDACTED_SECRET_PATH:GITHUB_TOKEN',type=PLAINTEXT \
+name=DISTRIBUTION_ID,value=REDACTED_CF_DIST_ID,type=PLAINTEXT
