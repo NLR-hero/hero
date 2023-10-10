@@ -3,11 +3,7 @@ import os
 import signal
 import subprocess
 
-WORKERS = 2
-
 try:
-
-    os.environ['HERO_QUEUE'] = 'test23443'
 
     # clear the queue if you are using exit messages
     subprocess.Popen("hero_clear_queue", shell=True, env=os.environ).wait()
@@ -18,7 +14,7 @@ try:
                                   env=os.environ)
 
     # lanch the workers
-    workers = subprocess.Popen(f"mpirun -np {WORKERS} python hero_worker.py", 
+    workers = subprocess.Popen("mpirun -np 10 python hero_worker.py", 
                                shell=True, 
                                env=os.environ)
     

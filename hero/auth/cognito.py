@@ -40,7 +40,6 @@ class ResilientSession(Session):
                 delay0 = 5*math.pow(2, counter)
 
                 # add some randomness
-                delay1 = np.random.uniform(low=0, high=delay0)
 
                 # effective delay
                 delay = 0.5*(delay0 + delay1)
