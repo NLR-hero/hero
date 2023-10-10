@@ -29,8 +29,6 @@ if __name__ == "__main__":
 
     NUM_WORKERS = 2
     NUM_TASKS = 10
-
-    print(os.environ['HERO_QUEUE'])
  
     # clear the queue
     hero = Hero()
@@ -39,7 +37,6 @@ if __name__ == "__main__":
     # push items
     items = [ create_task(i) for i in range(int(NUM_TASKS)) ]
     task_ids = hero.put_tasks(items)
-    print(task_ids)
 
     results = hero.wait_for_tasks(task_ids)
     df = pd.DataFrame(results)
