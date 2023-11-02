@@ -6,8 +6,8 @@ setup(
     version=__version__,
     packages=['hero', 'hero.api', 'hero.aws', 'hero.auth', 'hero.config'],
     install_requires=[
+        'botocore>=1.31.76',
         'boto3>=1.28.3',
-        'psycopg2-binary>=2.9.6',
         'requests>=2.28.2'
     ],
     entry_points={ "console_scripts": [

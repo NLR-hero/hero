@@ -58,16 +58,6 @@ def pull_task_sqs_dynamo(session, project, resource_name, worker_id, num_tasks=1
 
     return None
 
-
-def pull_task_rds(project, queue, queue_url):
-    """
-    Not currently in use.
-    """
-    task = get_next_available_job(queue_url)
-    return task
-
-
-
 def _convert_to_decimal_json(data):
     return json.loads(json.dumps(data), parse_float=Decimal)
 

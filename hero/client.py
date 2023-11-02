@@ -13,7 +13,7 @@ from .auth import cognito
 from .api import role, queue, task
 
 from .config import config
-from .aws import dynamodb, rds
+from .aws import dynamodb
 import uuid 
 
 from multiprocessing import Process
@@ -254,28 +254,31 @@ class Hero:
 
     @integrity_check
     def get_task_status_count(self, status):
-        return rds.get_jobs_status_count_by_queue_url(self._project, self._queue, status)
+        return
+        # return rds.get_jobs_status_count_by_queue_url(self._project, self._queue, status)
 
     @integrity_check 
     def map(self, items, sleep=5):
-        task_ids = self.put_tasks(items)
-        # wait for tasks to be available
-        while True:
-            results = rds.get_items_detail(task_ids)
-            if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
-                return results
-            log.debug(f"map: {len(results)} {len(task_ids)}")
-            time.sleep(sleep)
+        return
+        # task_ids = self.put_tasks(items)
+        # # wait for tasks to be available
+        # while True:
+        #     results = rds.get_items_detail(task_ids)
+        #     if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
+        #         return results
+        #     log.debug(f"map: {len(results)} {len(task_ids)}")
+        #     time.sleep(sleep)
 
     @integrity_check 
     def wait_for_tasks(self, task_ids):
-        while True:
-            results = rds.get_items_detail(task_ids)
-            log.debug(f"wait_for_tasks: {len(results)} {len(task_ids)}")
-            # print(len(results))
-            # print([r["status"] for r in results if r["status"] != COMPLETE ])
-            # print([ r['job_description']['name'] for r in results if r["status"] != COMPLETE ])
-            if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
-                return results
-            time.sleep(5)
+        return
+        # while True:
+        #     results = rds.get_items_detail(task_ids)
+        #     log.debug(f"wait_for_tasks: {len(results)} {len(task_ids)}")
+        #     # print(len(results))
+        #     # print([r["status"] for r in results if r["status"] != COMPLETE ])
+        #     # print([ r['job_description']['name'] for r in results if r["status"] != COMPLETE ])
+        #     if len(results) == len(task_ids) and all([r["status"] == COMPLETE for r in results]):
+        #         return results
+        #     time.sleep(5)
 
