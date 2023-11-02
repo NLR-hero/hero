@@ -51,6 +51,9 @@ class Hero:
     @property
     def queue_url(self):
         return self._queue_url
+    
+    def data_repo(self):
+        return api.data_repo
 
     def login(self):
         
