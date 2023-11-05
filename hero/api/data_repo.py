@@ -6,17 +6,10 @@ import logging
 
 log = logging.getLogger('hero:auth:cognito')
 
-HERO_BASE_URL = 'https://dev-hero.stratus.nrel.gov/repo/api/v2'
+HERO_BASE_URL = 'https://dev-hero.stratus.nrel.gov/repo/api/v3'
 
-def create_project(token, project):
-    '''
-    {
-        "name": "Raw Data",
-        "metadata": {},
-        "datahubId": "6fd4cda0-37b1-4767-9188-3383dc90a5a6"
-    }
-    '''
-    url = f'{HERO_BASE_URL}/project'
+def create_project(token, datahubId, project):
+    url = f'{HERO_BASE_URL}/{datahubId}/project'
 
     payload = json.dumps(project)
     headers = {
@@ -25,70 +18,51 @@ def create_project(token, project):
     }
 
     response = requests.request('POST', url, headers=headers, data=payload)
+
     response.raise_for_status()
+
     return response.json()
 
-def create_dataset(token, dataset):
-    '''
-    {
-        "name": "Raw Data",
-        "metadata": {},
-        "projectId": "6fd4cda0-37b1-4767-9188-3383dc90a5a6"
-    }
-    '''
-    url = f'{HERO_BASE_URL}/dataset'
+def create_dataset(token, datahubId, data):
+    url = f'{HERO_BASE_URL}/{datahubId}/dataset'
 
-    payload = json.dumps(dataset)
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {token}'
-    }
-
-    response = requests.request('POST', url, headers=headers, data=payload)
-    response.raise_for_status()
-    return response.json()
-
-def create_file(token, file):
-    '''
-    {
-        "name": filename,
-        "metadata": {},
-        "datasetId": "6a232b47-f52e-444d-b815-dd7d13b73d7b"
-    }
-    '''
-    url = f'{HERO_BASE_URL}/file'
-
-    payload = json.dumps(file)
+    payload = json.dumps(data)
     headers = {
         'Content-Type': 'application/json',
         "Authorization": f"Bearer {token}"
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
+
     response.raise_for_status()
+    print(response.content)
     return response.json()
 
-def upload_file(token, file, file_path):
-    '''
-    fileItem = create_file(filename)
-    print('FileItem', fileItem)
-    file_path = f'/tmp/{file["name"]}'
-    '''
+def create_file(token, datahubId, fileData):
+    url = f'{HERO_BASE_URL}/{datahubId}/file'
 
-    url = f'{HERO_BASE_URL}/files/put-object-url/{file["id"]}'
-
-    payload = json.dumps({
-        "bucket": "dev-aws-repo-files",
-        "key": f'{file["id"]}/{file["name"]}'
-    })
+    payload = json.dumps(fileData)
     headers = {
         'Content-Type': 'application/json',
         "Authorization": f"Bearer {token}"
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
+
+    return response.json()
+
+def upload_file(token, datahubId, fileItem, file_path):
+    url = f'{HERO_BASE_URL}/{datahubId}/files/upload/{fileItem["id"]}'
+    headers = {
+        'Content-Type': 'application/json',
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.request("GET", url, headers=headers)
 
     signed_url = response.json()['url']
+
+    # file_path = f'./tmp/{fileItem["name"]}'  # The local file you want to upload
 
     # Read the file data
     with open(file_path, "rb") as file:
@@ -103,3 +77,45 @@ def upload_file(token, file, file_path):
     else:
         print(f"File upload failed with status code {response.status_code}: {response.text}")
 
+
+def read_project_by_name(token, datahubId, metatype, name):
+    url = f'{HERO_BASE_URL}/{datahubId}/project/metatype/{metatype}?name={name}'
+    print(url)
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+
+    response = requests.request('GET', url, headers=headers)
+
+    response.raise_for_status()
+
+    return response.json()
+
+def read_dataset_by_name(token, datahubId, metatype, name):
+    url = f'{HERO_BASE_URL}/{datahubId}/dataset/metatype/{metatype}?name={name}'
+    print(url)
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+
+    response = requests.request('GET', url, headers=headers)
+
+    response.raise_for_status()
+
+    return response.json()
+
+def read_file_by_name(token, datahubId, metatype, name):
+    url = f'{HERO_BASE_URL}/{datahubId}/file/metatype/{metatype}?name={name}'
+    print(url)
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {token}'
+    }
+
+    response = requests.request('GET', url, headers=headers)
+
+    response.raise_for_status()
+
+    return response.json()
