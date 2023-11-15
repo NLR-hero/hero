@@ -64,12 +64,12 @@ class Hero:
             client_id, client_secret = config.get_client_credentials()
             scopes = ['hero-api/user', f'project/{self._project}']
             self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
-            self.aws_credentials = role.assume_role(self.access_token)
-            # config.export_session_to_env(self.aws_credentials)
-            self._session = aws.utils.get_session(self.aws_credentials)
-            self._aws_expiration = datetime.datetime.fromisoformat(self.aws_credentials['Expiration'][:-1]).astimezone(datetime.timezone.utc)
-            
             if self.enable_task_engine:
+                self.aws_credentials = role.assume_role(self.access_token)
+                # config.export_session_to_env(self.aws_credentials)
+                self._session = aws.utils.get_session(self.aws_credentials)
+                self._aws_expiration = datetime.datetime.fromisoformat(self.aws_credentials['Expiration'][:-1]).astimezone(datetime.timezone.utc)
+            
                 try:
                     self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
                     self._queue_count = 0
