@@ -48,6 +48,7 @@ def create_file(token, datahubId, fileData):
     }
 
     response = requests.request("POST", url, headers=headers, data=payload)
+    requests.raise_for_status()
 
     return response.json()
 
