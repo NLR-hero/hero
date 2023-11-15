@@ -30,17 +30,19 @@ from .api.integrity_check import integrity_check
 
 
 class Hero:
-    def __init__(self, queue=None, resource_name=None, worker_id=None):
+    def __init__(self, queue=None, resource_name=None, worker_id=None, enable_task_engine=True):
         
         self._version = __version__
         self.aws_credentials = None
         self._project = config.get_project()
-        self._queue_name = config.get_queue(queue)
-        self._resource_name = config.get_resource_name(resource_name)
-        self._worker_id = f"hero-{str(uuid.uuid4())}" if worker_id is None else worker_id
-        self._queue_url = None
-        self._queue_count = 0
-        log.debug(f'Initializing HERO: {self._worker_id} {self._resource_name} {self._queue_name} {self._project}')
+        self.enable_task_engine = enable_task_engine
+        if enable_task_engine:
+            self._queue_name = config.get_queue(queue)
+            self._resource_name = config.get_resource_name(resource_name)
+            self._worker_id = f"hero-{str(uuid.uuid4())}" if worker_id is None else worker_id
+            self._queue_url = None
+            self._queue_count = 0
+            log.debug(f'Initializing HERO: {self._worker_id} {self._resource_name} {self._queue_name} {self._project}')
     
     @property
     def logged_in(self):
@@ -67,15 +69,16 @@ class Hero:
             self._session = aws.utils.get_session(self.aws_credentials)
             self._aws_expiration = datetime.datetime.fromisoformat(self.aws_credentials['Expiration'][:-1]).astimezone(datetime.timezone.utc)
             
-            try:
-                self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
-                self._queue_count = 0
-            except QueueDoesNotExits as e:
-                self._queue_url = None
-                log.debug(f'Queue {self._queue_name} not found, you need to create the queue first.')
-            except QueueNotInDynamo as e:
-                self._queue_url = None
-                log.debug(f'Queue {self._queue_name} not found in Dynamo.  You need to create the queue first.')
+            if self.enable_task_engine:
+                try:
+                    self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+                    self._queue_count = 0
+                except QueueDoesNotExits as e:
+                    self._queue_url = None
+                    log.debug(f'Queue {self._queue_name} not found, you need to create the queue first.')
+                except QueueNotInDynamo as e:
+                    self._queue_url = None
+                    log.debug(f'Queue {self._queue_name} not found in Dynamo.  You need to create the queue first.')
                 
         total_seconds = round((self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
         if total_seconds % 60 == 0:
