@@ -80,9 +80,9 @@ class Hero:
                     self._queue_url = None
                     log.debug(f'Queue {self._queue_name} not found in Dynamo.  You need to create the queue first.')
                 
-        total_seconds = round((self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
-        if total_seconds % 60 == 0:
-            log.debug(f"AWS session {self._worker_id} will expire in {str(datetime.timedelta(seconds=total_seconds))}")
+                total_seconds = round((self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+                if total_seconds % 60 == 0:
+                    log.debug(f"AWS session {self._worker_id} will expire in {str(datetime.timedelta(seconds=total_seconds))}")
 
     @integrity_check
     def clear_tasks(self):
