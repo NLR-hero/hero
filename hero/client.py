@@ -84,6 +84,12 @@ class Hero:
                 if total_seconds % 60 == 0:
                     log.debug(f"AWS session {self._worker_id} will expire in {str(datetime.timedelta(seconds=total_seconds))}")
 
+    def create_queue(self):
+        self._queue_url = api.queue.create_queue(self._session, self._project, self._queue_name)
+        api.queue.update_queue_url(self._session, self._queue_url, self._project, self._queue_name)
+        self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+        log.debug(f"Queue {self._queue_name} cleared.  New queue url {self._queue_url} is ready")
+
     @integrity_check
     def clear_tasks(self):
         """
