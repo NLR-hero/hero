@@ -14,7 +14,7 @@ def queue_name(project, queue):
 def queue_url(aws_session, queue_name, visibility_timeout):
     result = hq.aws.sqs.create_queue(aws_session, queue_name, visibility_timeout)
     yield result['QueueUrl']
-    hq.aws.sqs.delete_queue(aws_session, result['QueueUrl'])
+    hq.aws.sqs.delete_queue(aws_session, result['QueueUrl'], 'worker-000')
 
 def test_sqs(aws_session, queue_name, visibility_timeout):
     result = hq.aws.sqs.create_queue(aws_session, queue_name, visibility_timeout)
@@ -23,7 +23,7 @@ def test_sqs(aws_session, queue_name, visibility_timeout):
     queue_url = hq.aws.sqs.get_queue_url(aws_session, queue_name)
     assert queue_name in queue_url
 
-    hq.aws.sqs.delete_queue(aws_session, result['QueueUrl'])
+    # hq.aws.sqs.delete_queue(aws_session, result['QueueUrl'], 'unit-test-000')
 
     queue_url = hq.aws.sqs.get_queue_url(aws_session, queue_url)
     assert queue_url is None
@@ -33,6 +33,8 @@ def test_sqs(aws_session, queue_name, visibility_timeout):
         assert len(message) == 0
     except ClientError as e:
         assert e.response["Error"]["Code"] == "AWS.SimpleQueueService.NonExistentQueue"
+    
+    hq.aws.sqs.delete_queue(aws_session, result['QueueUrl'], 'worker-001')
 
 def test_receive_messages(aws_session, queue_url):
     message = hq.aws.sqs.receive_messages(aws_session, queue_url)

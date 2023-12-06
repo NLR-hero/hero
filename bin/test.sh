@@ -7,5 +7,5 @@ export HERO_QUEUE_VISIBILITY_TIMEOUT="60"
 # pytest tests/test_dynamo.py
 # pytest tests/test_config.py
 # pytest tests/api/test_queue.py
-pytest tests/aws/test_aws_sqs.py
+pytest -v -s tests/aws/test_aws_sqs.py
 # pytest tests
