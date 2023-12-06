@@ -34,10 +34,10 @@ jobs:
         - name: Install dependencies
           run: |
             python -m pip install --upgrade pip
-            # not sure if below line works, have to test
-            python setup.py develop 
             pip install -r requirements.txt
             pip install -r dev-requirements.txt
+            # not sure if below line works, have to test
+            python setup.py develop 
 
         - name: Run Pytest test suite via environment with pytest-github-report
           env:
