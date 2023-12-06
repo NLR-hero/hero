@@ -1,4 +1,4 @@
-pdoc --html hero --force --template-dir ./pdoc/templates --output-dir ./docs
+pdoc --html hero --force --template-dir ./pdoc/templates --output-dir docs
 
 # Creates index.html at the root, and places a redirect inside to the nested index.html
 # - for Github Pages to be able to find the entry point
