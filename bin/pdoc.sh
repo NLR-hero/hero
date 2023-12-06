@@ -1,3 +1,4 @@
+# may have to delete the one of the two dots on line 2 and 7
 pdoc --html hero --force --template-dir ../pdoc/templates --output-dir ../docs
 
 # Creates index.html at the root, and places a redirect inside to the nested index.html
