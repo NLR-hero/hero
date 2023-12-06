@@ -1,0 +1,1421 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>hero.client API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}#lunr-search{width:100%;font-size:1em;padding:6px 9px 5px 9px;border:1px solid silver}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+<style>.homelink{display:block;font-size:2em;font-weight:bold;color:#555;padding-bottom:.5em;border-bottom:1px solid silver}.homelink:hover{color:inherit}.homelink img{max-width:20%;max-height:5em;margin:auto;margin-bottom:.3em}</style>
+<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/hero/client.html">
+<link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>hero.client</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+&#34;&#34;&#34;
+
+import time
+import socket
+import logging
+import datetime
+from botocore.exceptions import ClientError
+
+
+from .api.task import Task, COMPLETE, CLAIMED, READY
+from .auth import cognito
+from .api import role, queue, task
+
+from .config import config
+from .aws import dynamodb, rds
+import uuid 
+
+from multiprocessing import Process
+
+from . import aws
+from . import api
+
+from . import __version__ 
+
+log = logging.getLogger(__name__)
+
+from .api.integrity import QueueDoesNotExits, QueueNotInDynamo, RetryAttemptsExceeded
+from .api.integrity_check import integrity_check
+
+
+class Hero:
+    def __init__(self, queue=None, resource_name=None, worker_id=None):
+        
+        self._version = __version__
+        self.aws_credentials = None
+        self._project = config.get_project()
+        self._queue_name = config.get_queue(queue)
+        self._resource_name = config.get_resource_name(resource_name)
+        self._worker_id = f&#34;hero-{str(uuid.uuid4())}&#34; if worker_id is None else worker_id
+        self._queue_url = None
+        self._queue_count = 0
+        log.debug(f&#39;Initializing HERO: {self._worker_id} {self._resource_name} {self._queue_name} {self._project}&#39;)
+    
+    @property
+    def logged_in(self):
+        if self.aws_credentials is not None:
+            return True
+        return False
+
+    @property
+    def queue_url(self):
+        return self._queue_url
+
+    def login(self):
+        
+        if not self.logged_in:
+          
+            client_id, client_secret = config.get_client_credentials()
+            scopes = [&#39;hero-api/user&#39;, f&#39;project/{self._project}&#39;]
+            self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
+            self.aws_credentials = role.assume_role(self.access_token)
+            # config.export_session_to_env(self.aws_credentials)
+            self._session = aws.utils.get_session(self.aws_credentials)
+            self._aws_expiration = datetime.datetime.fromisoformat(self.aws_credentials[&#39;Expiration&#39;][:-1]).astimezone(datetime.timezone.utc)
+            
+            try:
+                self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+            except QueueDoesNotExits as e:
+                self._queue_url = None
+                log.debug(f&#39;Queue {self._queue_name} not found, you need to create the queue first.&#39;)
+            except QueueNotInDynamo as e:
+                self._queue_url = None
+                log.debug(f&#39;Queue {self._queue_name} not found in Dynamo.  You need to create the queue first.&#39;)
+                
+        total_seconds = round((self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+        if total_seconds % 60 == 0:
+            log.debug(f&#34;AWS session {self._worker_id} will expire in {str(datetime.timedelta(seconds=total_seconds))}&#34;)
+
+    @integrity_check
+    def clear_tasks(self):
+        &#34;&#34;&#34;
+        Clears the queue of all messages by deleting queue
+        &#34;&#34;&#34;
+        log.debug(&#39;clear_tasks&#39;)
+        self._queue_url = api.queue.create_queue(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        
+        api.queue.delete_other_queues(self._session, self._queue_url, self._project, self._queue_name, self._worker_id)
+        api.queue.update_queue_url(self._session, self._queue_url, self._project, self._queue_name)
+        self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+        log.debug(f&#34;Queue {self._queue_name} cleared.  New queue url {self._queue_url} is ready&#34;)
+    
+
+    
+    @property
+    def resource_name(self):
+        return self._resource_name
+
+    @property
+    def count(self):
+        return self._queue_count
+
+    @property
+    @integrity_check
+    def queue_url(self):
+        if self._queue_url is None:
+            self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+        return self._queue_url
+
+
+    @integrity_check
+    def put_task(self, item):
+        task = Task(
+            project=self._project,
+            queue_name=self._queue_name,
+            queue_url=self.queue_url,
+            inputs=item,
+            status=READY,
+            insert_resource_name=self._resource_name,
+            insert_worker_id=self._worker_id,
+        )
+        task_id = api.retry.Retry(attempts=10, sleep=1).retry(
+            aws.dynamodb.put_item,
+            self._session, 
+            self._project, 
+            task)
+        return task_id
+
+    @integrity_check
+    def put_tasks(self, items):
+        tasks = [
+            Task(
+                project=self._project,
+                queue_name=self._queue_name,
+                queue_url=self.queue_url,
+                inputs=i,
+                status=READY,
+                insert_resource_name=self._resource_name,
+                insert_worker_id=self._worker_id,
+            )
+            for i in items
+        ]
+        task_ids = api.retry.Retry(attempts=10, sleep=1).retry(
+            aws.dynamodb.put_items,
+            self._session, 
+            self._project, 
+            tasks)
+        return task_ids
+
+    @integrity_check
+    def pull_task(self, attempts=10, sleep=&#34;constant&#34;):
+        &#34;&#34;&#34;
+        Pulls a task from the queue. Returns None otherwise.  Run this as a process.
+        &#34;&#34;&#34;  
+        # def retry(): 
+        #     retries = 0
+        #     while retries &lt; attempts:
+        #         try:
+        #             result = task.pull_task_sqs_dynamo(self._session,
+        #                                         self._project,
+        #                                         self._resource_name, 
+        #                                         self._worker_id, 
+        #                                         num_tasks=1,
+        #                                         queue_url=self.queue_url, 
+        #                                         )
+        #         except Exception as e:
+        #             print(&#34;Exception --&gt;&#34;, str(e))
+
+        #         if result is None:
+        #             retries += 1
+                    
+        #             if retries &gt;= attempts:
+        #                 raise RetryAttemptsExceeded()
+                    
+        #             if sleep == &#34;linear&#34;:
+        #                 time.sleep(retries)
+        #             elif sleep == &#34;exponential&#34;:
+        #                 time.sleep(2**retries)
+        #             elif sleep == &#34;constant&#34;:
+        #                 time.sleep(1)
+        #         else:
+        #             return result
+        # raw_task = retry()
+
+        raw_task = api.retry.Retry(attempts=attempts, sleep=sleep).retry(
+            task.pull_task_sqs_dynamo,
+            self._session, 
+            self._project,
+            self._resource_name, 
+            self._worker_id, 
+            num_tasks=1,
+            queue_url=self.queue_url, 
+        )
+        
+        if raw_task is None:
+            return None
+        self._queue_count += 1
+        return self.create_task(raw_task[0])
+       
+
+    @integrity_check
+    def pull_tasks(self, attempts=10, num_tasks=1, sleep=&#34;constant&#34;):
+        &#34;&#34;&#34;
+        Pulls tasks from the queue. Returns None otherwise.
+        &#34;&#34;&#34;
+        # for AWS SQS, max num_tasks is 10
+        num_tasks = min(10, num_tasks)
+        raw_tasks = api.retry.Retry(attempts=attempts, sleep=sleep).retry(
+            task.pull_task_sqs_dynamo,
+            self._session, 
+            self._project,
+            self._resource_name, 
+            self._worker_id, 
+            num_tasks=num_tasks,
+            queue_url=self.queue_url, 
+        )
+        results = [ self.create_task(raw_task) for raw_task in raw_tasks if raw_task is not None ]
+        self._queue_count += len(results)
+        return results
+    
+    def create_task(self, raw_task):
+        if raw_task is None:
+            return None
+        del raw_task[&#39;id&#39;]
+        del raw_task[&#39;queue&#39;]
+        return Task(**raw_task)
+        
+    @integrity_check
+    def update_task(self, task, results):
+        &#34;&#34;&#34;Updates a task in the queue&#34;&#34;&#34;
+        # task.completed_resource_name = self._resource_name
+        task.results = results
+        task.status = COMPLETE
+        log.debug(f&#34;update_task: {task.task_id} {task.queue_name} {task.status}&#34;)
+        api.retry.Retry(attempts=10, sleep=5).retry(
+            dynamodb.update_item_results,
+            self._session,
+            self._project,
+            task.task_id,
+            task.queue_name,
+            results=task.results,
+        )
+        # dynamodb.update_item_results(
+        #     self._session, self._project, task.task_id, task.queue_name, results=task.results
+        # )
+        return task
+
+    def wait(self, seconds):
+        &#34;&#34;&#34;A simple wrapper for time.sleep&#34;&#34;&#34;
+        time.sleep(seconds)
+
+    @integrity_check
+    def get_task_status_count(self, status):
+        return rds.get_jobs_status_count_by_queue_url(self._project, self._queue, status)
+
+    @integrity_check 
+    def map(self, items, sleep=5):
+        task_ids = self.put_tasks(items)
+        # wait for tasks to be available
+        while True:
+            results = rds.get_items_detail(task_ids)
+            if len(results) == len(task_ids) and all([r[&#34;status&#34;] == COMPLETE for r in results]):
+                return results
+            log.debug(f&#34;map: {len(results)} {len(task_ids)}&#34;)
+            time.sleep(sleep)
+
+    @integrity_check 
+    def wait_for_tasks(self, task_ids):
+        while True:
+            results = rds.get_items_detail(task_ids)
+            log.debug(f&#34;wait_for_tasks: {len(results)} {len(task_ids)}&#34;)
+            # print(len(results))
+            # print([r[&#34;status&#34;] for r in results if r[&#34;status&#34;] != COMPLETE ])
+            # print([ r[&#39;job_description&#39;][&#39;name&#39;] for r in results if r[&#34;status&#34;] != COMPLETE ])
+            if len(results) == len(task_ids) and all([r[&#34;status&#34;] == COMPLETE for r in results]):
+                return results
+            time.sleep(5)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="hero.client.Hero"><code class="flex name class">
+<span>class <span class="ident">Hero</span></span>
+<span>(</span><span>queue=None, resource_name=None, worker_id=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Hero:
+    def __init__(self, queue=None, resource_name=None, worker_id=None):
+        
+        self._version = __version__
+        self.aws_credentials = None
+        self._project = config.get_project()
+        self._queue_name = config.get_queue(queue)
+        self._resource_name = config.get_resource_name(resource_name)
+        self._worker_id = f&#34;hero-{str(uuid.uuid4())}&#34; if worker_id is None else worker_id
+        self._queue_url = None
+        self._queue_count = 0
+        log.debug(f&#39;Initializing HERO: {self._worker_id} {self._resource_name} {self._queue_name} {self._project}&#39;)
+    
+    @property
+    def logged_in(self):
+        if self.aws_credentials is not None:
+            return True
+        return False
+
+    @property
+    def queue_url(self):
+        return self._queue_url
+
+    def login(self):
+        
+        if not self.logged_in:
+          
+            client_id, client_secret = config.get_client_credentials()
+            scopes = [&#39;hero-api/user&#39;, f&#39;project/{self._project}&#39;]
+            self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
+            self.aws_credentials = role.assume_role(self.access_token)
+            # config.export_session_to_env(self.aws_credentials)
+            self._session = aws.utils.get_session(self.aws_credentials)
+            self._aws_expiration = datetime.datetime.fromisoformat(self.aws_credentials[&#39;Expiration&#39;][:-1]).astimezone(datetime.timezone.utc)
+            
+            try:
+                self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+            except QueueDoesNotExits as e:
+                self._queue_url = None
+                log.debug(f&#39;Queue {self._queue_name} not found, you need to create the queue first.&#39;)
+            except QueueNotInDynamo as e:
+                self._queue_url = None
+                log.debug(f&#39;Queue {self._queue_name} not found in Dynamo.  You need to create the queue first.&#39;)
+                
+        total_seconds = round((self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+        if total_seconds % 60 == 0:
+            log.debug(f&#34;AWS session {self._worker_id} will expire in {str(datetime.timedelta(seconds=total_seconds))}&#34;)
+
+    @integrity_check
+    def clear_tasks(self):
+        &#34;&#34;&#34;
+        Clears the queue of all messages by deleting queue
+        &#34;&#34;&#34;
+        log.debug(&#39;clear_tasks&#39;)
+        self._queue_url = api.queue.create_queue(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        
+        api.queue.delete_other_queues(self._session, self._queue_url, self._project, self._queue_name, self._worker_id)
+        api.queue.update_queue_url(self._session, self._queue_url, self._project, self._queue_name)
+        self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+        log.debug(f&#34;Queue {self._queue_name} cleared.  New queue url {self._queue_url} is ready&#34;)
+    
+
+    
+    @property
+    def resource_name(self):
+        return self._resource_name
+
+    @property
+    def count(self):
+        return self._queue_count
+
+    @property
+    @integrity_check
+    def queue_url(self):
+        if self._queue_url is None:
+            self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+        return self._queue_url
+
+
+    @integrity_check
+    def put_task(self, item):
+        task = Task(
+            project=self._project,
+            queue_name=self._queue_name,
+            queue_url=self.queue_url,
+            inputs=item,
+            status=READY,
+            insert_resource_name=self._resource_name,
+            insert_worker_id=self._worker_id,
+        )
+        task_id = api.retry.Retry(attempts=10, sleep=1).retry(
+            aws.dynamodb.put_item,
+            self._session, 
+            self._project, 
+            task)
+        return task_id
+
+    @integrity_check
+    def put_tasks(self, items):
+        tasks = [
+            Task(
+                project=self._project,
+                queue_name=self._queue_name,
+                queue_url=self.queue_url,
+                inputs=i,
+                status=READY,
+                insert_resource_name=self._resource_name,
+                insert_worker_id=self._worker_id,
+            )
+            for i in items
+        ]
+        task_ids = api.retry.Retry(attempts=10, sleep=1).retry(
+            aws.dynamodb.put_items,
+            self._session, 
+            self._project, 
+            tasks)
+        return task_ids
+
+    @integrity_check
+    def pull_task(self, attempts=10, sleep=&#34;constant&#34;):
+        &#34;&#34;&#34;
+        Pulls a task from the queue. Returns None otherwise.  Run this as a process.
+        &#34;&#34;&#34;  
+        # def retry(): 
+        #     retries = 0
+        #     while retries &lt; attempts:
+        #         try:
+        #             result = task.pull_task_sqs_dynamo(self._session,
+        #                                         self._project,
+        #                                         self._resource_name, 
+        #                                         self._worker_id, 
+        #                                         num_tasks=1,
+        #                                         queue_url=self.queue_url, 
+        #                                         )
+        #         except Exception as e:
+        #             print(&#34;Exception --&gt;&#34;, str(e))
+
+        #         if result is None:
+        #             retries += 1
+                    
+        #             if retries &gt;= attempts:
+        #                 raise RetryAttemptsExceeded()
+                    
+        #             if sleep == &#34;linear&#34;:
+        #                 time.sleep(retries)
+        #             elif sleep == &#34;exponential&#34;:
+        #                 time.sleep(2**retries)
+        #             elif sleep == &#34;constant&#34;:
+        #                 time.sleep(1)
+        #         else:
+        #             return result
+        # raw_task = retry()
+
+        raw_task = api.retry.Retry(attempts=attempts, sleep=sleep).retry(
+            task.pull_task_sqs_dynamo,
+            self._session, 
+            self._project,
+            self._resource_name, 
+            self._worker_id, 
+            num_tasks=1,
+            queue_url=self.queue_url, 
+        )
+        
+        if raw_task is None:
+            return None
+        self._queue_count += 1
+        return self.create_task(raw_task[0])
+       
+
+    @integrity_check
+    def pull_tasks(self, attempts=10, num_tasks=1, sleep=&#34;constant&#34;):
+        &#34;&#34;&#34;
+        Pulls tasks from the queue. Returns None otherwise.
+        &#34;&#34;&#34;
+        # for AWS SQS, max num_tasks is 10
+        num_tasks = min(10, num_tasks)
+        raw_tasks = api.retry.Retry(attempts=attempts, sleep=sleep).retry(
+            task.pull_task_sqs_dynamo,
+            self._session, 
+            self._project,
+            self._resource_name, 
+            self._worker_id, 
+            num_tasks=num_tasks,
+            queue_url=self.queue_url, 
+        )
+        results = [ self.create_task(raw_task) for raw_task in raw_tasks if raw_task is not None ]
+        self._queue_count += len(results)
+        return results
+    
+    def create_task(self, raw_task):
+        if raw_task is None:
+            return None
+        del raw_task[&#39;id&#39;]
+        del raw_task[&#39;queue&#39;]
+        return Task(**raw_task)
+        
+    @integrity_check
+    def update_task(self, task, results):
+        &#34;&#34;&#34;Updates a task in the queue&#34;&#34;&#34;
+        # task.completed_resource_name = self._resource_name
+        task.results = results
+        task.status = COMPLETE
+        log.debug(f&#34;update_task: {task.task_id} {task.queue_name} {task.status}&#34;)
+        api.retry.Retry(attempts=10, sleep=5).retry(
+            dynamodb.update_item_results,
+            self._session,
+            self._project,
+            task.task_id,
+            task.queue_name,
+            results=task.results,
+        )
+        # dynamodb.update_item_results(
+        #     self._session, self._project, task.task_id, task.queue_name, results=task.results
+        # )
+        return task
+
+    def wait(self, seconds):
+        &#34;&#34;&#34;A simple wrapper for time.sleep&#34;&#34;&#34;
+        time.sleep(seconds)
+
+    @integrity_check
+    def get_task_status_count(self, status):
+        return rds.get_jobs_status_count_by_queue_url(self._project, self._queue, status)
+
+    @integrity_check 
+    def map(self, items, sleep=5):
+        task_ids = self.put_tasks(items)
+        # wait for tasks to be available
+        while True:
+            results = rds.get_items_detail(task_ids)
+            if len(results) == len(task_ids) and all([r[&#34;status&#34;] == COMPLETE for r in results]):
+                return results
+            log.debug(f&#34;map: {len(results)} {len(task_ids)}&#34;)
+            time.sleep(sleep)
+
+    @integrity_check 
+    def wait_for_tasks(self, task_ids):
+        while True:
+            results = rds.get_items_detail(task_ids)
+            log.debug(f&#34;wait_for_tasks: {len(results)} {len(task_ids)}&#34;)
+            # print(len(results))
+            # print([r[&#34;status&#34;] for r in results if r[&#34;status&#34;] != COMPLETE ])
+            # print([ r[&#39;job_description&#39;][&#39;name&#39;] for r in results if r[&#34;status&#34;] != COMPLETE ])
+            if len(results) == len(task_ids) and all([r[&#34;status&#34;] == COMPLETE for r in results]):
+                return results
+            time.sleep(5)</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="hero.client.Hero.count"><code class="name">var <span class="ident">count</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def count(self):
+    return self._queue_count</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.logged_in"><code class="name">var <span class="ident">logged_in</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def logged_in(self):
+    if self.aws_credentials is not None:
+        return True
+    return False</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.queue_url"><code class="name">var <span class="ident">queue_url</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.resource_name"><code class="name">var <span class="ident">resource_name</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def resource_name(self):
+    return self._resource_name</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="hero.client.Hero.clear_tasks"><code class="name flex">
+<span>def <span class="ident">clear_tasks</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.create_task"><code class="name flex">
+<span>def <span class="ident">create_task</span></span>(<span>self, raw_task)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_task(self, raw_task):
+    if raw_task is None:
+        return None
+    del raw_task[&#39;id&#39;]
+    del raw_task[&#39;queue&#39;]
+    return Task(**raw_task)</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.get_task_status_count"><code class="name flex">
+<span>def <span class="ident">get_task_status_count</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.login"><code class="name flex">
+<span>def <span class="ident">login</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def login(self):
+    
+    if not self.logged_in:
+      
+        client_id, client_secret = config.get_client_credentials()
+        scopes = [&#39;hero-api/user&#39;, f&#39;project/{self._project}&#39;]
+        self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
+        self.aws_credentials = role.assume_role(self.access_token)
+        # config.export_session_to_env(self.aws_credentials)
+        self._session = aws.utils.get_session(self.aws_credentials)
+        self._aws_expiration = datetime.datetime.fromisoformat(self.aws_credentials[&#39;Expiration&#39;][:-1]).astimezone(datetime.timezone.utc)
+        
+        try:
+            self._queue_url = api.queue.get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+        except QueueDoesNotExits as e:
+            self._queue_url = None
+            log.debug(f&#39;Queue {self._queue_name} not found, you need to create the queue first.&#39;)
+        except QueueNotInDynamo as e:
+            self._queue_url = None
+            log.debug(f&#39;Queue {self._queue_name} not found in Dynamo.  You need to create the queue first.&#39;)
+            
+    total_seconds = round((self._aws_expiration - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+    if total_seconds % 60 == 0:
+        log.debug(f&#34;AWS session {self._worker_id} will expire in {str(datetime.timedelta(seconds=total_seconds))}&#34;)</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.map"><code class="name flex">
+<span>def <span class="ident">map</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.pull_task"><code class="name flex">
+<span>def <span class="ident">pull_task</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.pull_tasks"><code class="name flex">
+<span>def <span class="ident">pull_tasks</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.put_task"><code class="name flex">
+<span>def <span class="ident">put_task</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.put_tasks"><code class="name flex">
+<span>def <span class="ident">put_tasks</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.update_task"><code class="name flex">
+<span>def <span class="ident">update_task</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.wait"><code class="name flex">
+<span>def <span class="ident">wait</span></span>(<span>self, seconds)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>A simple wrapper for time.sleep</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wait(self, seconds):
+    &#34;&#34;&#34;A simple wrapper for time.sleep&#34;&#34;&#34;
+    time.sleep(seconds)</code></pre>
+</details>
+</dd>
+<dt id="hero.client.Hero.wait_for_tasks"><code class="name flex">
+<span>def <span class="ident">wait_for_tasks</span></span>(<span>self, *args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrapper(self, *args, **kwargs):
+    try:
+        self.login()
+        return func(self, *args, **kwargs)
+    
+    except ClientError as e:
+        log.debug(f&#34;ClientError {e.response[&#39;Error&#39;][&#39;Code&#39;]}&#34;)
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;ExpiredTokenException&#34;:
+            log.error(f&#34;AWS token expired &#34;)
+            self.aws_credentials = None
+            self.login()
+            return func(self, *args, **kwargs)
+        
+        if e.response[&#34;Error&#34;][&#34;Code&#34;] == &#34;AWS.SimpleQueueService.NonExistentQueue&#34;:
+            time.sleep(1)
+            try:
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                log.debug(&#34;new queue url&#34;, self._queue_url)
+                return func(self, *args, **kwargs)
+            except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                return None 
+            
+    except RetryAttemptsExceeded as e:
+        try:
+            self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+            self._queue_count = 0
+            log.debug(f&#34;RetryAttemptsExceeded: using queue ending in {self._queue_url[-10:]}&#34;)
+            return None
+        except QueueDoesNotExits as e:
+                log.debug(&#34;QueueDoesNotExits&#34;)
+                self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+                self._queue_count = 0
+                return None 
+        except QueueNotInDynamo as e:
+            log.debug(&#34;QueueNotInDynamo&#34;)
+            self._queue_url = None
+            self._queue_count = 0
+            return None
+            
+    except QueueDoesNotExits as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = get_queue_url(self._session, self._project, self._queue_name)
+        self._queue_count = 0
+        return None
+    
+    except QueueNotInDynamo as e:
+        log.debug(&#34;QueueDoesNotExits&#34;)
+        self._queue_url = None
+        self._queue_count = 0
+        return None</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="hero Home" href="https://pdoc3.github.io/pdoc/">
+<img src="https://pdoc3.github.io/pdoc/logo.png" alt=""> HERO
+</a>
+</header>
+<form>
+<input id="lunr-search" name="q" placeholder="🔎 Search ..." aria-label="Search"
+disabled minlength="2">
+</form>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.3/tingle.min.css" integrity="sha512-j1u8eUJ4f23xPPxwOrLUPQaCD2dwzNqqmDDcWS4deWsMv2ohLqmXXuP3hU7g8TyzbMSakP/mMqoNBYWj8AEIFg==" crossorigin>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.15.3/tingle.min.js" integrity="sha512-plGUER9JkeEWPPqQBE4sdLqBoQug5Ap+BCGMc7bJ8BXkm+VVj6QzkpBz5Yv2yPkkq+cqg9IpkBaGCas6uDbW8g==" crossorigin></script>
+<style>
+.modal-dialog iframe {
+width: 100vw;
+height: calc(100vh - 80px);
+}
+@media screen and (min-width: 700px) {
+.modal-dialog iframe {
+width: 70vw;
+height: 80vh;
+}
+}
+.modal-dialog .tingle-modal-box {width: auto;}
+.modal-dialog .tingle-modal-box__content {padding: 0;}
+</style>
+<script>
+const input = document.getElementById('lunr-search');
+input.disabled = false;
+input.form.addEventListener('submit', (ev) => {
+ev.preventDefault();
+const url = new URL(window.location);
+url.searchParams.set('q', input.value);
+history.replaceState({}, null, url.toString());
+search(input.value);
+});
+const query = new URL(window.location).searchParams.get('q');
+if (query)
+search(query);
+function search(query) {
+const url = '../doc-search.html#' + encodeURIComponent(query);
+new tingle.modal({
+cssClass: ['modal-dialog'],
+onClose: () => {
+const url = new URL(window.location);
+url.searchParams.delete('q');
+history.replaceState({}, null, url.toString());
+setTimeout(() => input.focus(), 100);
+}
+}).setContent('<iframe src="' + url + '"></iframe>').open();
+}
+</script>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="hero" href="index.html">hero</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="hero.client.Hero" href="#hero.client.Hero">Hero</a></code></h4>
+<ul class="">
+<li><code><a title="hero.client.Hero.clear_tasks" href="#hero.client.Hero.clear_tasks">clear_tasks</a></code></li>
+<li><code><a title="hero.client.Hero.count" href="#hero.client.Hero.count">count</a></code></li>
+<li><code><a title="hero.client.Hero.create_task" href="#hero.client.Hero.create_task">create_task</a></code></li>
+<li><code><a title="hero.client.Hero.get_task_status_count" href="#hero.client.Hero.get_task_status_count">get_task_status_count</a></code></li>
+<li><code><a title="hero.client.Hero.logged_in" href="#hero.client.Hero.logged_in">logged_in</a></code></li>
+<li><code><a title="hero.client.Hero.login" href="#hero.client.Hero.login">login</a></code></li>
+<li><code><a title="hero.client.Hero.map" href="#hero.client.Hero.map">map</a></code></li>
+<li><code><a title="hero.client.Hero.pull_task" href="#hero.client.Hero.pull_task">pull_task</a></code></li>
+<li><code><a title="hero.client.Hero.pull_tasks" href="#hero.client.Hero.pull_tasks">pull_tasks</a></code></li>
+<li><code><a title="hero.client.Hero.put_task" href="#hero.client.Hero.put_task">put_task</a></code></li>
+<li><code><a title="hero.client.Hero.put_tasks" href="#hero.client.Hero.put_tasks">put_tasks</a></code></li>
+<li><code><a title="hero.client.Hero.queue_url" href="#hero.client.Hero.queue_url">queue_url</a></code></li>
+<li><code><a title="hero.client.Hero.resource_name" href="#hero.client.Hero.resource_name">resource_name</a></code></li>
+<li><code><a title="hero.client.Hero.update_task" href="#hero.client.Hero.update_task">update_task</a></code></li>
+<li><code><a title="hero.client.Hero.wait" href="#hero.client.Hero.wait">wait</a></code></li>
+<li><code><a title="hero.client.Hero.wait_for_tasks" href="#hero.client.Hero.wait_for_tasks">wait_for_tasks</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
