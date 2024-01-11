@@ -6,7 +6,7 @@ import logging
 
 log = logging.getLogger('hero:auth:cognito')
 
-HERO_BASE_URL = 'https://dev-hero.stratus.nrel.gov/repo/api/v3'
+HERO_BASE_URL = 'https://dev-hero.stratus.nrel.gov/repo/api/v1'
 
 def create_project(token, datahubId, project):
     url = f'{HERO_BASE_URL}/{datahubId}/project'
