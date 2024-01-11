@@ -58,7 +58,7 @@ def upload_file(token, datahubId, fileItem, file_path):
         'Content-Type': 'application/json',
         "Authorization": f"Bearer {token}"
     }
-
+    
     response = requests.request("GET", url, headers=headers)
 
     signed_url = response.json()['url']
@@ -78,6 +78,31 @@ def upload_file(token, datahubId, fileItem, file_path):
     else:
         print(f"File upload failed with status code {response.status_code}: {response.text}")
 
+def download_file(token, datahubId, fileItem, file_path):
+    print("START DOWNLOAD")
+    url = f'{HERO_BASE_URL}/{datahubId}/files/download/{fileItem["id"]}'
+    headers = {
+        'Content-Type': 'application/json',
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.request("GET", url, headers=headers)
+    
+    signed_url = response.json()['url']
+
+    with requests.get(signed_url, stream=True) as r:
+        r.raise_for_status()
+        try:
+            with open(f'{file_path}', 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192): 
+                    f.write(chunk)
+        except Exception as e:
+            print(f"File write to disk failed with error: {str(e)}")
+    
+    if response.status_code == 200:
+        print("File download successful!")
+    else:
+        print(f"File download failed with status code {response.status_code}: {response.text}")
 
 def read_project_by_name(token, datahubId, metatype, name):
     url = f'{HERO_BASE_URL}/{datahubId}/project/metatype/{metatype}?name={name}'
