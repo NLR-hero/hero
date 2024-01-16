@@ -57,12 +57,11 @@ class Hero:
     def data_repo(self):
         return api.data_repo
 
-    def login(self):
-        
+    def login(self, scopes=None):
         if not self.logged_in:
-          
             client_id, client_secret = config.get_client_credentials()
-            scopes = ['hero-api/user', f'project/{self._project}']
+            if scopes is None:
+                scopes = ['hero-api/user', f'project/{self._project}']
             self.access_token = cognito.get_token(client_id=client_id, client_secret=client_secret, scopes=scopes)
             if self.enable_task_engine:
                 self.aws_credentials = role.assume_role(self.access_token)
