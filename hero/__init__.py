@@ -1,21 +1,20 @@
 """
 .. include:: ./documentation.md
 """
-__version__ = "0.1.2"
 
 from time import time
 
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
+
 urllib3.disable_warnings(InsecureRequestWarning)
 
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 
-
 from .client import Hero
-
 
 
 # def timer(func):
@@ -28,4 +27,3 @@ from .client import Hero
 #         return result
 
 #     return wrap_func
-
