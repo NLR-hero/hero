@@ -1,5 +1,6 @@
 from setuptools import setup
 
+__version__ = "0.0.1"
 requires = [
     "boto3>=1.28.3",
     "psycopg2-binary>=2.9.6",
@@ -12,7 +13,7 @@ requires = [
 
 setup(
     name="hero",
-    version="0.0.1",
+    version=__version__,
     packages=["hero", "hero.api", "hero.aws", "hero.auth", "hero.config"],
     install_requires=requires,
     setup_requires=requires,
