@@ -25,5 +25,5 @@ aws_credentials = hq.auth.assume_role(access_token)
 Here, `aws_credentials` are your access keys to AWS. Use them as you would typically use AWS access keys.
 
 """
+
 from . import cognito
-from . import utils
