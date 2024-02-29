@@ -1,19 +1,17 @@
 import base64
 import logging
-from requests import Session
-import math
-import time
+import os
 
 from ..resilent_session import ResilientSession
 
-log = logging.getLogger("hero:auth:cognito")
 
-COGNITO_AUTH_URL = (
-    "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token"
+COGNITO_AUTH_URL = os.environ.get(
+    "HERO_COGNITO_AUTH_URL",
+    "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
 )
 
 
-def get_token(client_id, client_secret, scopes, auth_url=COGNITO_AUTH_URL):
+def get_token(client_id, client_secret, scopes):
     """
     Login to the Cognito user pool. Requires a client with a client secret and authorization to assign requested scopes.
 
@@ -25,7 +23,7 @@ def get_token(client_id, client_secret, scopes, auth_url=COGNITO_AUTH_URL):
 
     s = ResilientSession()
     response = s.post(
-        auth_url,
+        COGNITO_AUTH_URL,
         data=f'grant_type=client_credentials&scope={" ".join(scopes)}&client_id={client_id}',
         headers={
             "Authorization": basic_auth,

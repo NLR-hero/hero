@@ -36,12 +36,12 @@ class ResilientSession(Session):
 
             r = super(ResilientSession, self).request(method, url, **kwargs)
 
-            if r.status_code in [429, 456, 500, 502, 503, 504, 569, 563]:
+            if r.status_code in [401, 404, 429, 456, 500, 502, 503, 504, 569, 563]:
 
                 # calculate delay
                 delay = (5 * math.pow(2, counter)) * 0.5
 
-                logging.warn(
+                logging.warning(
                     "Got recoverable error [%s]: retry #%s in %ss from %s %s, "
                     % (r.status_code, counter, delay, method, url)
                 )
