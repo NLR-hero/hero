@@ -25,6 +25,10 @@ def get_client_credentials():
     )
     return client_credentials
 
+def get_project():
+    """Get the project from the environment"""
+    return os.environ["HERO_PROJECT"]
+
 
 def get_task_engine_id():
     env = os.environ.get("HERO_ENV", "dev")
