@@ -84,3 +84,7 @@ def get_tasks(token, task_engine_id, queue_id, state=READY):
 
 def get_ready_tasks(token, task_engine_id, queue_id):
     return get_tasks(token, task_engine_id, queue_id, state=READY)
+
+
+def get_completed_tasks(token, task_engine_id, queue_id):
+    return get_tasks(token, task_engine_id, queue_id, state=DONE)

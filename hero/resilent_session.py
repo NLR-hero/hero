@@ -36,7 +36,7 @@ class ResilientSession(Session):
 
             r = super(ResilientSession, self).request(method, url, **kwargs)
 
-            if r.status_code in [404, 429, 456, 500, 502, 503, 504, 569, 563]:
+            if r.status_code in [429, 456, 500, 502, 503, 504, 569, 563]:
 
                 # calculate delay
                 delay = (5 * math.pow(2, counter)) * 0.5
@@ -49,7 +49,15 @@ class ResilientSession(Session):
                 continue
 
             if r.status_code == 401:
-                raise errors.UnauthorizedException()
+                raise errors.UnauthorizedException(
+                    "Hero 401: Unauthorized for this resource"
+                )
             if r.status_code == 400:
-                raise errors.QueueDoesNotExistException()
+                raise errors.QueueDoesNotExistException(
+                    "Hero 400: Queue does not exists"
+                )
+            if r.status_code == 404:
+                raise errors.ItemNotFoundException(
+                    "Hero 404: Queue not found in Dynamo"
+                )
             return r
