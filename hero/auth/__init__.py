@@ -27,4 +27,3 @@ Here, `aws_credentials` are your access keys to AWS. Use them as you would typic
 """
 
 from . import cognito
-from . import boto

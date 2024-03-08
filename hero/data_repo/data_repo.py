@@ -35,6 +35,14 @@ class DataRepo:
             if dataset['name'] == dataset_name:
                 return dataset
 
+        data = {
+            "name": dataset_name,
+            "metadata": {},
+            "projectId": project['id'],
+        }
+        dataset = data_repo_api.create_dataset(self._access_token, self._datarepo_id, data)
+        return dataset
+
     @cache
     def get_file_object(self, project_name, dataset_name, file_name):
         """ This will fail with a large number of files"""
@@ -43,6 +51,14 @@ class DataRepo:
         for file_object in file_objects:
             if file_object['name'] == file_name:
                 return file_object
+        data = {
+            "name": file_name,
+            "metadata": {},
+            "datasetId": dataset['id'],
+        }
+        file_obj = data_repo_api.create_file(self._access_token, self._datarepo_id, data)
+        return file_obj
+        
 
     def download_file(self, project_name, dataset_name, file_name, download_path):
         file_object = self.get_file_object(project_name, dataset_name, file_name)

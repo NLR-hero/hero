@@ -13,7 +13,7 @@ log = logging.getLogger("hero:auth:cognito")
 
 HERO_DATA_REPO_API_URL = os.environ.get(
     "HERO_DATA_REPO_API_URL",
-    "https://db1kvdyyqlha5.cloudfront.net/task-engine/api/v1", #TODO... fix this for the datarepo
+    "https://db1kvdyyqlha5.cloudfront.net/data-repo/api/v1", #TODO... fix this for the datarepo
 )
 
 
@@ -138,7 +138,7 @@ def read_dataset_by_name(token, datahubId, metatype, name):
 def read_file_by_name(token, datahubId, metatype, name):
     url = f"{HERO_DATA_REPO_API_URL}/{datahubId}/file/metatype/{metatype}?name={name}"
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
-    s = ResilientSession()
+    s = Request()
     response = s.request("GET", url, headers=headers)
     response.raise_for_status()
     return response.json()
