@@ -1,18 +1,59 @@
-class UnauthorizedException(Exception):
+from tenacity import (
+    retry_if_exception_type,
+)
+
+
+class HeroRetryError(RuntimeError):
+    def __init__(
+        self,
+        message,
+        attempt_number,
+        idle_for,
+    ):
+        super().__init__(message)
+        self.attempt_number = attempt_number
+        self.idle_for = idle_for
+
+
+class ClientPullTasksEmpty(Exception):
     pass
 
 
-class QueueNotActiveException(Exception):
+class ApiUnauthorized(Exception):
     pass
 
 
-class QueueDoesNotExistException(Exception):
+class ApiQueueDoesNotExist(Exception):
     pass
 
 
-class QueueEmptyException(Exception):
+class ApiItemNotFound(Exception):
     pass
 
 
-class ItemNotFoundException(Exception):
+class ClientQueueNotActive(Exception):
     pass
+
+
+class ClientReadyTaskEstimate(Exception):
+    pass
+
+
+class ClientRetry(Exception):
+    pass
+
+
+class ClientNoQueueObject(Exception):
+    pass
+
+
+task_engine_exceptions = (
+    retry_if_exception_type(ApiUnauthorized)
+    | retry_if_exception_type(ApiQueueDoesNotExist)
+    | retry_if_exception_type(ApiItemNotFound)
+    | retry_if_exception_type(ClientQueueNotActive)
+    | retry_if_exception_type(ClientNoQueueObject)
+    | retry_if_exception_type(ClientPullTasksEmpty)
+    | retry_if_exception_type(ClientReadyTaskEstimate)
+    | retry_if_exception_type(ClientRetry)
+)

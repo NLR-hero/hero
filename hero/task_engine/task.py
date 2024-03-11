@@ -1,7 +1,7 @@
 import os
 import json
 import time
-from ..resilent_session import ResilientSession
+from ..resilient_session import ResilientSession
 
 HERO_TASK_ENGINE_API_URL = os.environ.get(
     "HERO_TASK_ENGINE_API_URL",
@@ -73,7 +73,7 @@ def update_task(token, task_engine_id, task_id, task):
 def get_tasks(token, task_engine_id, queue_id, state=READY):
     """ """
     url = f"{HERO_TASK_ENGINE_API_URL}/{task_engine_id}/queue/{queue_id}/tasks"
-    query_params = f"?metatype=Task&state={READY}"
+    query_params = f"?metatype=Task&state={state}"
     url = url + query_params
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     s = ResilientSession()
@@ -83,8 +83,10 @@ def get_tasks(token, task_engine_id, queue_id, state=READY):
 
 
 def get_ready_tasks(token, task_engine_id, queue_id):
+
     return get_tasks(token, task_engine_id, queue_id, state=READY)
 
 
 def get_completed_tasks(token, task_engine_id, queue_id):
+
     return get_tasks(token, task_engine_id, queue_id, state=DONE)

@@ -2,7 +2,7 @@ import base64
 import logging
 import os
 
-from ..resilent_session import ResilientSession
+from ..resilient_session import ResilientSession
 
 
 COGNITO_AUTH_URL = os.environ.get(

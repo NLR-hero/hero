@@ -4,7 +4,7 @@ import json
 import base64
 import logging
 
-from ..resilent_session import ResilientSession
+from ..resilient_session import ResilientSession
 
 log = logging.getLogger("hero:auth:cognito")
 
@@ -13,7 +13,7 @@ log = logging.getLogger("hero:auth:cognito")
 
 HERO_DATA_REPO_API_URL = os.environ.get(
     "HERO_DATA_REPO_API_URL",
-    "https://db1kvdyyqlha5.cloudfront.net/data-repo/api/v1", #TODO... fix this for the datarepo
+    "https://db1kvdyyqlha5.cloudfront.net/data-repo/api/v1",  # TODO... fix this for the datarepo
 )
 
 
@@ -115,7 +115,9 @@ def download_file(token, datahubId, fileItem, file_path):
 
 
 def read_project_by_name(token, datahubId, metatype, name):
-    url = f"{HERO_DATA_REPO_API_URL}/{datahubId}/project/metatype/{metatype}?name={name}"
+    url = (
+        f"{HERO_DATA_REPO_API_URL}/{datahubId}/project/metatype/{metatype}?name={name}"
+    )
     print(url)
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     s = ResilientSession()
@@ -126,7 +128,9 @@ def read_project_by_name(token, datahubId, metatype, name):
 
 
 def read_dataset_by_name(token, datahubId, metatype, name):
-    url = f"{HERO_DATA_REPO_API_URL}/{datahubId}/dataset/metatype/{metatype}?name={name}"
+    url = (
+        f"{HERO_DATA_REPO_API_URL}/{datahubId}/dataset/metatype/{metatype}?name={name}"
+    )
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     s = ResilientSession()
     response = s.request("GET", url, headers=headers)

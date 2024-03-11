@@ -8,51 +8,31 @@ This is the Python client for Hero.
 pip install git+https://github.nrel.gov/Hero/hero@master#egg=hero
 ```
 
-
-## Development
-
-```
-python3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-python setup.py develop
-```
-
-If you are using `pyenv` then the virtual environment will automaticall load if available from the `.python-version` file.
-
-To create a new venv through pyenv run:
-
-```
-pyenv virtualenv 3.9 hero_3.9
-pyenv activate hero_3.9
-pip install -r requirements.txt
-python setup.py develop
-```
-
-## Execute
+### Execute
 
 You need to have the following environment variables defined.
 
 ```
-export HERO_PROJECT="test-project"
-export HERO_QUEUE="queue-001"
-export HERO_QUEUE_VISIBILITY_TIMEOUT=300
-
-export HERO_DATABASE_PASSWORD=""
-
-export AWS_DEFAULT_OUTPUT=json
-export AWS_DEFAULT_REGION=us-west-2
-
-export AWS_ACCESS_KEY_ID=""
-export AWS_SECRET_ACCESS_KEY=""
-export AWS_SESSION_TOKEN=""
+export HERO_ENV=["dev", "stage", "prod"]
+export HERO_PROJECT="aeroportal-app"
+export HERO_CLIENT_ID="*******************************"
+export HERO_CLIENT_SECRET="*******************************"
 ```
 
-On eagle, you'll need to load the following modules.
+## Examples
+
+
+
+## Development
 
 ```
-module load openmpi
+pip install virtualenv
+python -m virtualenv venv
+source venv/bin/activate
+python -m pip install --editable '.[dev]'
 ```
+
+
 
 ### Building Pdoc in CodeBuild
 

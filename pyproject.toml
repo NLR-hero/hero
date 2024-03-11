@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hero"
+version = "0.1.0"
+dependencies = ["requests", "tenacity"]
+requires-python = ">=3.8"
+authors = [
+    { name = "Monte Lunacek", email = "monte.lunacek@nrel.gov" },
+    { name = "Nick Wunder", email = "nick.wunder@nrel.gov" },
+]
+maintainers = [
+    { name = "Monte Lunacek", email = "monte.lunacek@nrel.gov" },
+    { name = "Nick Wunder", email = "nick.wunder@nrel.gov" },
+]
+description = "Python client for HERO"
+readme = "README.md"
+license = { file = "LICENSE.txt" }
+keywords = ["hero", "task engine", "data repo", "search"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.nrel.gov/Hero/hero"
+Documentation = "https://github.nrel.gov/Hero/hero"
+Repository = "https://github.nrel.gov/Hero/hero"
+"Bug Tracker" = "https://github.nrel.gov/Hero/hero/issues"
+
+[project.scripts]
+hero = "spam:main_cli"

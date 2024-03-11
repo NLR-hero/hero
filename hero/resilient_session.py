@@ -5,6 +5,15 @@ import math
 import time
 from . import errors
 
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    wait_fixed,
+    RetryError,
+    TryAgain,
+)
+
 log = logging.getLogger("hero:auth:cognito")
 
 COGNITO_AUTH_URL = (
@@ -38,6 +47,7 @@ class ResilientSession(Session):
 
             if r.status_code in [429, 456, 500, 502, 503, 504, 569, 563]:
 
+                print(r.status_code, r.json().get("error"))
                 # calculate delay
                 delay = (5 * math.pow(2, counter)) * 0.5
 
@@ -48,16 +58,17 @@ class ResilientSession(Session):
                 time.sleep(delay)
                 continue
 
+            # Raise to the client
             if r.status_code == 401:
-                raise errors.UnauthorizedException(
-                    "Hero 401: Unauthorized for this resource"
-                )
+                if r.json().get("message") == "Unauthorized":
+                    raise errors.ApiUnauthorized("Unauthorized for this resource")
+                raise r.raise_for_status()
             if r.status_code == 400:
-                raise errors.QueueDoesNotExistException(
-                    "Hero 400: Queue does not exists"
-                )
+                if r.json().get("error") == "Bad Request":
+                    raise errors.ApiQueueDoesNotExist("Queue does not exists")
+                raise r.raise_for_status()
             if r.status_code == 404:
-                raise errors.ItemNotFoundException(
-                    "Hero 404: Queue not found in Dynamo"
-                )
+                if r.json().get("error", {}).get("message") == "Item not found.":
+                    raise errors.ApiItemNotFound("Queue not found in Dynamo")
+                raise r.raise_for_status()
             return r

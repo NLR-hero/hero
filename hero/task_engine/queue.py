@@ -1,7 +1,8 @@
 import os
 import json
 import time
-from ..resilent_session import ResilientSession
+from ..resilient_session import ResilientSession
+
 
 HERO_TASK_ENGINE_API_URL = os.environ.get(
     "HERO_TASK_ENGINE_API_URL",
