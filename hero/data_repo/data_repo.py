@@ -5,6 +5,7 @@ from .. import auth
 from .. import config
 from . import data_repo_api
 
+from .. import errors
 from .errors import retry_method
 
 
@@ -85,6 +86,7 @@ class DataRepo:
         )
         if project is not None:
             return project
+        raise errors.ClientCreateProject
 
     @track_calls
     @retry_method
@@ -113,6 +115,7 @@ class DataRepo:
         )
         if dataset is not None:
             return dataset
+        raise errors.ClientCreateDataset
 
     @track_calls
     @retry_method
@@ -141,6 +144,7 @@ class DataRepo:
         )
         if file_obj is not None:
             return file_obj
+        raise errors.ClientCreateFileObject
 
     @track_calls
     @retry_method
