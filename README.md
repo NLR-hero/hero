@@ -1,11 +1,13 @@
 # Hero
 
-This is the Python client for Hero.
+This is the Python client for Hero.  
+
+Please check out the [HERO examples](https://github.nrel.gov/Hero/hero-examples).
 
 ## Installation
 
 ```
-pip install git+https://github.nrel.gov/Hero/hero@master#egg=hero
+pip install git+https://github.nrel.gov/Hero/hero@main#egg=hero
 ```
 
 ### Execute
@@ -18,11 +20,6 @@ export HERO_PROJECT="aeroportal-app"
 export HERO_CLIENT_ID="*******************************"
 export HERO_CLIENT_SECRET="*******************************"
 ```
-
-## Examples
-
-Please clone and run the  [HERO examples](https://github.nrel.gov/Hero/hero-examples).
-
 
 ## Development
 
