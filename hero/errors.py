@@ -57,3 +57,7 @@ task_engine_exceptions = (
     | retry_if_exception_type(ClientReadyTaskEstimate)
     | retry_if_exception_type(ClientRetry)
 )
+
+data_repo_exceptions = retry_if_exception_type(
+    ApiUnauthorized
+) | retry_if_exception_type(ApiQueueDoesNotExist)

@@ -8,9 +8,6 @@ from ..resilient_session import ResilientSession
 
 log = logging.getLogger("hero:auth:cognito")
 
-# HERO_BASE_URL = "https://dev-hero.stratus.nrel.gov/repo/api/v1"
-# HERO_BASE_URL = "http://localhost:8002/data-repo/api/v1"
-
 HERO_DATA_REPO_API_URL = os.environ.get(
     "HERO_DATA_REPO_API_URL",
     "https://db1kvdyyqlha5.cloudfront.net/data-repo/api/v1",  # TODO... fix this for the datarepo
@@ -19,7 +16,6 @@ HERO_DATA_REPO_API_URL = os.environ.get(
 
 def create_project(token, datahubId, project):
     url = f"{HERO_DATA_REPO_API_URL}/{datahubId}/project"
-
     payload = json.dumps(project)
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     s = ResilientSession()
@@ -89,12 +85,10 @@ def upload_file(token, datahubId, fileItem, file_path):
 
 
 def download_file(token, datahubId, fileItem, file_path):
-    print("START DOWNLOAD")
     url = f'{HERO_DATA_REPO_API_URL}/{datahubId}/files/download/{fileItem["id"]}'
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     s = ResilientSession()
     response = s.request("GET", url, headers=headers)
-
     signed_url = response.json()["url"]
 
     with s.get(signed_url, stream=True) as r:
