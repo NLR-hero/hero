@@ -8,11 +8,21 @@ from . import data_repo_api
 from .errors import retry_method
 
 
+def track_calls(func):
+    def wrapper(self, *args, **kwargs):
+        self._calls += 1
+        return func(self, *args, **kwargs)
+
+    return wrapper
+
+
 class DataRepo:
 
     def __init__(self):
+        self._calls = 0
         self._login()
 
+    @track_calls
     def _login(self):
         """This method should not have a @retry_method decorator"""
         client_id, client_secret = config.get_client_credentials()
@@ -26,6 +36,31 @@ class DataRepo:
             scopes=self._scopes,
         )
 
+    @track_calls
+    @retry_method
+    def list_projects(self):
+        projects = data_repo_api.read_projects_by_datarepo(
+            self._access_token, self._datarepo_id
+        )
+        return projects
+
+    @track_calls
+    @retry_method
+    def list_datasets(self, project):
+        datasets = data_repo_api.read_datasets_by_project(
+            self._access_token, self._datarepo_id, project.get("id")
+        )
+        return datasets
+
+    @track_calls
+    @retry_method
+    def list_file_objects(self, dataset):
+        files = data_repo_api.read_files_by_dataset(
+            self._access_token, self._datarepo_id, dataset.get("id")
+        )
+        return files
+
+    @track_calls
     @retry_method
     def add_or_get_project(self, project_name):
         projects = data_repo_api.read_projects_by_datarepo(
@@ -35,7 +70,11 @@ class DataRepo:
             if project["name"] == project_name:
                 return project
 
-        # else we need to add it
+        return self.create_project(project_name)
+
+    @track_calls
+    @retry_method
+    def create_project(self, project_name):
         data = {"name": project_name, "metadata": {}}
         project = data_repo_api.create_project(
             self._access_token, self._datarepo_id, data
@@ -43,6 +82,7 @@ class DataRepo:
         if project is not None:
             return project
 
+    @track_calls
     @retry_method
     def add_or_get_dataset(self, project, dataset_name):
         """This will fail with a large number of datasets"""
@@ -53,6 +93,11 @@ class DataRepo:
             if dataset["name"] == dataset_name:
                 return dataset
 
+        return self.create_dataset(project, dataset_name)
+
+    @track_calls
+    @retry_method
+    def create_dataset(self, project, dataset_name):
         data = {
             "name": dataset_name,
             "metadata": {},
@@ -61,8 +106,10 @@ class DataRepo:
         dataset = data_repo_api.create_dataset(
             self._access_token, self._datarepo_id, data
         )
-        return dataset
+        if dataset is not None:
+            return dataset
 
+    @track_calls
     @retry_method
     def add_or_get_file_object(self, dataset, file_name):
         """This will fail with a large number of files"""
@@ -72,6 +119,12 @@ class DataRepo:
         for file_object in file_objects:
             if file_object["name"] == file_name:
                 return file_object
+
+        return self.create_file_object(dataset, file_name)
+
+    @track_calls
+    @retry_method
+    def create_file_object(self, dataset, file_name):
         data = {
             "name": file_name,
             "metadata": {},
@@ -80,14 +133,17 @@ class DataRepo:
         file_obj = data_repo_api.create_file(
             self._access_token, self._datarepo_id, data
         )
-        return file_obj
+        if file_obj is not None:
+            return file_obj
 
+    @track_calls
     @retry_method
     def upload_file(self, file_object, upload_path):
         data_repo_api.upload_file(
             self._access_token, self._datarepo_id, file_object, upload_path
         )
 
+    @track_calls
     @retry_method
     def download_file(self, file_object, download_path):
         data_repo_api.download_file(

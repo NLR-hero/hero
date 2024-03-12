@@ -47,6 +47,18 @@ class ClientNoQueueObject(Exception):
     pass
 
 
+class ClientCreateProject(Exception):
+    pass
+
+
+class ClientCreateDataset(Exception):
+    pass
+
+
+class ClientCreateFileObject(Exception):
+    pass
+
+
 task_engine_exceptions = (
     retry_if_exception_type(ApiUnauthorized)
     | retry_if_exception_type(ApiQueueDoesNotExist)
@@ -58,6 +70,10 @@ task_engine_exceptions = (
     | retry_if_exception_type(ClientRetry)
 )
 
-data_repo_exceptions = retry_if_exception_type(
-    ApiUnauthorized
-) | retry_if_exception_type(ApiQueueDoesNotExist)
+data_repo_exceptions = (
+    retry_if_exception_type(ApiUnauthorized)
+    | retry_if_exception_type(ApiQueueDoesNotExist)
+    | retry_if_exception_type(ClientCreateProject)
+    | retry_if_exception_type(ClientCreateDataset)
+    | retry_if_exception_type(ClientCreateFileObject)
+)

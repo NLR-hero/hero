@@ -34,4 +34,4 @@ Repository = "https://github.nrel.gov/Hero/hero"
 "Bug Tracker" = "https://github.nrel.gov/Hero/hero/issues"
 
 [project.scripts]
-hero = "spam:main_cli"
+hero = "hero:command_line.main"

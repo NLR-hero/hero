@@ -25,8 +25,14 @@ def data_repo_handle_exceptions(self, func, *args, **kwargs):
     # for issues with the infrastructure, we can attempt to
     # fix the issues
     except (errors.ApiUnauthorized, errors.ApiQueueDoesNotExist) as e:
-        # print("     ApiUnauthorized")
         self._login()
+        raise TryAgain(str(e))
+
+    except (
+        errors.ClientCreateProject,
+        errors.ClientCreateDataset,
+        errors.ClientCreateFileObject,
+    ) as e:
         raise TryAgain(str(e))
 
 
