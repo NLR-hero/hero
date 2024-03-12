@@ -74,8 +74,12 @@ class DataRepo:
 
     @track_calls
     @retry_method
-    def create_project(self, project_name):
-        data = {"name": project_name, "metadata": {}}
+    def create_project(self, project_name, metatype='Project', metadata={}):
+        data = {
+            "name": project_name, 
+            "metatype": metatype,
+            "metadata": metadata
+        }
         project = data_repo_api.create_project(
             self._access_token, self._datarepo_id, data
         )
@@ -97,10 +101,11 @@ class DataRepo:
 
     @track_calls
     @retry_method
-    def create_dataset(self, project, dataset_name):
+    def create_dataset(self, project, dataset_name, metatype='Dataset', metadata={}):
         data = {
             "name": dataset_name,
-            "metadata": {},
+            "metatype": metatype,
+            "metadata": metadata,
             "projectId": project["id"],
         }
         dataset = data_repo_api.create_dataset(
@@ -124,10 +129,11 @@ class DataRepo:
 
     @track_calls
     @retry_method
-    def create_file_object(self, dataset, file_name):
+    def create_file_object(self, dataset, file_name, metatype='File', metadata={}):
         data = {
             "name": file_name,
-            "metadata": {},
+            "metatype": metatype,
+            "metadata": metadata,
             "datasetId": dataset["id"],
         }
         file_obj = data_repo_api.create_file(
