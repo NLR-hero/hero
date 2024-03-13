@@ -202,6 +202,6 @@ def update_file_object(token, datahubId, file_id, data):
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     payload = json.dumps(data)
     s = ResilientSession()
-    response = s.request("POST", url, headers=headers, data=payload)
+    response = s.request("PUT", url, headers=headers, data=payload)
     response.raise_for_status()
     return response.json()
