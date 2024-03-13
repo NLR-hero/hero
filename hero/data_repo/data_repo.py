@@ -76,7 +76,7 @@ class DataRepo:
     @track_calls
     @retry_method
     def get_project(self, project_id):
-        projects = data_repo_api.read_projects_by_id(
+        projects = data_repo_api.read_project_by_id(
             self._access_token, self._datarepo_id, project_id
         )
         
@@ -114,7 +114,7 @@ class DataRepo:
     @retry_method
     def get_dataset(self, dataset_id):
         """This will fail with a large number of datasets"""
-        datasets = data_repo_api.read_datasets_by_id(
+        datasets = data_repo_api.read_dataset_by_id(
             self._access_token, self._datarepo_id, dataset_id
         )
 
