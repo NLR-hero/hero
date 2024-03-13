@@ -72,6 +72,15 @@ class DataRepo:
                 return project
 
         return self.create_project(project_name)
+    
+    @track_calls
+    @retry_method
+    def get_project(self, project_id):
+        projects = data_repo_api.read_projects_by_id(
+            self._access_token, self._datarepo_id, project_id
+        )
+        
+        return projects
 
     @track_calls
     @retry_method
@@ -100,6 +109,16 @@ class DataRepo:
                 return dataset
 
         return self.create_dataset(project, dataset_name)
+    
+    @track_calls
+    @retry_method
+    def get_dataset(self, dataset_id):
+        """This will fail with a large number of datasets"""
+        datasets = data_repo_api.read_datasets_by_id(
+            self._access_token, self._datarepo_id, dataset_id
+        )
+
+        return datasets
 
     @track_calls
     @retry_method

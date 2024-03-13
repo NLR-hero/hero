@@ -170,6 +170,24 @@ def read_files_by_dataset(token, datahubId, dataset_id):
     return response.json()
 
 
+def read_project_by_id(token, datahubId, project_id):
+    url = f"{HERO_DATA_REPO_API_URL}/{datahubId}/project/{project_id}"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
+    s = ResilientSession()
+    response = s.request("GET", url, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
+
+def read_dataset_by_id(token, datahubId, dataset_id):
+    url = f"{HERO_DATA_REPO_API_URL}/{datahubId}/dataset/{dataset_id}"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
+    s = ResilientSession()
+    response = s.request("GET", url, headers=headers)
+    response.raise_for_status()
+    return response.json()
+
+
 def read_file_by_id(token, datahubId, file_id):
     url = f"{HERO_DATA_REPO_API_URL}/{datahubId}/file/{file_id}"
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
