@@ -195,3 +195,13 @@ def read_file_by_id(token, datahubId, file_id):
     response = s.request("GET", url, headers=headers)
     response.raise_for_status()
     return response.json()
+
+
+def update_file_object(token, datahubId, file_id, data):
+    url = f"{HERO_DATA_REPO_API_URL}/{datahubId}/file/{file_id}"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
+    payload = json.dumps(data)
+    s = ResilientSession()
+    response = s.request("POST", url, headers=headers, data=payload)
+    response.raise_for_status()
+    return response.json()

@@ -187,3 +187,13 @@ class DataRepo:
         data_repo_api.download_file(
             self._access_token, self._datarepo_id, file_object, download_path
         )
+
+
+    @track_calls
+    @retry_method
+    def update_file_object(self, file_object):
+        file_object = data_repo_api.update_file_object(
+            self._access_token, self._datarepo_id, file_object['id'], file_object
+        )
+        
+        return file_object
