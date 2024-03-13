@@ -34,7 +34,7 @@ def add_task(token, task_engine_id, queue_id, task):
 
 
 def pull_tasks(
-    token, task_engine_id, queue_id, metatype, messages=1, visibility_timeout=60
+    token, task_engine_id, queue_id, metatype="Task", messages=1, visibility_timeout=60
 ):
     """
     The API pulls a task from SQS, checks to ensure it has not been claimed,
