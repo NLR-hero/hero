@@ -114,11 +114,11 @@ class TaskEngine:
         )
 
     @retry_method
-    def pull_tasks(self, messages=1, attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT):
+    def pull_tasks(self, messages=1, metatype='Task', attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT):
         self.raise_error_if_queue_is_not_active()
 
         tasks = task_api.pull_tasks(
-            self._token, self._task_engine_id, self.queue_id, messages=messages
+            self._token, self._task_engine_id, self.queue_id, messages=messages, metatype=metatype
         )
         if len(tasks) > 0:
             return tasks

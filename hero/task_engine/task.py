@@ -34,7 +34,7 @@ def add_task(token, task_engine_id, queue_id, task):
     return response.json()
 
 
-def pull_tasks(token, task_engine_id, queue_id, messages=1, visibility_timeout=60):
+def pull_tasks(token, task_engine_id, queue_id, metatype, messages=1, visibility_timeout=60):
     """
     The API pulls a task from SQS, checks to ensure it has not been claimed,
     and returns the task.
@@ -43,6 +43,7 @@ def pull_tasks(token, task_engine_id, queue_id, messages=1, visibility_timeout=6
     query_params = f"?receive={messages}"
     query_params += f"&visibilityTimeout={visibility_timeout}"
     query_params += f"&queueId={queue_id}"
+    query_params += f"&metatype={metatype}"
     url = url + query_params
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     s = ResilientSession()
