@@ -126,6 +126,15 @@ class DataRepo:
                 return file_object
 
         return self.create_file_object(dataset, file_name)
+    
+    @track_calls
+    @retry_method
+    def get_file_object(self, file_id):
+        file_object = data_repo_api.read_file_by_id(
+            self._access_token, self._datarepo_id, file_id
+        )
+        
+        return file_object
 
     @track_calls
     @retry_method
