@@ -3,12 +3,9 @@ import logging
 import os
 
 from ..resilient_session import ResilientSession
+from ..config import get_cognito_api
 
-
-COGNITO_AUTH_URL = os.environ.get(
-    "HERO_COGNITO_AUTH_URL",
-    "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
-)
+COGNITO_AUTH_URL = get_cognito_api()
 
 
 def get_token(client_id, client_secret, scopes):

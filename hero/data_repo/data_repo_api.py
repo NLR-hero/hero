@@ -5,13 +5,11 @@ import base64
 import logging
 
 from ..resilient_session import ResilientSession
+from ..config import get_data_repo_api
 
 log = logging.getLogger("hero:auth:cognito")
 
-HERO_DATA_REPO_API_URL = os.environ.get(
-    "HERO_DATA_REPO_API_URL",
-    "https://db1kvdyyqlha5.cloudfront.net/data-repo/api/v1",  # TODO... fix this for the datarepo
-)
+HERO_DATA_REPO_API_URL = get_data_repo_api()
 
 
 def create_project(token, datahubId, project):

@@ -50,6 +50,7 @@ def test_upload_file():
         outfile.write(json.dumps({}))
 
     data_repo.upload_file(file_object, "example.json")
+    os.remove("example.json")
 
 
 def test_download_file():
@@ -58,3 +59,4 @@ def test_download_file():
     dataset = data_repo.add_or_get_dataset(project, "example_dataset")
     file_object = data_repo.add_or_get_file_object(dataset, "example.json")
     data_repo.download_file(file_object, "download.json")
+    os.remove("download.json")

@@ -3,11 +3,9 @@ import json
 import time
 from ..resilient_session import ResilientSession
 
+from ..config import get_task_engine_api
 
-HERO_TASK_ENGINE_API_URL = os.environ.get(
-    "HERO_TASK_ENGINE_API_URL",
-    "https://db1kvdyyqlha5.cloudfront.net/task-engine/api/v1",
-)
+HERO_TASK_ENGINE_API_URL = get_task_engine_api()
 
 ACTIVE = "active"
 DELETED = "deleted"

@@ -3,6 +3,18 @@ import os
 
 from collections import OrderedDict
 
+URL_MAP = {
+    "dev": {
+        "HERO_TASK_ENGINE_API_URL": "https://db1kvdyyqlha5.cloudfront.net/task-engine/api/v1",
+        "HERO_DATA_REPO_API_URL": "https://db1kvdyyqlha5.cloudfront.net/data-repo/api/v1",
+        "HERO_SEARCH_API_URL": "https://db1kvdyyqlha5.cloudfront.net/search/api/v1",
+        "HERO_AUTH_API_URL": "https://db1kvdyyqlha5.cloudfront.net/auth/api/v1",
+        "HERO_COGNITO_API_URL": "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
+    },
+    "stage": {},
+    "prod": {},
+}
+
 
 def get_environment():
     tmp = OrderedDict()
@@ -51,16 +63,32 @@ def get_data_repo_scopes():
 
 
 def get_task_engine_api():
-    defined = os.environ.get("HERO_TASK_ENGINE_API_URL")
-    if defined is not None:
-        return defined
-    env = os.environ.get("HERO_ENV", "dev")
-    return f"https://{env}-HERO-TASK-ENGINE"
+    # environment trumps URL_MAP
+    return os.environ.get(
+        "HERO_TASK_ENGINE_API_URL",
+        URL_MAP[os.environ.get("HERO_ENV", "dev")]["HERO_TASK_ENGINE_API_URL"],
+    )
 
 
 def get_data_repo_api():
-    defined = os.environ["HERO_DATA_REPO_API_URL"]
-    if defined is not None:
-        return defined
-    env = os.environ.get("HERO_ENV", "dev")
-    return f"https://{env}-HERO-DATA-REPO"
+    # environment trumps URL_MAP
+    return os.environ.get(
+        "HERO_DATA_REPO_API_URL",
+        URL_MAP[os.environ.get("HERO_ENV", "dev")]["HERO_DATA_REPO_API_URL"],
+    )
+
+
+def get_auth_api():
+    # environment trumps URL_MAP
+    return os.environ.get(
+        "HERO_AUTH_API_URL",
+        URL_MAP[os.environ.get("HERO_ENV", "dev")]["HERO_AUTH_API_URL"],
+    )
+
+
+def get_cognito_api():
+    # environment trumps URL_MAP
+    return os.environ.get(
+        "HERO_COGNITO_API_URL",
+        URL_MAP[os.environ.get("HERO_ENV", "dev")]["HERO_COGNITO_API_URL"],
+    )

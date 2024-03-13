@@ -3,10 +3,9 @@ import json
 import time
 from ..resilient_session import ResilientSession
 
-HERO_TASK_ENGINE_API_URL = os.environ.get(
-    "HERO_TASK_ENGINE_API_URL",
-    "https://db1kvdyyqlha5.cloudfront.net/task-engine/api/v1",
-)
+from ..config import get_task_engine_api
+
+HERO_TASK_ENGINE_API_URL = get_task_engine_api()
 
 READY = "ready"
 CLAIMED = "claimed"
@@ -34,7 +33,9 @@ def add_task(token, task_engine_id, queue_id, task):
     return response.json()
 
 
-def pull_tasks(token, task_engine_id, queue_id, metatype, messages=1, visibility_timeout=60):
+def pull_tasks(
+    token, task_engine_id, queue_id, metatype, messages=1, visibility_timeout=60
+):
     """
     The API pulls a task from SQS, checks to ensure it has not been claimed,
     and returns the task.
