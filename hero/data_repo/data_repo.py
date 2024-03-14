@@ -138,7 +138,7 @@ class DataRepo:
 
     @track_calls
     @retry_method
-    def add_or_get_file_object(self, dataset, file_name):
+    def add_or_get_file_object(self, dataset, file_name, file_metatype, file_metadata):
         """This will fail with a large number of files"""
         file_objects = data_repo_api.read_files_by_dataset(
             self._access_token, self._datarepo_id, dataset["id"]
@@ -147,7 +147,7 @@ class DataRepo:
             if file_object["name"] == file_name:
                 return file_object
 
-        return self.create_file_object(dataset, file_name)
+        return self.create_file_object(dataset, file_name, metatype=file_metatype, metadata=file_metadata)
     
     @track_calls
     @retry_method
