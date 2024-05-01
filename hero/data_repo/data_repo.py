@@ -72,24 +72,20 @@ class DataRepo:
                 return project
 
         return self.create_project(project_name)
-    
+
     @track_calls
     @retry_method
     def get_project(self, project_id):
         projects = data_repo_api.read_project_by_id(
             self._access_token, self._datarepo_id, project_id
         )
-        
+
         return projects
 
     @track_calls
     @retry_method
-    def create_project(self, project_name, metatype='Project', metadata={}):
-        data = {
-            "name": project_name, 
-            "metatype": metatype,
-            "metadata": metadata
-        }
+    def create_project(self, project_name, metatype="Project", metadata={}):
+        data = {"name": project_name, "metatype": metatype, "metadata": metadata}
         project = data_repo_api.create_project(
             self._access_token, self._datarepo_id, data
         )
@@ -109,7 +105,7 @@ class DataRepo:
                 return dataset
 
         return self.create_dataset(project, dataset_name)
-    
+
     @track_calls
     @retry_method
     def get_dataset(self, dataset_id):
@@ -122,7 +118,7 @@ class DataRepo:
 
     @track_calls
     @retry_method
-    def create_dataset(self, project, dataset_name, metatype='Dataset', metadata={}):
+    def create_dataset(self, project, dataset_name, metatype="Dataset", metadata={}):
         data = {
             "name": dataset_name,
             "metatype": metatype,
@@ -138,7 +134,7 @@ class DataRepo:
 
     @track_calls
     @retry_method
-    def add_or_get_file_object(self, dataset, file_name, file_metatype, file_metadata):
+    def add_or_get_file_object(self, dataset, file_name, metatype="File", metadata={}):
         """This will fail with a large number of files"""
         file_objects = data_repo_api.read_files_by_dataset(
             self._access_token, self._datarepo_id, dataset["id"]
@@ -147,20 +143,22 @@ class DataRepo:
             if file_object["name"] == file_name:
                 return file_object
 
-        return self.create_file_object(dataset, file_name, metatype=file_metatype, metadata=file_metadata)
-    
+        return self.create_file_object(
+            dataset, file_name, metatype=metatype, metadata=metadata
+        )
+
     @track_calls
     @retry_method
     def get_file_object(self, file_id):
         file_object = data_repo_api.read_file_by_id(
             self._access_token, self._datarepo_id, file_id
         )
-        
+
         return file_object
 
     @track_calls
     @retry_method
-    def create_file_object(self, dataset, file_name, metatype='File', metadata={}):
+    def create_file_object(self, dataset, file_name, metatype="File", metadata={}):
         data = {
             "name": file_name,
             "metatype": metatype,
@@ -188,12 +186,11 @@ class DataRepo:
             self._access_token, self._datarepo_id, file_object, download_path
         )
 
-
     @track_calls
     @retry_method
     def update_file_object(self, file_object):
         file_object = data_repo_api.update_file_object(
-            self._access_token, self._datarepo_id, file_object['id'], file_object
+            self._access_token, self._datarepo_id, file_object["id"], file_object
         )
-        
+
         return file_object
