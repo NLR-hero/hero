@@ -68,7 +68,8 @@ class ResilientSession(Session):
                     raise errors.ApiQueueDoesNotExist("Queue does not exists")
                 raise r.raise_for_status()
             if r.status_code == 404:
-                if r.json().get("error", {}).get("message") == "Item not found.":
-                    raise errors.ApiItemNotFound("Queue not found in Dynamo")
+                # print(r.json())
+                # if r.json().get("error", {}).get("message") == "Item not found.":
+                #     raise errors.ApiItemNotFound("Queue not found in Dynamo")
                 raise r.raise_for_status()
             return r
