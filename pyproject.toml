@@ -1,37 +1,42 @@
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
-[project]
+[tool.poetry]
 name = "hero"
 version = "0.1.9"
-dependencies = ["requests", "tenacity"]
-requires-python = ">=3.8"
 authors = [
-    { name = "Monte Lunacek", email = "monte.lunacek@nrel.gov" },
-    { name = "Nick Wunder", email = "nick.wunder@nrel.gov" },
+    "Monte Lunacek <monte.lunacek@nrel.gov>",
+    "Nick Wunder <nick.wunder@nrel.gov>"
 ]
 maintainers = [
-    { name = "Monte Lunacek", email = "monte.lunacek@nrel.gov" },
-    { name = "Nick Wunder", email = "nick.wunder@nrel.gov" },
+    "Monte Lunacek <monte.lunacek@nrel.gov>",
+    "Nick Wunder <nick.wunder@nrel.gov>",
+    "Joseph Smith <joseph.smith@nrel.gov>"
 ]
 description = "Python client for HERO"
 readme = "README.md"
-license = { file = "LICENSE.txt" }
+license = "Proprietary"
 keywords = ["hero", "task engine", "data repo", "search"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python",
 ]
 
-[project.optional-dependencies]
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.32.3"
+tenacity = "^8.3.0"
+
+[tool.poetry.extras]
 dev = ["pytest"]
 
-[project.urls]
+[tool.poetry.urls]
 Homepage = "https://github.nrel.gov/Hero/hero"
 Documentation = "https://github.nrel.gov/Hero/hero"
 Repository = "https://github.nrel.gov/Hero/hero"
 "Bug Tracker" = "https://github.nrel.gov/Hero/hero/issues"
 
-[project.scripts]
+[tool.poetry.scripts]
 pyhero = "hero:command_line.main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
