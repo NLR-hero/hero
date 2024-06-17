@@ -1,44 +1,20 @@
 import os
+from tenacity import stop_after_attempt, wait_fixed, wait_exponential
 
-from tenacity import retry, stop_after_attempt, wait_fixed, TryAgain, wait_exponential
-from ..errors import HeroRetryError, data_repo_exceptions
-from .. import errors
+from ..errors import HeroRetryError
 
 DEFAULT_ATTEMPTS = 10
 DEFAULT_WAIT = "fix"
 
-
-@retry(
-    stop=stop_after_attempt(4),
-    wait=wait_fixed(1),
-    reraise=True,
-    retry=data_repo_exceptions,
-)
-
-def data_repo_handle_exceptions(self, func, *args, **kwargs):
-    """Functions, such as self._login and self._get_active_queue should
-    not trigger a retry because this will cause an infinite loop.
-    """
-
-    try:
+def track_calls(func):
+    def wrapper(self, *args, **kwargs):
+        self._calls += 1
         return func(self, *args, **kwargs)
 
-    # for issues with the infrastructure, we can attempt to
-    # fix the issues
-    except (errors.ApiUnauthorized, errors.ApiQueueDoesNotExist) as e:
-        self._login()
-        raise TryAgain(str(e))
-
-    except (
-        errors.ClientCreateProject,
-        errors.ClientCreateDataset,
-        errors.ClientCreateFileObject,
-    ) as e:
-        raise TryAgain(str(e))
+    return wrapper
 
 
-def retry_method(func):
-
+def retry_method(self, func):
     def wrapper(self, *args, **kwargs):
         # attempts order: kwargs -> EVN -> default
 
@@ -62,7 +38,7 @@ def retry_method(func):
             wait = wait_exponential(multiplier=1, min=1, max=60)
 
         try:
-            local_instance = data_repo_handle_exceptions.retry_with(
+            local_instance = self.handle_resilient_catchable_exceptions.retry_with(
                 stop=stop_after_attempt(attempts), wait=wait
             )
             results = local_instance.__call__(self, func, *args, **kwargs)
@@ -76,3 +52,20 @@ def retry_method(func):
             )
 
     return wrapper
+
+
+class ResilientMetaClass(type):
+    def __init__(cls, name, bases, dct):
+        cls._calls = 0
+        super().__init__(name, bases, dct)
+
+    def __new__(cls, name, bases, dct):
+        for attr in dct:
+            val = dct[attr]
+            if callable(val):
+                if not attr.startswith('__'):
+                    if attr != '_login':
+                        dct[attr] = retry_method(cls, val)
+                    dct[attr] = track_calls(val)
+        return super().__new__(cls, name, bases, dct)
+

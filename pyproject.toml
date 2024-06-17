@@ -23,18 +23,13 @@ classifiers = [
 python = "^3.8"
 requests = "^2.32.3"
 tenacity = "^8.3.0"
-
-[tool.poetry.extras]
-dev = ["pytest"]
+pytest = "^8.2.2"
 
 [tool.poetry.urls]
 Homepage = "https://github.nrel.gov/Hero/hero"
 Documentation = "https://github.nrel.gov/Hero/hero"
 Repository = "https://github.nrel.gov/Hero/hero"
 "Bug Tracker" = "https://github.nrel.gov/Hero/hero/issues"
-
-[tool.poetry.scripts]
-pyhero = "hero:command_line.main"
 
 [build-system]
 requires = ["poetry-core"]

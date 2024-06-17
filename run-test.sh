@@ -1,0 +1,13 @@
+export HERO_ENV="dev"
+export HERO_PROJECT="aeroportal-app"
+export HERO_CLIENT_ID="REDACTED_CLIENT_ID"
+export HERO_CLIENT_SECRET="REDACTED_CLIENT_SECRET"
+export HERO_RESILIENT_SESSION=true
+
+poetry run pytest
+
+unset HERO_ENV
+unset HERO_PROJECT
+unset HERO_CLIENT_ID
+unset HERO_CLIENT_SECRET
+unset HERO_RESILIENT_SESSION

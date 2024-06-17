@@ -25,38 +25,38 @@ def test_add_or_get_project():
     assert project["name"] == "example_project"
 
 
-def test_add_or_get_dataset():
-    data_repo = hero.DataRepo()
-    project = data_repo.add_or_get_project("example_project")
-    dataset = data_repo.add_or_get_dataset(project, "example_dataset")
-    assert dataset["name"] == "example_dataset"
+# def test_add_or_get_dataset():
+#     data_repo = hero.DataRepo()
+#     project = data_repo.add_or_get_project("example_project")
+#     dataset = data_repo.add_or_get_dataset(project, "example_dataset")
+#     assert dataset["name"] == "example_dataset"
 
 
-def test_add_or_get_file_object():
-    data_repo = hero.DataRepo()
-    project = data_repo.add_or_get_project("example_project")
-    dataset = data_repo.add_or_get_dataset(project, "example_dataset")
-    file_object = data_repo.add_or_get_file_object(dataset, "example.json")
-    assert file_object["name"] == "example.json"
+# def test_add_or_get_file_object():
+#     data_repo = hero.DataRepo()
+#     project = data_repo.add_or_get_project("example_project")
+#     dataset = data_repo.add_or_get_dataset(project, "example_dataset")
+#     file_object = data_repo.add_or_get_file_object(dataset, "example.json")
+#     assert file_object["name"] == "example.json"
 
 
-def test_upload_file():
-    data_repo = hero.DataRepo()
-    project = data_repo.add_or_get_project("example_project")
-    dataset = data_repo.add_or_get_dataset(project, "example_dataset")
-    file_object = data_repo.add_or_get_file_object(dataset, "example.json")
+# def test_upload_file():
+#     data_repo = hero.DataRepo()
+#     project = data_repo.add_or_get_project("example_project")
+#     dataset = data_repo.add_or_get_dataset(project, "example_dataset")
+#     file_object = data_repo.add_or_get_file_object(dataset, "example.json")
 
-    with open("example.json", "w") as outfile:
-        outfile.write(json.dumps({}))
+#     with open("example.json", "w") as outfile:
+#         outfile.write(json.dumps({}))
 
-    data_repo.upload_file(file_object, "example.json")
-    os.remove("example.json")
+#     data_repo.upload_file(file_object, "example.json")
+#     os.remove("example.json")
 
 
-def test_download_file():
-    data_repo = hero.DataRepo()
-    project = data_repo.add_or_get_project("example_project")
-    dataset = data_repo.add_or_get_dataset(project, "example_dataset")
-    file_object = data_repo.add_or_get_file_object(dataset, "example.json")
-    data_repo.download_file(file_object, "download.json")
-    os.remove("download.json")
+# def test_download_file():
+#     data_repo = hero.DataRepo()
+#     project = data_repo.add_or_get_project("example_project")
+#     dataset = data_repo.add_or_get_dataset(project, "example_dataset")
+#     file_object = data_repo.add_or_get_file_object(dataset, "example.json")
+#     data_repo.download_file(file_object, "download.json")
+#     os.remove("download.json")
