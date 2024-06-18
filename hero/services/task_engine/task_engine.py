@@ -8,8 +8,6 @@ from .task_api import TaskApi
 
 from ...config import get_task_engine_id, get_task_engine_scopes
 
-from .errors import retry_method, DEFAULT_ATTEMPTS, DEFAULT_WAIT
-
 class TaskEngine(ServiceBase):
 
     def _configure(self):
@@ -35,19 +33,16 @@ class TaskEngine(ServiceBase):
     """ Public method """
 
     @property
-    @retry_method
     def queue_id(self):
         if self._queue is None or not isinstance(self._queue, Queue):
             self._get_active_queue()
         return self._queue.queue_id
 
-    @retry_method
     def clear_queue(self):
         self._queue = self.add_or_get_queue()
         self.delete_queue()
         self._queue = self.add_or_get_queue()
 
-    @retry_method
     def add_or_get_queue(self):
         queue = self.queue_api.add_or_get_queue(
             self._token, self._task_engine_id, self._queue_name
@@ -59,7 +54,6 @@ class TaskEngine(ServiceBase):
             f"add_or_get_queue returned none for {self._queue_name}"
         )
 
-    @retry_method
     def delete_queue(self):
         response = self.queue_api.delete_queue(
             self._token, self._task_engine_id, self.queue_id
@@ -70,17 +64,16 @@ class TaskEngine(ServiceBase):
     #       Work on active queues only
     # ==========================================================================
 
-    def raise_error_if_queue_is_not_active(self):
+    def _raise_error_if_queue_is_not_active(self):
         tmp = self.queue_api.get_active_queue(
             self._token, self._task_engine_id, self._queue_name
         )
         if tmp is None or tmp.get("id") != self.queue_id:
             raise errors.ClientQueueNotActive(f"{self._queue_name} queue is not active")
 
-    @retry_method
     def estimate_ready_tasks(self):
         # TODO raise error on the API if self._queue isn't active
-        self.raise_error_if_queue_is_not_active()
+        self._raise_error_if_queue_is_not_active()
 
         tasks = self.task_api.get_ready_tasks(
             self._token, self._task_engine_id, self.queue_id
@@ -92,9 +85,8 @@ class TaskEngine(ServiceBase):
             f"No ready tasks results for {self._queue_name}"
         )
 
-    @retry_method
-    def pull_tasks(self, messages=1, metatype='Task', attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT):
-        self.raise_error_if_queue_is_not_active()
+    def pull_tasks(self, messages=1, metatype='Task'):
+        self._raise_error_if_queue_is_not_active()
 
         tasks = self.task_api.pull_tasks(
             self._token, self._task_engine_id, self.queue_id, messages=messages, metatype=metatype
@@ -103,9 +95,8 @@ class TaskEngine(ServiceBase):
             return tasks
         raise errors.ClientPullTasksEmpty(f"Pull task failed for {self._queue_name}")
 
-    @retry_method
-    def put_tasks(self, tasks: list, attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT):
-        self.raise_error_if_queue_is_not_active()
+    def put_tasks(self, tasks: list):
+        self._raise_error_if_queue_is_not_active()
         for task in tasks:
             self.task_api.add_task(
                 self._token,
@@ -122,9 +113,8 @@ class TaskEngine(ServiceBase):
     #       Maybe work on active or deleted?
     # ==========================================================================
 
-    # @retry_method
     def update_task(
-        self, task, results={}, attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT
+        self, task, results={}
     ):
         res = self.task_api.update_task(
             self._token,
@@ -137,8 +127,7 @@ class TaskEngine(ServiceBase):
         )
         return res
 
-    @retry_method
-    def completed_tasks(self, attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT):
+    def completed_tasks(self):
         tasks = self.task_api.get_completed_tasks(
             self._token, self._task_engine_id, self.queue_id
         )

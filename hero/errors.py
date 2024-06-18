@@ -57,15 +57,3 @@ class ClientCreateDataset(Exception):
 
 class ClientCreateFileObject(Exception):
     pass
-
-
-task_engine_exceptions = (
-    retry_if_exception_type(ApiUnauthorized)
-    | retry_if_exception_type(ApiQueueDoesNotExist)
-    | retry_if_exception_type(ApiItemNotFound)
-    | retry_if_exception_type(ClientQueueNotActive)
-    | retry_if_exception_type(ClientNoQueueObject)
-    | retry_if_exception_type(ClientPullTasksEmpty)
-    | retry_if_exception_type(ClientReadyTaskEstimate)
-    | retry_if_exception_type(ClientRetry)
-)

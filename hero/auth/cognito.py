@@ -15,7 +15,7 @@ def get_token(api, client_id, client_secret, scopes):
     # Request access_token following client credentials grant flow
     basic_auth = f"Basic {base64.urlsafe_b64encode(app_client_id_secret).decode()}"
 
-    response = api.post(
+    response = api.session.post(
         COGNITO_AUTH_URL,
         data=f'grant_type=client_credentials&scope={" ".join(scopes)}&client_id={client_id}',
         headers={
