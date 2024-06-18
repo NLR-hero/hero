@@ -1,3 +1,5 @@
+import json
+
 from ...service import ServiceBase
 from ... import errors
 
@@ -44,8 +46,11 @@ class TaskEngine(ServiceBase):
         self._queue = self.add_or_get_queue()
 
     def add_or_get_queue(self):
+        attributes = {"name": self._queue_name}
         queue = self.queue_api.add_or_get_queue(
-            self._token, self._task_engine_id, self._queue_name
+            self._token,
+            self._task_engine_id,
+            json.dumps(attributes)
         )
         if queue is not None:
             self._queue = Queue(queue)
@@ -56,7 +61,9 @@ class TaskEngine(ServiceBase):
 
     def delete_queue(self):
         response = self.queue_api.delete_queue(
-            self._token, self._task_engine_id, self.queue_id
+            self._token,
+            self._task_engine_id,
+            self.queue_id
         )
         self._queue = None
 
@@ -66,7 +73,9 @@ class TaskEngine(ServiceBase):
 
     def _raise_error_if_queue_is_not_active(self):
         tmp = self.queue_api.get_active_queue(
-            self._token, self._task_engine_id, self._queue_name
+            self._token,
+            self._task_engine_id,
+            self._queue_name
         )
         if tmp is None or tmp.get("id") != self.queue_id:
             raise errors.ClientQueueNotActive(f"{self._queue_name} queue is not active")

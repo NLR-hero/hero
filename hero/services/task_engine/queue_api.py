@@ -1,5 +1,3 @@
-import json
-
 from ...config import get_task_engine_api
 from ...api import ApiBase
 
@@ -13,15 +11,13 @@ class QueueApi(ApiBase):
         super().__init__(resilient_session)
         self.base_url = get_task_engine_api()
 
-    def add_or_get_queue(self, token, task_engine_id, queue_name):
+    def add_or_get_queue(self, token, task_engine_id, data):
         """
         Returns the active queue associated with a queue_name if it exists. If it doesn't
         exist, it creates a new queue and returns
         """
         url = f"{self.base_url}/{task_engine_id}/queue"
-        attributes = {"name": queue_name}
-        payload = json.dumps(attributes)
-        response = self.session.request("POST", url, headers=self.getHeaders(token), data=payload)
+        response = self.session.request("POST", url, headers=self.getHeaders(token), data=data)
         response.raise_for_status()
         return response.json()
 

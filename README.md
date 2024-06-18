@@ -30,6 +30,24 @@ source venv/bin/activate
 python -m pip install --editable '.[dev]'
 ```
 
+## Using Poetry
+
+To start the shell and install any packages (note, Poetry will create a local .venv for you if one does not exist)
+
+```
+poetry shell
+poetry install
+```
+
+(develop as normal)
+
+To deactivate the poetry shell
+
+```
+deactivate
+```
+
+
 
 
 export HERO_ENV="dev"
