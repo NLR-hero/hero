@@ -23,7 +23,9 @@ classifiers = [
 python = "^3.8"
 requests = "^2.32.3"
 tenacity = "^8.3.0"
-pytest = "^8.2.2"
+
+[tool.poetry.extras]
+dev = ["pytest"]
 
 [tool.poetry.urls]
 Homepage = "https://github.nrel.gov/Hero/hero"
