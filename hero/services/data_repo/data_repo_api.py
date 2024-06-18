@@ -1,9 +1,8 @@
 import json
 import logging
 
-from ..resilient_session import ResilientSession
-from ..config import get_data_repo_api
-from ..api import ApiBase
+from ...config import get_data_repo_api
+from ...api import ApiBase
 log = logging.getLogger("hero:auth:cognito")
 
 
@@ -60,7 +59,7 @@ class DataRepoApi(ApiBase):
             file_data = file.read()
 
         # Make a PUT request to the signed URL
-        response = s.put(signed_url, data=file_data)
+        response = self.session.put(signed_url, data=file_data)
 
         # Check if the upload was successful (HTTP status code 200)
         if response.status_code == 200:
@@ -76,7 +75,7 @@ class DataRepoApi(ApiBase):
         response = self.session.request("GET", url, headers=self.getHeaders(token))
         signed_url = response.json()["url"]
 
-        with s.get(signed_url, stream=True) as r:
+        with self.session.get(signed_url, stream=True) as r:
             r.raise_for_status()
             try:
                 with open(f"{file_path}", "wb") as f:

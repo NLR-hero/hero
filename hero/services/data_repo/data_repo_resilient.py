@@ -1,9 +1,10 @@
 from tenacity import retry, TryAgain, stop_after_attempt, wait_fixed, retry_if_exception_type
 
-from .. import errors
+from ... import errors
+from ...service import retry_method, track_calls
+
 from .data_repo import DataRepo
 from .data_repo_api import DataRepoApi
-from ..service import retry_method, track_calls
 
 retryable_exceptions = (
     retry_if_exception_type(errors.ApiUnauthorized)

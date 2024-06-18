@@ -1,14 +1,11 @@
 import base64
-import logging
-import os
 
-from ..resilient_session import ResilientSession
 from ..config import get_cognito_api
 
 COGNITO_AUTH_URL = get_cognito_api()
 
 
-def get_token(client_id, client_secret, scopes):
+def get_token(api, client_id, client_secret, scopes):
     """
     Login to the Cognito user pool. Requires a client with a client secret and authorization to assign requested scopes.
 
@@ -18,8 +15,7 @@ def get_token(client_id, client_secret, scopes):
     # Request access_token following client credentials grant flow
     basic_auth = f"Basic {base64.urlsafe_b64encode(app_client_id_secret).decode()}"
 
-    s = ResilientSession()
-    response = s.post(
+    response = api.post(
         COGNITO_AUTH_URL,
         data=f'grant_type=client_credentials&scope={" ".join(scopes)}&client_id={client_id}',
         headers={

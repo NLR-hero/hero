@@ -1,5 +1,5 @@
-from ..service import ServiceBase
-from .. import errors
+from ...service import ServiceBase
+from ...errors import ClientCreateProject, ClientCreateDataset, ClientCreateFileObject
 
 from .data_repo_api import DataRepoApi
 
@@ -49,7 +49,7 @@ class DataRepo(ServiceBase):
         )
         if project is not None:
             return project
-        raise errors.ClientCreateProject
+        raise ClientCreateProject
 
     def add_or_get_dataset(self, project, dataset_name):
         """This will fail with a large number of datasets"""
@@ -82,7 +82,7 @@ class DataRepo(ServiceBase):
         )
         if dataset is not None:
             return dataset
-        raise errors.ClientCreateDataset
+        raise ClientCreateProject
 
     def add_or_get_file_object(self, dataset, file_name, metatype="File", metadata={}):
         """This will fail with a large number of files"""
@@ -116,7 +116,7 @@ class DataRepo(ServiceBase):
         )
         if file_obj is not None:
             return file_obj
-        raise errors.ClientCreateFileObject
+        raise ClientCreateFileObject
 
     def upload_file(self, file_object, upload_path):
         self.api.upload_file(

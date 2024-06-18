@@ -1,8 +1,5 @@
 import os
-
-
 from collections import OrderedDict
-
 
 URL_MAP = {
     "dev": {
