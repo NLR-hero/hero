@@ -8,8 +8,8 @@ log = logging.getLogger("hero:auth:cognito")
 
 
 class DataRepoApi(ApiBase):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, resilient_session=False):
+        super().__init__(resilient_session)
         self.base_url = get_data_repo_api()
 
     def create_project(self, token, datahubId, project):

@@ -10,9 +10,8 @@ from .. import errors
 from .data_repo_api import DataRepoApi
 
 class DataRepo(ServiceBase):
-    def __init__(self):
-        super().__init__()
-        self.api = DataRepoApi()
+    def getApi(self):
+        return DataRepoApi()
 
     def list_projects(self):
         projects = self.api.read_projects_by_datarepo(

@@ -1,12 +1,12 @@
-from .errors import retry_method
+from tenacity import TryAgain
 from . import errors
 from .data_repo import DataRepo
-from tenacity import TryAgain
+from .data_repo_api import DataRepoApi
 from ..service import ResilientServiceMeta
 
 class DataRepoResilient(DataRepo, metaclass=ResilientServiceMeta):
-    def __init__(self):
-        super().__init__()
+    def getApi(self):
+        return DataRepoApi(resilient_session=True)
 
     def handle_resilient_catchable_exceptions(self, func, *args, **kwargs):
         """Functions, such as self._login and self._get_active_queue should

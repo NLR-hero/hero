@@ -107,4 +107,4 @@ def get_cognito_api():
     )
 
 def get_resilient_session():
-    return os.environ.get("HERO_RESILIENT_SESSION", 'False').lower() in ('true', '1', 't')
+    return os.environ.get("HERO_RESILIENT_SESSION", 'False').lower() in ('true')

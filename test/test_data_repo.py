@@ -20,7 +20,7 @@ import json
 
 
 def test_add_or_get_project():
-    data_repo = hero.DataRepo()
+    data_repo = hero.DataRepoResilient()
     project = data_repo.add_or_get_project("example_project")
     assert project["name"] == "example_project"
 

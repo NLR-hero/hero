@@ -3,6 +3,7 @@ from .. import auth
 
 class ServiceBase:
     def __init__(self):
+        self.api = self.getApi()
         self._login()
 
     def _login(self):
@@ -17,3 +18,6 @@ class ServiceBase:
             client_secret=self._client_secret,
             scopes=self._scopes,
         )
+
+    def getApi(self):
+        return None
