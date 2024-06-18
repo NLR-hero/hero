@@ -3,6 +3,7 @@ import logging
 
 from ...config import get_data_repo_api
 from ...api import ApiBase
+
 log = logging.getLogger("hero:auth:cognito")
 
 

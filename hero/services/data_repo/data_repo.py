@@ -1,11 +1,14 @@
 from ...service import ServiceBase
 from ...errors import ClientCreateProject, ClientCreateDataset, ClientCreateFileObject
+from ...config import get_data_repo_scopes, get_data_repo_id
 
 from .data_repo_api import DataRepoApi
 
 class DataRepo(ServiceBase):
-    def getApi(self):
-        return DataRepoApi()
+    def _configure(self):
+        self.api = DataRepoApi()
+        self._scopes = get_data_repo_scopes()
+        self._datarepo_id = get_data_repo_id()
 
     def list_projects(self):
         projects = self.api.read_projects_by_datarepo(

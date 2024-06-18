@@ -3,21 +3,21 @@ from .. import auth
 
 class ServiceBase:
     def __init__(self):
-        self.api = self.getApi()
+        self._configure()
         self._login()
+
+    def _configure(self):
+        return None
 
     def _login(self):
         """This method should not have a @retry_method decorator"""
         client_id, client_secret = config.get_client_credentials()
         self._client_id = client_id
         self._client_secret = client_secret
-        self._scopes = config.get_data_repo_scopes()
-        self._datarepo_id = config.get_data_repo_id()
         self._access_token = auth.cognito.get_token(
+            self.api,
             client_id=self._client_id,
             client_secret=self._client_secret,
             scopes=self._scopes,
         )
 
-    def getApi(self):
-        return None

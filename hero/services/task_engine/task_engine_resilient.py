@@ -1,27 +1,48 @@
-from ...service import ServiceBase
-from ... import errors
-
-from .queue import Queue
-from .task_engine_api import TaskEngineApi
-from .queue_api import QueueApi
-from .task_api import TaskApi
-
-from ...config import get_task_engine_id, get_task_engine_scopes
+from . import queue_api as queue_api
+from . import task_api as task_api
+from ..config import get_client_credentials, get_task_engine_id, get_task_engine_scopes
+from ..auth.cognito import get_token
+import time
+import requests
 
 from .errors import retry_method, DEFAULT_ATTEMPTS, DEFAULT_WAIT
+from .. import errors
 
-class TaskEngine(ServiceBase):
 
-    def _configure(self):
-        self.api = TaskEngineApi()
-        self.queue_api = QueueApi()
-        self.task_api = TaskApi()
+class Queue:
+
+    def __init__(self, queue):
+        self._id = queue["id"]
+        self._queue = queue
+
+    @property
+    def queue_id(self):
+        return self._id
+
+
+class TaskEngine:
+
+    def __init__(self, queue_name: str):
+        self._queue_name = queue_name
+        self._login()
+        self._queue = None
+
+    def _login(self):
+        """This method should not have a @robust decorator"""
         self._task_engine_id = get_task_engine_id()
         self._scopes = get_task_engine_scopes()
+        client_id, client_secret = get_client_credentials()
+        self._client_id = client_id
+        self._client_secret = client_secret
+        self._token = get_token(
+            client_id=self._client_id,
+            client_secret=self._client_secret,
+            scopes=self._scopes,
+        )
 
     def _get_active_queue(self):
         """Private method should not have a @robust decorator"""
-        queue = self.queue_api.get_active_queue(
+        queue = queue_api.get_active_queue(
             self._token, self._task_engine_id, self._queue_name
         )
         if queue is not None:
@@ -49,7 +70,7 @@ class TaskEngine(ServiceBase):
 
     @retry_method
     def add_or_get_queue(self):
-        queue = self.queue_api.add_or_get_queue(
+        queue = queue_api.add_or_get_queue(
             self._token, self._task_engine_id, self._queue_name
         )
         if queue is not None:
@@ -61,7 +82,7 @@ class TaskEngine(ServiceBase):
 
     @retry_method
     def delete_queue(self):
-        response = self.queue_api.delete_queue(
+        response = queue_api.delete_queue(
             self._token, self._task_engine_id, self.queue_id
         )
         self._queue = None
@@ -71,7 +92,7 @@ class TaskEngine(ServiceBase):
     # ==========================================================================
 
     def raise_error_if_queue_is_not_active(self):
-        tmp = self.queue_api.get_active_queue(
+        tmp = queue_api.get_active_queue(
             self._token, self._task_engine_id, self._queue_name
         )
         if tmp is None or tmp.get("id") != self.queue_id:
@@ -82,7 +103,7 @@ class TaskEngine(ServiceBase):
         # TODO raise error on the API if self._queue isn't active
         self.raise_error_if_queue_is_not_active()
 
-        tasks = self.task_api.get_ready_tasks(
+        tasks = task_api.get_ready_tasks(
             self._token, self._task_engine_id, self.queue_id
         )
         if tasks is not None:
@@ -96,7 +117,7 @@ class TaskEngine(ServiceBase):
     def pull_tasks(self, messages=1, metatype='Task', attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT):
         self.raise_error_if_queue_is_not_active()
 
-        tasks = self.task_api.pull_tasks(
+        tasks = task_api.pull_tasks(
             self._token, self._task_engine_id, self.queue_id, messages=messages, metatype=metatype
         )
         if len(tasks) > 0:
@@ -107,7 +128,7 @@ class TaskEngine(ServiceBase):
     def put_tasks(self, tasks: list, attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT):
         self.raise_error_if_queue_is_not_active()
         for task in tasks:
-            self.task_api.add_task(
+            task_api.add_task(
                 self._token,
                 self._task_engine_id,
                 self.queue_id,
@@ -126,12 +147,12 @@ class TaskEngine(ServiceBase):
     def update_task(
         self, task, results={}, attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT
     ):
-        res = self.task_api.update_task(
+        res = task_api.update_task(
             self._token,
             self._task_engine_id,
             task["id"],
             {
-                "state": self.task_api.DONE,
+                "state": task_api.DONE,
                 "outputs": results,
             },
         )
@@ -139,7 +160,7 @@ class TaskEngine(ServiceBase):
 
     @retry_method
     def completed_tasks(self, attempts=DEFAULT_ATTEMPTS, wait=DEFAULT_WAIT):
-        tasks = self.task_api.get_completed_tasks(
+        tasks = task_api.get_completed_tasks(
             self._token, self._task_engine_id, self.queue_id
         )
         return tasks
