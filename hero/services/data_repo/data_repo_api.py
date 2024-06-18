@@ -1,4 +1,3 @@
-import json
 import logging
 
 from ...config import get_data_repo_api
@@ -12,26 +11,23 @@ class DataRepoApi(ApiBase):
         super().__init__(resilient_session)
         self.base_url = get_data_repo_api()
 
-    def create_project(self, token, datahubId, project):
+    def create_project(self, token, datahubId, data):
         url = f"{self.base_url}/{datahubId}/project"
-        payload = json.dumps(project)
-        response = self.session.request("POST", url, headers=self.getHeaders(token), data=payload)
+        response = self.session.request("POST", url, headers=self.getHeaders(token), data=data)
         response.raise_for_status()
         return response.json()
 
 
     def create_dataset(self, token, datahubId, data):
         url = f"{self.base_url}/{datahubId}/dataset"
-        payload = json.dumps(data)
-        response = self.session.request("POST", url, headers=self.getHeaders(token), data=payload)
+        response = self.session.request("POST", url, headers=self.getHeaders(token), data=data)
         response.raise_for_status()
         return response.json()
 
 
-    def create_file(self, token, datahubId, fileData):
+    def create_file(self, token, datahubId, data):
         url = f"{self.base_url}/{datahubId}/file"
-        payload = json.dumps(fileData)
-        response = self.session.request("POST", url, headers=self.getHeaders(token), data=payload)
+        response = self.session.request("POST", url, headers=self.getHeaders(token), data=data)
         response.raise_for_status()
         return response.json()
 
@@ -166,7 +162,6 @@ class DataRepoApi(ApiBase):
 
     def update_file_object(self, token, datahubId, file_id, data):
         url = f"{self.base_url}/{datahubId}/file/{file_id}"
-        payload = json.dumps(data)
-        response = self.session.request("PUT", url, headers=self.getHeaders(token), data=payload)
+        response = self.session.request("PUT", url, headers=self.getHeaders(token), data=data)
         response.raise_for_status()
         return response.json()
