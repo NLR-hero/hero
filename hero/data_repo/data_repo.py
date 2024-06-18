@@ -4,48 +4,36 @@ from pathlib import Path
 from .. import auth
 from .. import config
 from . import data_repo_api
-
+from ..service import ServiceBase
 from .. import errors
 
-class DataRepo:
+from .data_repo_api import DataRepoApi
 
+class DataRepo(ServiceBase):
     def __init__(self):
-        self._login()
-
-    def _login(self):
-        """This method should not have a @retry_method decorator"""
-        print('login ----------')
-        client_id, client_secret = config.get_client_credentials()
-        self._client_id = client_id
-        self._client_secret = client_secret
-        self._scopes = config.get_data_repo_scopes()
-        self._datarepo_id = config.get_data_repo_id()
-        self._access_token = auth.cognito.get_token(
-            client_id=self._client_id,
-            client_secret=self._client_secret,
-            scopes=self._scopes,
-        )
+        super().__init__()
+        self.api = DataRepoApi()
 
     def list_projects(self):
-        projects = data_repo_api.read_projects_by_datarepo(
+        projects = self.api.read_projects_by_datarepo(
             self._access_token, self._datarepo_id
         )
         return projects
 
     def list_datasets(self, project):
-        datasets = data_repo_api.read_datasets_by_project(
+        datasets = self.api.read_datasets_by_project(
             self._access_token, self._datarepo_id, project.get("id")
         )
         return datasets
 
     def list_file_objects(self, dataset):
-        files = data_repo_api.read_files_by_dataset(
+        files = self.api.read_files_by_dataset(
             self._access_token, self._datarepo_id, dataset.get("id")
         )
         return files
 
     def add_or_get_project(self, project_name):
-        projects = data_repo_api.read_projects_by_datarepo(
+        projects = self.api.read_projects_by_datarepo(
             self._access_token, self._datarepo_id
         )
         for project in projects:
@@ -55,7 +43,7 @@ class DataRepo:
         return self.create_project(project_name)
 
     def get_project(self, project_id):
-        projects = data_repo_api.read_project_by_id(
+        projects = self.api.read_project_by_id(
             self._access_token, self._datarepo_id, project_id
         )
 
@@ -63,7 +51,7 @@ class DataRepo:
 
     def create_project(self, project_name, metatype="Project", metadata={}):
         data = {"name": project_name, "metatype": metatype, "metadata": metadata}
-        project = data_repo_api.create_project(
+        project = self.api.create_project(
             self._access_token, self._datarepo_id, data
         )
         if project is not None:
@@ -72,7 +60,7 @@ class DataRepo:
 
     def add_or_get_dataset(self, project, dataset_name):
         """This will fail with a large number of datasets"""
-        datasets = data_repo_api.read_datasets_by_project(
+        datasets = self.api.read_datasets_by_project(
             self._access_token, self._datarepo_id, project.get("id")
         )
         for dataset in datasets:
@@ -83,7 +71,7 @@ class DataRepo:
 
     def get_dataset(self, dataset_id):
         """This will fail with a large number of datasets"""
-        datasets = data_repo_api.read_dataset_by_id(
+        datasets = self.api.read_dataset_by_id(
             self._access_token, self._datarepo_id, dataset_id
         )
 
@@ -96,7 +84,7 @@ class DataRepo:
             "metadata": metadata,
             "projectId": project["id"],
         }
-        dataset = data_repo_api.create_dataset(
+        dataset = self.api.create_dataset(
             self._access_token, self._datarepo_id, data
         )
         if dataset is not None:
@@ -105,7 +93,7 @@ class DataRepo:
 
     def add_or_get_file_object(self, dataset, file_name, metatype="File", metadata={}):
         """This will fail with a large number of files"""
-        file_objects = data_repo_api.read_files_by_dataset(
+        file_objects = self.api.read_files_by_dataset(
             self._access_token, self._datarepo_id, dataset["id"]
         )
         for file_object in file_objects:
@@ -117,7 +105,7 @@ class DataRepo:
         )
 
     def get_file_object(self, file_id):
-        file_object = data_repo_api.read_file_by_id(
+        file_object = self.api.read_file_by_id(
             self._access_token, self._datarepo_id, file_id
         )
 
@@ -130,7 +118,7 @@ class DataRepo:
             "metadata": metadata,
             "datasetId": dataset["id"],
         }
-        file_obj = data_repo_api.create_file(
+        file_obj = self.api.create_file(
             self._access_token, self._datarepo_id, data
         )
         if file_obj is not None:
@@ -138,17 +126,17 @@ class DataRepo:
         raise errors.ClientCreateFileObject
 
     def upload_file(self, file_object, upload_path):
-        data_repo_api.upload_file(
+        self.api.upload_file(
             self._access_token, self._datarepo_id, file_object, upload_path
         )
 
     def download_file(self, file_object, download_path):
-        data_repo_api.download_file(
+        self.api.download_file(
             self._access_token, self._datarepo_id, file_object, download_path
         )
 
     def update_file_object(self, file_object):
-        file_object = data_repo_api.update_file_object(
+        file_object = self.api.update_file_object(
             self._access_token, self._datarepo_id, file_object["id"], file_object
         )
 

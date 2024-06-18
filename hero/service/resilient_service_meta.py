@@ -3,9 +3,6 @@ from tenacity import stop_after_attempt, wait_fixed, wait_exponential
 
 from ..errors import HeroRetryError
 
-DEFAULT_ATTEMPTS = 10
-DEFAULT_WAIT = "fix"
-
 def track_calls(func):
     def wrapper(self, *args, **kwargs):
         self._calls += 1
@@ -21,14 +18,14 @@ def retry_method(self, func):
         attempts = int(
             kwargs.get(
                 "attempts",
-                os.environ.get("HERO_RETRY_ATTEMPTS", DEFAULT_ATTEMPTS),
+                os.environ.get("HERO_RETRY_ATTEMPTS", self.default_attempts),
             )
         )
 
         wait_schedule = str(
             kwargs.get(
                 "wait",
-                os.environ.get("HERO_RETRY_WAIT", DEFAULT_WAIT),
+                os.environ.get("HERO_RETRY_WAIT", self.default_wait),
             )
         )
 
@@ -54,12 +51,11 @@ def retry_method(self, func):
     return wrapper
 
 
-class ResilientMetaClass(type):
-    def __init__(cls, name, bases, dct):
-        cls._calls = 0
-        super().__init__(name, bases, dct)
-
+class ResilientServiceMeta(type):
     def __new__(cls, name, bases, dct):
+        dct['_calls'] = 0
+        dct['default_attempts']  = 10
+        dct['default_wait']  = "fix"
         for attr in dct:
             val = dct[attr]
             if callable(val):
@@ -67,5 +63,6 @@ class ResilientMetaClass(type):
                     if attr != '_login':
                         dct[attr] = retry_method(cls, val)
                     dct[attr] = track_calls(val)
+
         return super().__new__(cls, name, bases, dct)
 

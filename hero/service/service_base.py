@@ -1,0 +1,19 @@
+from .. import config
+from .. import auth
+
+class ServiceBase:
+    def __init__(self):
+        self._login()
+
+    def _login(self):
+        """This method should not have a @retry_method decorator"""
+        client_id, client_secret = config.get_client_credentials()
+        self._client_id = client_id
+        self._client_secret = client_secret
+        self._scopes = config.get_data_repo_scopes()
+        self._datarepo_id = config.get_data_repo_id()
+        self._access_token = auth.cognito.get_token(
+            client_id=self._client_id,
+            client_secret=self._client_secret,
+            scopes=self._scopes,
+        )

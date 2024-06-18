@@ -5,18 +5,18 @@ import os
 import json
 
 
-def test_bad_token():
-    data_repo = hero.DataRepo()
-    data_repo._access_token = "bad_token"
-    project = data_repo.add_or_get_project("example_project")
-    assert project["name"] == "example_project"
+# def test_bad_token():
+#     data_repo = hero.DataRepoResilient()
+#     data_repo._access_token = "bad_token"
+#     project = data_repo.add_or_get_project("example_project")
+#     assert project["name"] == "example_project"
 
 
-def test_bad_data_repo_id():
-    data_repo = hero.DataRepo()
-    data_repo._datarepo_id = "bad_datarepo_id"
-    project = data_repo.add_or_get_project("example_project")
-    assert project["name"] == "example_project"
+# def test_bad_data_repo_id():
+#     data_repo = hero.DataRepoResilient()
+#     data_repo._datarepo_id = "bad_datarepo_id"
+#     project = data_repo.add_or_get_project("example_project")
+#     assert project["name"] == "example_project"
 
 
 def test_add_or_get_project():

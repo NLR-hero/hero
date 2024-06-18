@@ -1,9 +1,6 @@
-import base64
 import logging
 from requests import Session
-import math
-import time
-from . import errors
+from ..errors import ApiUnauthorized, ApiQueueDoesNotExist
 
 log = logging.getLogger("hero:auth:cognito")
 
@@ -31,15 +28,15 @@ class StandardSession(Session):
         # Raise to the client
         if r.status_code == 401:
             if r.json().get("message") == "Unauthorized":
-                raise errors.ApiUnauthorized("Unauthorized for this resource")
+                raise ApiUnauthorized("Unauthorized for this resource")
             raise r.raise_for_status()
         if r.status_code == 400:
             if r.json().get("error") == "Bad Request":
-                raise errors.ApiQueueDoesNotExist("Queue does not exists")
+                raise ApiQueueDoesNotExist("Queue does not exists")
             raise r.raise_for_status()
         if r.status_code == 404:
             # print(r.json())
             # if r.json().get("error", {}).get("message") == "Item not found.":
-            #     raise errors.ApiItemNotFound("Queue not found in Dynamo")
+            #     raise ApiItemNotFound("Queue not found in Dynamo")
             raise r.raise_for_status()
         return r

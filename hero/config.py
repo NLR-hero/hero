@@ -105,3 +105,6 @@ def get_cognito_api():
         "HERO_COGNITO_API_URL",
         URL_MAP[os.environ.get("HERO_ENV", "dev")]["HERO_COGNITO_API_URL"],
     )
+
+def get_resilient_session():
+    return os.environ.get("HERO_RESILIENT_SESSION", 'False').lower() in ('true', '1', 't')
