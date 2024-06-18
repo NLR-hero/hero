@@ -1,2 +1,2 @@
 from .service_base import ServiceBase
-from .resilient_service_meta import ResilientServiceMeta
+from .resilient_service_utils import retry_method, track_calls

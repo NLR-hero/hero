@@ -11,7 +11,7 @@ def track_calls(func):
     return wrapper
 
 
-def retry_method(self, func):
+def retry_method(func, errFunc):
     def wrapper(self, *args, **kwargs):
         # attempts order: kwargs -> EVN -> default
 
@@ -35,7 +35,7 @@ def retry_method(self, func):
             wait = wait_exponential(multiplier=1, min=1, max=60)
 
         try:
-            local_instance = self.handle_resilient_catchable_exceptions.retry_with(
+            local_instance = errFunc.retry_with(
                 stop=stop_after_attempt(attempts), wait=wait
             )
             results = local_instance.__call__(self, func, *args, **kwargs)
@@ -49,20 +49,4 @@ def retry_method(self, func):
             )
 
     return wrapper
-
-
-class ResilientServiceMeta(type):
-    def __new__(cls, name, bases, dct):
-        dct['_calls'] = 0
-        dct['default_attempts']  = 10
-        dct['default_wait']  = "fix"
-        for attr in dct:
-            val = dct[attr]
-            if callable(val):
-                if not attr.startswith('__'):
-                    if attr != '_login':
-                        dct[attr] = retry_method(cls, val)
-                    dct[attr] = track_calls(val)
-
-        return super().__new__(cls, name, bases, dct)
 
