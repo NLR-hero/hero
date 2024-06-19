@@ -82,6 +82,11 @@ class ResilientServiceMeta(type):
 
 
 class TaskEngineResilient(TaskEngine, metaclass=ResilientServiceMeta):
+    def __init__(self, queue_name):
+        self._queue_name = queue_name
+        self._queue = None
+        super().__init__()
+
     def _configure(self):
         self.api = TaskEngineApi(resilient_session=True)
         self.queue_api = QueueApi(resilient_session=True)

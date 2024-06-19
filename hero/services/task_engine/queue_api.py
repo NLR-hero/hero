@@ -2,11 +2,12 @@ from ...config import get_task_engine_api
 from ...api import ApiBase
 
 
-ACTIVE = "active"
-DELETED = "deleted"
-
 
 class QueueApi(ApiBase):
+
+    ACTIVE = "active"
+    DELETED = "deleted"
+
     def __init__(self, resilient_session=False):
         super().__init__(resilient_session)
         self.base_url = get_task_engine_api()
@@ -17,7 +18,7 @@ class QueueApi(ApiBase):
         exist, it creates a new queue and returns
         """
         url = f"{self.base_url}/{task_engine_id}/queue"
-        response = self.session.request("POST", url, headers=self.getHeaders(token), data=data)
+        response = self.session.request("POST", url, headers=self.get_headers(token), data=data)
         response.raise_for_status()
         return response.json()
 
@@ -27,20 +28,21 @@ class QueueApi(ApiBase):
         Marks the queue as deleted
         """
         url = f"{self.base_url}/{task_engine_id}/queue/{queue_id}"
-        response = self.session.request("DELETE", url, headers=self.getHeaders(token))
+        response = self.session.request("DELETE", url, headers=self.get_headers(token))
         response.raise_for_status()
         return response.json()
 
 
-    def get_queues(self, token, task_engine_id, queue_name, state=ACTIVE):
+    def get_queues(self, token, task_engine_id, queue_name, state):
         """
         Returns a random set of `limit` queues of a given `state`
         """
-        assert state in [ACTIVE, DELETED]
+        state = state or QueueApi.ACTIVE
+        assert state in [QueueApi.ACTIVE, QueueApi.DELETED]
         url = f"{self.base_url}/{task_engine_id}/queues/metatype/Queue"
         query_params = f"?name={queue_name}|{state}"
         url = url + query_params
-        response = self.session.request("GET", url, headers=self.getHeaders(token))
+        response = self.session.request("GET", url, headers=self.get_headers(token))
         response.raise_for_status()
         return response.json()
 
@@ -50,7 +52,7 @@ class QueueApi(ApiBase):
         There can only be one active queue for a given queue_name.  This returns
         that queue or None if an active queue doesn't exist.
         """
-        queues = self.get_queues(access_token, task_engine_id, queue_name, state=ACTIVE)
+        queues = self.get_queues(access_token, task_engine_id, queue_name, state=QueueApi.ACTIVE)
         for queue in queues:
             if queue["name"] == queue_name:
                 tmp = {

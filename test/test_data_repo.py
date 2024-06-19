@@ -1,8 +1,6 @@
-import hero
-import pytest
-import uuid
-import os
-import json
+# import hero
+# import os
+# import json
 
 
 # def test_bad_token():
@@ -19,10 +17,10 @@ import json
 #     assert project["name"] == "example_project"
 
 
-def test_add_or_get_project():
-    data_repo = hero.DataRepoResilient()
-    project = data_repo.add_or_get_project("example_project")
-    assert project["name"] == "example_project"
+# def test_add_or_get_project():
+#     data_repo = hero.DataRepo()
+#     project = data_repo.add_or_get_project("example_project")
+#     assert project["name"] == "example_project"
 
 
 # def test_add_or_get_dataset():

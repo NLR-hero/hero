@@ -5,13 +5,13 @@ from .standard_session import StandardSession
 class ApiBase:
     def __init__(self, resilient_session=False):
         self._resilient_session = resilient_session or get_resilient_session()
-        self.session = self.getRequestSession()
+        self.session = self.get_request_session()
 
-    def getRequestSession(self):
+    def get_request_session(self):
         if self._resilient_session:
             return ResilientSession()
         else:
             return StandardSession()
 
-    def getHeaders(self, token):
+    def get_headers(self, token):
         return {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
