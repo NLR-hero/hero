@@ -117,18 +117,10 @@ def get_m3s_id():
 def get_m3s_scopes():
     return ['m3s/user']
 
-
 # do we really need this???
 def get_iam_session_url():
     """Returns the IAM session URL from the environment variable IAM_SESSION_URL"""
     return os.environ["IAM_SESSION_URL"]
-
-
-# def get_client_credentials(client_credentials=None):
-#     """Returns the client credentials tuple (client_id, client_secret) from the environment variables"""
-#     if client_credentials is None:
-#         client_credentials = (os.environ["M3S_CLIENT_ID"], os.environ["M3S_CLIENT_SECRET"])
-#     return client_credentials
 
 
 def get_mlflow_tracking_uri():

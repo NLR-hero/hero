@@ -28,7 +28,6 @@ class TaskApi(ApiBase):
 
         payload = json.dumps(task)
         response = self.session.request("POST", url, headers=self.get_headers(token), data=payload)
-        response.raise_for_status()
         return response.json()
 
 
@@ -46,7 +45,6 @@ class TaskApi(ApiBase):
         query_params += f"&metatype={metatype}"
         url = url + query_params
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 
@@ -63,7 +61,6 @@ class TaskApi(ApiBase):
 
         payload = json.dumps(task)
         response = self.session.request("POST", url, headers=self.get_headers(token), data=payload)
-        response.raise_for_status()
         return response.json()
 
 
@@ -73,7 +70,6 @@ class TaskApi(ApiBase):
         query_params = f"?metatype=Task&state={state}"
         url = url + query_params
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 

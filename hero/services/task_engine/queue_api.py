@@ -19,7 +19,6 @@ class QueueApi(ApiBase):
         """
         url = f"{self.base_url}/{task_engine_id}/queue"
         response = self.session.request("POST", url, headers=self.get_headers(token), data=data)
-        response.raise_for_status()
         return response.json()
 
 
@@ -29,7 +28,6 @@ class QueueApi(ApiBase):
         """
         url = f"{self.base_url}/{task_engine_id}/queue/{queue_id}"
         response = self.session.request("DELETE", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 
@@ -43,7 +41,6 @@ class QueueApi(ApiBase):
         query_params = f"?name={queue_name}|{state}"
         url = url + query_params
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 

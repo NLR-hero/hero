@@ -14,21 +14,18 @@ class DataRepoApi(ApiBase):
     def create_project(self, token, datahubId, data):
         url = f"{self.base_url}/{datahubId}/project"
         response = self.session.request("POST", url, headers=self.get_headers(token), data=data)
-        response.raise_for_status()
         return response.json()
 
 
     def create_dataset(self, token, datahubId, data):
         url = f"{self.base_url}/{datahubId}/dataset"
         response = self.session.request("POST", url, headers=self.get_headers(token), data=data)
-        response.raise_for_status()
         return response.json()
 
 
     def create_file(self, token, datahubId, data):
         url = f"{self.base_url}/{datahubId}/file"
         response = self.session.request("POST", url, headers=self.get_headers(token), data=data)
-        response.raise_for_status()
         return response.json()
 
 
@@ -95,8 +92,6 @@ class DataRepoApi(ApiBase):
         )
         print(url)
         response = self.session.request("GET", url, headers=self.get_headers(token))
-
-        response.raise_for_status()
         return response.json()
 
 
@@ -105,15 +100,12 @@ class DataRepoApi(ApiBase):
             f"{self.base_url}/{datahubId}/dataset/metatype/{metatype}?name={name}"
         )
         response = self.session.request("GET", url, headers=self.get_headers(token))
-
-        response.raise_for_status()
         return response.json()
 
 
     def read_file_by_name(self, token, datahubId, metatype, name):
         url = f"{self.base_url}/{datahubId}/file/metatype/{metatype}?name={name}"
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 
@@ -121,47 +113,40 @@ class DataRepoApi(ApiBase):
         print("calling...")
         url = f"{self.base_url}/{datahubId}/projects"
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 
     def read_datasets_by_project(self, token, datahubId, project_id):
         url = f"{self.base_url}/{datahubId}/project/{project_id}/datasets"
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 
     def read_files_by_dataset(self, token, datahubId, dataset_id):
         url = f"{self.base_url}/{datahubId}/dataset/{dataset_id}/files"
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 
     def read_project_by_id(self, token, datahubId, project_id):
         url = f"{self.base_url}/{datahubId}/project/{project_id}"
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 
     def read_dataset_by_id(self, token, datahubId, dataset_id):
         url = f"{self.base_url}/{datahubId}/dataset/{dataset_id}"
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 
     def read_file_by_id(self, token, datahubId, file_id):
         url = f"{self.base_url}/{datahubId}/file/{file_id}"
         response = self.session.request("GET", url, headers=self.get_headers(token))
-        response.raise_for_status()
         return response.json()
 
 
     def update_file_object(self, token, datahubId, file_id, data):
         url = f"{self.base_url}/{datahubId}/file/{file_id}"
         response = self.session.request("PUT", url, headers=self.get_headers(token), data=data)
-        response.raise_for_status()
         return response.json()

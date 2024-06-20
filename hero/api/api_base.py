@@ -1,6 +1,7 @@
 from ..config import get_resilient_session
 from .resilient_session import ResilientSession
 from .standard_session import StandardSession
+from .session_hooks import log_request, check_for_errors
 
 class ApiBase:
     def __init__(self, resilient_session=False):
@@ -9,9 +10,12 @@ class ApiBase:
 
     def get_request_session(self):
         if self._resilient_session:
-            return ResilientSession()
+            session = ResilientSession()
         else:
-            return StandardSession()
+            session = StandardSession()
+
+        session.hooks['response'] = [log_request, check_for_errors]
+        return session
 
     def get_headers(self, token):
         return {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
