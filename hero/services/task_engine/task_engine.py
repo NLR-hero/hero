@@ -1,6 +1,6 @@
 import json
 
-from ...service import ServiceBase
+from .._base import ServiceBase
 from ... import errors
 
 from .queue import Queue

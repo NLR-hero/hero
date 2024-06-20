@@ -12,17 +12,17 @@ COGNITO_AUTH_URL = (
     "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token"
 )
 
-
 urllib3.disable_warnings()
-
 
 class ResilientSession(Session):
     """
-    This class is supposed to retry requests that return temporary errors.
-    At this moment it supports: [429, 456, 500, 502, 503, 504, 569, 563]
+    An extension of the requests.Session object that will retry requests that return temporary/resolvable errors.
+
+    Currently supports the following error codes: [429, 456, 500, 502, 503, 504, 569, 563]
     """
 
     def request(self, method, url, **kwargs):
+
 
         counter = 0
         max_retries = 10
@@ -58,9 +58,9 @@ class ResilientSession(Session):
                 if r.json().get("error") == "Bad Request":
                     raise ApiQueueDoesNotExist("Queue does not exists")
                 raise r.raise_for_status()
-            if r.status_code == 404:
+            # if r.status_code == 404:
                 # print(r.json())
                 # if r.json().get("error", {}).get("message") == "Item not found.":
                 #     raise ApiItemNotFound("Queue not found in Dynamo")
-                raise r.raise_for_status()
+                # raise r.raise_for_status()
             return r
