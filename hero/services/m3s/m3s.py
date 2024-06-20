@@ -19,6 +19,6 @@ class M3S(ServiceBase):
     def _after_init(self):
         self.set_mlflow_tracking_token(self._access_token)
 
-    def set_mlflow_tracking_token(token=None):
+    def set_mlflow_tracking_token(self, token=None):
         """Sets the MLFlow tracking token in the environment"""
         os.environ['MLFLOW_TRACKING_TOKEN'] = token
