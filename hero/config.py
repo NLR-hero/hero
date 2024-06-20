@@ -134,6 +134,7 @@ def get_iam_session_url():
 def get_mlflow_tracking_uri():
     return os.environ.get('M3S_TRACKER_URL', 'http://localhost:5000')
 
+
 def get_cognito_auth_url():
     return os.environ.get('COGNITO_AUTH_URL', 'https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token')
 
