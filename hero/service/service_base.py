@@ -5,6 +5,7 @@ class ServiceBase:
     def __init__(self):
         self._configure()
         self._login()
+        self._after_init()
 
     def _configure(self):
         return None
@@ -21,3 +22,5 @@ class ServiceBase:
             scopes=self._scopes,
         )
 
+    def _after_init(self):
+        return None
