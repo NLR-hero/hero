@@ -1,9 +1,11 @@
 import os
+from functools import wraps
 from tenacity import stop_after_attempt, wait_fixed, wait_exponential
 
 from ..errors import HeroRetryError
 
 def track_calls(func):
+    @wraps(func)
     def wrapper(self, *args, **kwargs):
         self._calls += 1
         return func(self, *args, **kwargs)
@@ -12,6 +14,7 @@ def track_calls(func):
 
 
 def retry_method(func, errFunc):
+    @wraps(func)
     def wrapper(self, *args, **kwargs):
         # attempts order: kwargs -> EVN -> default
 

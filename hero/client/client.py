@@ -14,7 +14,7 @@ class HeroClient:
     '''
     def __init__(self):
         '''
-        Initializes the client and logs in.
+        Creates the Hero client.
         '''
         self._scopes = []
         self.session = Session()

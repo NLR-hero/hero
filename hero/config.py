@@ -1,5 +1,4 @@
 import os
-from collections import OrderedDict
 
 URL_MAP = {
     'dev': {
@@ -30,21 +29,6 @@ URL_MAP = {
     },
 }
 
-
-def get_environment():
-    tmp = OrderedDict()
-    tmp['HERO_ENV'] = os.environ.get('HERO_ENV', 'dev')
-    tmp['HERO_PROJECT'] = os.environ.get('HERO_PROJECT')
-    tmp['HERO_CLIENT_ID'] = os.environ.get('HERO_CLIENT_ID')
-    tmp['HERO_CLIENT_SECRET'] = os.environ.get('HERO_CLIENT_SECRET')
-    tmp['HERO_TASK_ENGINE_API_URL'] = os.environ.get('HERO_TASK_ENGINE_API_URL')
-    tmp['HERO_DATA_REPO_API'] = os.environ.get('HERO_DATA_REPO_API')
-    tmp['AWS_ACCESS_KEY_ID'] = os.environ.get('AWS_ACCESS_KEY_ID')
-    tmp['AWS_SECRET_ACCESS_KEY'] = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    tmp['AWS_SESSION_TOKEN'] = os.environ.get('AWS_SESSION_TOKEN')
-    return tmp
-
-
 def get_client_credentials():
     '''Returns the client credentials tuple (client_id, client_secret) from the environment variables HERO_CLIENT_ID and HERO_CLIENT_SECRET'''
     client_credentials = (
@@ -57,7 +41,6 @@ def get_client_credentials():
 def get_project():
     '''Get the project from the environment'''
     return os.environ['HERO_PROJECT']
-
 
 def get_task_engine_id():
     env = os.environ.get('HERO_ENV', 'dev')
@@ -81,7 +64,6 @@ def get_data_repo_api():
         URL_MAP[os.environ.get('HERO_ENV', 'dev')]['HERO_DATA_REPO_API_URL'],
     )
 
-
 def get_auth_api():
     # environment trumps URL_MAP
     return os.environ.get(
@@ -89,28 +71,19 @@ def get_auth_api():
         URL_MAP[os.environ.get('HERO_ENV', 'dev')]['HERO_AUTH_API_URL'],
     )
 
-
 def get_cognito_api():
     # environment trumps URL_MAP
     return os.environ.get(
         'HERO_COGNITO_API_URL',
         URL_MAP[os.environ.get('HERO_ENV', 'dev')]['HERO_COGNITO_API_URL'],
     )
+def get_m3s_api():
+    # environment trumps URL_MAP
+    return os.environ.get(
+        'HERO_M3S_TRACKER_URL',
+        URL_MAP[os.environ.get('HERO_ENV', 'dev')]['HERO_M3S_TRACKER_URL'],
+    )
 
 def get_resilient_session():
     return os.environ.get('HERO_RESILIENT_SESSION', 'False').lower() in ('true')
 
-# M3S
-def get_m3s_id():
-    '''Returns the project name from the environment variable HERO_PROJECT'''
-    env = os.environ.get('HERO_ENV', 'dev')
-    return f'{env}-{os.environ["HERO_PROJECT"]}'
-
-# do we really need this???
-def get_iam_session_url():
-    '''Returns the IAM session URL from the environment variable IAM_SESSION_URL'''
-    return os.environ['IAM_SESSION_URL']
-
-
-def get_mlflow_tracking_uri():
-    return os.environ.get('HERO_M3S_TRACKER_URL', 'http://localhost:5000')

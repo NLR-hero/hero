@@ -9,6 +9,9 @@ from .data_repo_api import DataRepoApi
 @decorate_all(log_errors)
 class DataRepoService(ServiceBase):
     def _configure(self):
+        '''
+        Sets the API, adds data_repo id and required scope
+        '''
         self.api = DataRepoApi()
         self._datarepo_id = get_data_repo_id()
         self.client.add_scope('data-repo/user')

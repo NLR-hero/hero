@@ -1,8 +1,10 @@
 import logging
+from functools import wraps
 
 log = logging.getLogger('hero:service')
 
 def log_errors(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         try:
             # print('Hi, im about to do the function, woop woop')

@@ -16,6 +16,9 @@ class TaskEngineService(ServiceBase):
         super().__init__(clientInstance)
 
     def _configure(self):
+        '''
+        Sets the API, adds task engine id and required scope
+        '''
         self.api = TaskEngineApi()
         self._task_engine_id = get_task_engine_id()
         self.client.add_scope('task-engine/user')
