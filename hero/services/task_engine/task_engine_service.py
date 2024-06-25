@@ -18,6 +18,8 @@ class TaskEngineService(ServiceBase):
     def _configure(self):
         self.api = TaskEngineApi()
         self._task_engine_id = get_task_engine_id()
+        self.client.add_scope('task-engine/user')
+
 
     def _get_active_queue(self):
         """Private method should not have a @robust decorator"""

@@ -11,6 +11,7 @@ class DataRepoService(ServiceBase):
     def _configure(self):
         self.api = DataRepoApi()
         self._datarepo_id = get_data_repo_id()
+        self.client.add_scope('data-repo/user')
 
     def list_projects(self):
         projects = self.api.read_projects_by_datarepo(

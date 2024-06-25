@@ -63,13 +63,6 @@ def get_task_engine_id():
     env = os.environ.get("HERO_ENV", "dev")
     return f"{env}-{os.environ['HERO_PROJECT']}"
 
-
-def get_client_scopes():
-    return [
-        'task-engine/user',
-        'data-repo/user',
-        'm3s/user']
-
 def get_data_repo_id():
     env = os.environ.get("HERO_ENV", "dev")
     return f"{env}-{os.environ['HERO_PROJECT']}"
