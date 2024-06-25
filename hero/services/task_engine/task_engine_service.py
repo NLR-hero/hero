@@ -22,7 +22,7 @@ class TaskEngineService(ServiceBase):
 
 
     def _get_active_queue(self):
-        """Private method should not have a @robust decorator"""
+        '''Private method should not have a @robust decorator'''
         queue = self.api.get_active_queue(
             self.client.get_token(),
             self._task_engine_id,
@@ -33,10 +33,10 @@ class TaskEngineService(ServiceBase):
             return self._queue
 
         raise errors.ClientQueueNotActive(
-            f"{self._queue_name} queue not active in DynamoDB"
+            f'{self._queue_name} queue not active in DynamoDB'
         )
 
-    """ Public method """
+    ''' Public method '''
 
     @property
     def queue_id(self):
@@ -50,7 +50,7 @@ class TaskEngineService(ServiceBase):
         self._queue = self.add_or_get_queue()
 
     def add_or_get_queue(self):
-        attributes = {"name": self._queue_name}
+        attributes = {'name': self._queue_name}
         queue = self.api.add_or_get_queue(
             self.client.get_token(),
             self._task_engine_id,
@@ -60,7 +60,7 @@ class TaskEngineService(ServiceBase):
             self._queue = Queue(queue)
             return self._queue
         raise errors.ClientRetry(
-            f"add_or_get_queue returned none for {self._queue_name}"
+            f'add_or_get_queue returned none for {self._queue_name}'
         )
 
     def delete_queue(self):
@@ -81,8 +81,8 @@ class TaskEngineService(ServiceBase):
             self._task_engine_id,
             self._queue_name
         )
-        if tmp is None or tmp.get("id") != self.queue_id:
-            raise errors.ClientQueueNotActive(f"{self._queue_name} queue is not active")
+        if tmp is None or tmp.get('id') != self.queue_id:
+            raise errors.ClientQueueNotActive(f'{self._queue_name} queue is not active')
 
     def estimate_ready_tasks(self):
         # TODO raise error on the API if self._queue isn't active
@@ -95,7 +95,7 @@ class TaskEngineService(ServiceBase):
             return len(tasks)
 
         raise errors.ClientReadyTaskEstimate(
-            f"No ready tasks results for {self._queue_name}"
+            f'No ready tasks results for {self._queue_name}'
         )
 
     def pull_tasks(self, messages=1, metatype='Task'):
@@ -106,7 +106,7 @@ class TaskEngineService(ServiceBase):
         )
         if len(tasks) > 0:
             return tasks
-        raise errors.ClientPullTasksEmpty(f"Pull task failed for {self._queue_name}")
+        raise errors.ClientPullTasksEmpty(f'Pull task failed for {self._queue_name}')
 
     def put_tasks(self, tasks: list):
         self._raise_error_if_queue_is_not_active()
@@ -116,9 +116,9 @@ class TaskEngineService(ServiceBase):
                 self._task_engine_id,
                 self.queue_id,
                 {
-                    "name": task.get("name", "No name specified"),
-                    "metadata": task.get("metadata", {}),
-                    "inputs": task.get("inputs", task),
+                    'name': task.get('name', 'No name specified'),
+                    'metadata': task.get('metadata', {}),
+                    'inputs': task.get('inputs', task),
                 },
             )
 
@@ -130,10 +130,10 @@ class TaskEngineService(ServiceBase):
         res = self.api.update_task(
             self.client.get_token(),
             self._task_engine_id,
-            task["id"],
+            task['id'],
             {
-                "state": self.api.DONE,
-                "outputs": results,
+                'state': self.api.DONE,
+                'outputs': results,
             },
         )
         return res

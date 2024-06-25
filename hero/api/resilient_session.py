@@ -4,16 +4,16 @@ import math
 import time
 import urllib3
 
-log = logging.getLogger("hero:auth:cognito")
+log = logging.getLogger('hero:auth:cognito')
 
 urllib3.disable_warnings()
 
 class ResilientSession(Session):
-    """
+    '''
     An extension of the requests.Session object that will retry requests that return temporary/resolvable errors.
 
     Currently supports the following error codes: [429, 456, 500, 502, 503, 504, 569, 563]
-    """
+    '''
 
     def request(self, method, url, **kwargs):
 
@@ -31,12 +31,12 @@ class ResilientSession(Session):
 
             if r.status_code in [429, 456, 500, 502, 503, 504, 569, 563]:
 
-                print(r.status_code, r.json().get("error"))
+                print(r.status_code, r.json().get('error'))
                 # calculate delay
                 delay = (5 * math.pow(2, counter)) * 0.5
 
                 logging.warning(
-                    "Got recoverable error [%s]: retry #%s in %ss from %s %s, "
+                    'Got recoverable error [%s]: retry #%s in %ss from %s %s, '
                     % (r.status_code, counter, delay, method, url)
                 )
                 time.sleep(delay)

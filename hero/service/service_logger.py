@@ -1,6 +1,6 @@
 import logging
 
-log = logging.getLogger("hero:service")
+log = logging.getLogger('hero:service')
 
 def log_errors(func):
     def wrapper(*args, **kwargs):

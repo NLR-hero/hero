@@ -22,9 +22,9 @@ retryable_exceptions = (
     retry=retryable_exceptions,
 )
 def handle_resilient_exceptions(self, func, *args, **kwargs):
-    """Functions, such as self._login and self._get_active_queue should
+    '''Functions, such as self._login and self._get_active_queue should
     not trigger a retry because this will cause an infinite loop.
-    """
+    '''
     try:
         return func(self, *args, **kwargs)
 
@@ -46,7 +46,7 @@ class ResilientServiceMeta(type):
     def __new__(cls, name, bases, dct):
         dct['_calls'] = 0
         dct['default_attempts']  = 10
-        dct['default_wait']  = "fix"
+        dct['default_wait']  = 'fix'
 
         for attr in dct:
             if callable(dct[attr]):

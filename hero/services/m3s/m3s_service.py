@@ -9,7 +9,7 @@ class M3SService(ServiceBase):
 
     def __init__(self, clientInstance, m3s_name):
         if not m3s_name:
-            raise ValueError("m3s_name must be provided")
+            raise ValueError('m3s_name must be provided')
         self.tracking_uri = get_mlflow_tracking_uri()
         super().__init__(clientInstance)
 
@@ -23,5 +23,5 @@ class M3SService(ServiceBase):
         self.set_mlflow_tracking_token(self.client.get_token())
 
     def set_mlflow_tracking_token(self, token=None):
-        """Sets the MLFlow tracking token in the environment"""
+        '''Sets the MLFlow tracking token in the environment'''
         os.environ['MLFLOW_TRACKING_TOKEN'] = token

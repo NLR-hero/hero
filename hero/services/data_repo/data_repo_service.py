@@ -24,7 +24,7 @@ class DataRepoService(ServiceBase):
         datasets = self.api.read_datasets_by_project(
             self.client.get_token(),
             self._datarepo_id,
-            project.get("id")
+            project.get('id')
         )
         return datasets
 
@@ -32,7 +32,7 @@ class DataRepoService(ServiceBase):
         files = self.api.read_files_by_dataset(
             self.client.get_token(),
             self._datarepo_id,
-            dataset.get("id")
+            dataset.get('id')
         )
         return files
 
@@ -42,7 +42,7 @@ class DataRepoService(ServiceBase):
             self._datarepo_id
         )
         for project in projects:
-            if project["name"] == project_name:
+            if project['name'] == project_name:
                 return project
 
         return self.create_project(project_name)
@@ -56,8 +56,8 @@ class DataRepoService(ServiceBase):
 
         return projects
 
-    def create_project(self, project_name, metatype="Project", metadata={}):
-        data = {"name": project_name, "metatype": metatype, "metadata": metadata}
+    def create_project(self, project_name, metatype='Project', metadata={}):
+        data = {'name': project_name, 'metatype': metatype, 'metadata': metadata}
         project = self.api.create_project(
             self.client.get_token(),
             self._datarepo_id,
@@ -68,20 +68,20 @@ class DataRepoService(ServiceBase):
         raise ClientCreateProject
 
     def add_or_get_dataset(self, project, dataset_name):
-        """This will fail with a large number of datasets"""
+        '''This will fail with a large number of datasets'''
         datasets = self.api.read_datasets_by_project(
             self.client.get_token(),
             self._datarepo_id,
-            project.get("id")
+            project.get('id')
         )
         for dataset in datasets:
-            if dataset["name"] == dataset_name:
+            if dataset['name'] == dataset_name:
                 return dataset
 
         return self.create_dataset(project, dataset_name)
 
     def get_dataset(self, dataset_id):
-        """This will fail with a large number of datasets"""
+        '''This will fail with a large number of datasets'''
         datasets = self.api.read_dataset_by_id(
             self.client.get_token(),
             self._datarepo_id,
@@ -90,12 +90,12 @@ class DataRepoService(ServiceBase):
 
         return datasets
 
-    def create_dataset(self, project, dataset_name, metatype="Dataset", metadata={}):
+    def create_dataset(self, project, dataset_name, metatype='Dataset', metadata={}):
         data = {
-            "name": dataset_name,
-            "metatype": metatype,
-            "metadata": metadata,
-            "projectId": project["id"],
+            'name': dataset_name,
+            'metatype': metatype,
+            'metadata': metadata,
+            'projectId': project['id'],
         }
         dataset = self.api.create_dataset(
             self.client.get_token(),
@@ -106,15 +106,15 @@ class DataRepoService(ServiceBase):
             return dataset
         raise ClientCreateProject
 
-    def add_or_get_file_object(self, dataset, file_name, metatype="File", metadata={}):
-        """This will fail with a large number of files"""
+    def add_or_get_file_object(self, dataset, file_name, metatype='File', metadata={}):
+        '''This will fail with a large number of files'''
         file_objects = self.api.read_files_by_dataset(
             self.client.get_token(),
             self._datarepo_id,
-            dataset["id"]
+            dataset['id']
         )
         for file_object in file_objects:
-            if file_object["name"] == file_name:
+            if file_object['name'] == file_name:
                 return file_object
 
         return self.create_file_object(
@@ -133,12 +133,12 @@ class DataRepoService(ServiceBase):
 
         return file_object
 
-    def create_file_object(self, dataset, file_name, metatype="File", metadata={}):
+    def create_file_object(self, dataset, file_name, metatype='File', metadata={}):
         data = {
-            "name": file_name,
-            "metatype": metatype,
-            "metadata": metadata,
-            "datasetId": dataset["id"],
+            'name': file_name,
+            'metatype': metatype,
+            'metadata': metadata,
+            'datasetId': dataset['id'],
         }
         file_obj = self.api.create_file(
             self.client.get_token(),
@@ -169,7 +169,7 @@ class DataRepoService(ServiceBase):
         file_object = self.api.update_file_object(
             self.client.get_token(),
             self._datarepo_id,
-            file_object["id"],
+            file_object['id'],
             json.dumps(file_object)
         )
 

@@ -7,9 +7,9 @@ def test_bad_token():
     hero_client = hero.HeroClient()
     data_repo = hero_client.DataRepo()
     hero_client.authenticate()
-    data_repo._access_token = "bad_token"
-    project = data_repo.add_or_get_project("example_project")
-    assert project["name"] == "example_project"
+    data_repo._access_token = 'bad_token'
+    project = data_repo.add_or_get_project('example_project')
+    assert project['name'] == 'example_project'
 
 
 # def test_bad_data_repo_id():

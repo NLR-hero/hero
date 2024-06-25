@@ -23,7 +23,7 @@ class ApiBase:
         pass
 
     def get_headers(self, token):
-        headers = {"Content-Type": "application/json"}
+        headers = {'Content-Type': 'application/json'}
         if token:
-            headers["Authorization"] = f"Bearer {token}"
+            headers['Authorization'] = f'Bearer {token}'
         return headers
