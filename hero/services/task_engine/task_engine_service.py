@@ -6,24 +6,23 @@ from ... import errors
 from .queue import Queue
 from .task_engine_api import TaskEngineApi
 
-from ...config import get_task_engine_id, get_task_engine_scopes
+from ...config import get_task_engine_id
 
 class TaskEngineService(ServiceBase):
 
-    def __init__(self, queue_name):
+    def __init__(self, clientInstance, queue_name):
         self._queue_name = queue_name
         self._queue = None
-        super().__init__()
+        super().__init__(clientInstance)
 
     def _configure(self):
         self.api = TaskEngineApi()
         self._task_engine_id = get_task_engine_id()
-        self._scopes = get_task_engine_scopes()
 
     def _get_active_queue(self):
         """Private method should not have a @robust decorator"""
         queue = self.api.get_active_queue(
-            self.client._access_token,
+            self.client.get_token(),
             self._task_engine_id,
             self._queue_name
         )
@@ -51,7 +50,7 @@ class TaskEngineService(ServiceBase):
     def add_or_get_queue(self):
         attributes = {"name": self._queue_name}
         queue = self.api.add_or_get_queue(
-            self.client._access_token,
+            self.client.get_token(),
             self._task_engine_id,
             json.dumps(attributes)
         )
@@ -64,7 +63,7 @@ class TaskEngineService(ServiceBase):
 
     def delete_queue(self):
         response = self.api.delete_queue(
-            self.client._access_token,
+            self.client.get_token(),
             self._task_engine_id,
             self.queue_id
         )
@@ -76,7 +75,7 @@ class TaskEngineService(ServiceBase):
 
     def _raise_error_if_queue_is_not_active(self):
         tmp = self.api.get_active_queue(
-            self.client._access_token,
+            self.client.get_token(),
             self._task_engine_id,
             self._queue_name
         )
@@ -88,7 +87,7 @@ class TaskEngineService(ServiceBase):
         self._raise_error_if_queue_is_not_active()
 
         tasks = self.api.get_ready_tasks(
-            self.client._access_token, self._task_engine_id, self.queue_id
+            self.client.get_token(), self._task_engine_id, self.queue_id
         )
         if tasks is not None:
             return len(tasks)
@@ -101,7 +100,7 @@ class TaskEngineService(ServiceBase):
         self._raise_error_if_queue_is_not_active()
 
         tasks = self.api.pull_tasks(
-            self.client._access_token, self._task_engine_id, self.queue_id, messages=messages, metatype=metatype
+            self.client.get_token(), self._task_engine_id, self.queue_id, messages=messages, metatype=metatype
         )
         if len(tasks) > 0:
             return tasks
@@ -111,7 +110,7 @@ class TaskEngineService(ServiceBase):
         self._raise_error_if_queue_is_not_active()
         for task in tasks:
             self.api.add_task(
-                self.client._access_token,
+                self.client.get_token(),
                 self._task_engine_id,
                 self.queue_id,
                 {
@@ -127,7 +126,7 @@ class TaskEngineService(ServiceBase):
 
     def update_task( self, task, results={}):
         res = self.api.update_task(
-            self.client._access_token,
+            self.client.get_token(),
             self._task_engine_id,
             task["id"],
             {
@@ -139,6 +138,6 @@ class TaskEngineService(ServiceBase):
 
     def completed_tasks(self):
         tasks = self.api.get_completed_tasks(
-            self.client._access_token, self._task_engine_id, self.queue_id
+            self.client.get_token(), self._task_engine_id, self.queue_id
         )
         return tasks

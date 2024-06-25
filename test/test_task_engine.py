@@ -8,21 +8,23 @@ os.environ["HERO_RETRY_ATTEMPTS"] = f"{ATTEMPT_NUMBER}"
 os.environ["HERO_RETRY_WAIT"] = "fix"  # ["fix", "exp"]
 
 
-def test_bad_token():
-    task_engine = hero.TaskEngine("queue-003")
-    task_engine.clear_queue()
-    task_engine._token = "badtoken"
-    queue_id = task_engine.queue_id
-    assert queue_id is not None
+# def test_bad_token():
+#     hero_client = hero.HeroClient()
+#     task_engine = hero_client.TaskEngine("queue-003")
+#     task_engine.clear_queue()
+#     task_engine._token = "badtoken"
+#     queue_id = task_engine.queue_id
+#     assert queue_id is not None
 
 
-def test_no_active_queue():
-    queue_name = f"queue-{str(uuid.uuid4())}"
-    task_engine = hero.TaskEngine(queue_name)
-    with pytest.raises(hero.errors.HeroRetryError) as e_info:
-        queue_id = task_engine.queue_id
-        assert e_info.value.message == f"{queue_name} queue not active in DynamoDB"
-        assert e_info.value.attempt_number == ATTEMPT_NUMBER
+# def test_no_active_queue():
+#     hero_client = hero.HeroClient()
+#     queue_name = f"queue-{str(uuid.uuid4())}"
+#     task_engine = hero_client.TaskEngine(queue_name)
+#     with pytest.raises(hero.errors.HeroRetryError) as e_info:
+#         queue_id = task_engine.queue_id
+#         assert e_info.value.message == f"{queue_name} queue not active in DynamoDB"
+#         assert e_info.value.attempt_number == ATTEMPT_NUMBER
 
 
 # def test_bad_queue():

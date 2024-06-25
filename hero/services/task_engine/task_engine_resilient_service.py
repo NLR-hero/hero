@@ -2,7 +2,7 @@ from tenacity import retry, TryAgain, stop_after_attempt, wait_fixed, retry_if_e
 
 from ... import errors
 from ...service import retry_method, track_calls
-from ...config import get_task_engine_id, get_task_engine_scopes
+from ...config import get_task_engine_id
 
 from .queue import Queue
 from .task_engine_api import TaskEngineApi
@@ -88,7 +88,5 @@ class TaskEngineResilientService(TaskEngineService, metaclass=ResilientServiceMe
     def _configure(self):
         self.api = TaskEngineApi(resilient_session=True)
         self._task_engine_id = get_task_engine_id()
-        self._scopes = get_task_engine_scopes()
-
 
 

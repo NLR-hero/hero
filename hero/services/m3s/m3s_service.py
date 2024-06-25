@@ -3,18 +3,19 @@ import os
 from ...service import ServiceBase
 from ...api import ApiBase
 
-from ...config import get_m3s_id, get_m3s_scopes, get_mlflow_tracking_uri
+from ...config import get_m3s_id, get_mlflow_tracking_uri
 
 class M3SService(ServiceBase):
 
-    def __init__(self):
+    def __init__(self, clientInstance, m3s_name):
+        if not m3s_name:
+            raise ValueError("m3s_name must be provided")
         self.tracking_uri = get_mlflow_tracking_uri()
-        super().__init__()
+        super().__init__(clientInstance)
 
     def _configure(self):
-        self.api = ApiBase() #used for auth, base is adequate for this
+        self.api = ApiBase()
         self._m3s_id = get_m3s_id() #not used, do we need this?
-        self._scopes = get_m3s_scopes()
 
     def _after_init(self):
         self.set_mlflow_tracking_token(self._access_token)

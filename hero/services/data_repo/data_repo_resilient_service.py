@@ -2,7 +2,7 @@ from tenacity import retry, TryAgain, stop_after_attempt, wait_fixed, retry_if_e
 
 from ... import errors
 from ...service import retry_method, track_calls
-from ...config import get_data_repo_scopes, get_data_repo_id
+from ...config import get_data_repo_id
 
 from .data_repo_service import DataRepoService
 from .data_repo_api import DataRepoApi
@@ -62,7 +62,6 @@ class ResilientServiceMeta(type):
 class DataRepoResilientService(DataRepoService, metaclass=ResilientServiceMeta):
     def _configure(self):
         self.api = DataRepoApi(resilient_session=True)
-        self._scopes = get_data_repo_scopes()
         self._datarepo_id = get_data_repo_id()
 
 
