@@ -1,12 +1,13 @@
 import json
 
-from ...service import ServiceBase
+from ...service import ServiceBase, decorate_all, log_errors
 from ...errors import ClientCreateProject, ClientCreateDataset, ClientCreateFileObject
 from ...config import get_data_repo_scopes, get_data_repo_id
 
 from .data_repo_api import DataRepoApi
 
-class DataRepo(ServiceBase):
+@decorate_all(log_errors)
+class DataRepoService(ServiceBase):
     def _configure(self):
         self.api = DataRepoApi()
         self._scopes = get_data_repo_scopes()
@@ -14,14 +15,14 @@ class DataRepo(ServiceBase):
 
     def list_projects(self):
         projects = self.api.read_projects_by_datarepo(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id
         )
         return projects
 
     def list_datasets(self, project):
         datasets = self.api.read_datasets_by_project(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             project.get("id")
         )
@@ -29,7 +30,7 @@ class DataRepo(ServiceBase):
 
     def list_file_objects(self, dataset):
         files = self.api.read_files_by_dataset(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             dataset.get("id")
         )
@@ -37,7 +38,7 @@ class DataRepo(ServiceBase):
 
     def add_or_get_project(self, project_name):
         projects = self.api.read_projects_by_datarepo(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id
         )
         for project in projects:
@@ -48,7 +49,7 @@ class DataRepo(ServiceBase):
 
     def get_project(self, project_id):
         projects = self.api.read_project_by_id(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             project_id
         )
@@ -58,7 +59,7 @@ class DataRepo(ServiceBase):
     def create_project(self, project_name, metatype="Project", metadata={}):
         data = {"name": project_name, "metatype": metatype, "metadata": metadata}
         project = self.api.create_project(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             json.dumps(data)
         )
@@ -69,7 +70,7 @@ class DataRepo(ServiceBase):
     def add_or_get_dataset(self, project, dataset_name):
         """This will fail with a large number of datasets"""
         datasets = self.api.read_datasets_by_project(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             project.get("id")
         )
@@ -82,7 +83,7 @@ class DataRepo(ServiceBase):
     def get_dataset(self, dataset_id):
         """This will fail with a large number of datasets"""
         datasets = self.api.read_dataset_by_id(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             dataset_id
         )
@@ -97,7 +98,7 @@ class DataRepo(ServiceBase):
             "projectId": project["id"],
         }
         dataset = self.api.create_dataset(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             json.dumps(data)
         )
@@ -108,7 +109,7 @@ class DataRepo(ServiceBase):
     def add_or_get_file_object(self, dataset, file_name, metatype="File", metadata={}):
         """This will fail with a large number of files"""
         file_objects = self.api.read_files_by_dataset(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             dataset["id"]
         )
@@ -125,7 +126,7 @@ class DataRepo(ServiceBase):
 
     def get_file_object(self, file_id):
         file_object = self.api.read_file_by_id(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             file_id
         )
@@ -140,7 +141,7 @@ class DataRepo(ServiceBase):
             "datasetId": dataset["id"],
         }
         file_obj = self.api.create_file(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             json.dumps(data)
         )
@@ -150,7 +151,7 @@ class DataRepo(ServiceBase):
 
     def upload_file(self, file_object, upload_path):
         self.api.upload_file(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             file_object,
             upload_path
@@ -158,7 +159,7 @@ class DataRepo(ServiceBase):
 
     def download_file(self, file_object, download_path):
         self.api.download_file(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             file_object,
             download_path
@@ -166,7 +167,7 @@ class DataRepo(ServiceBase):
 
     def update_file_object(self, file_object):
         file_object = self.api.update_file_object(
-            self._access_token,
+            self.client._access_token,
             self._datarepo_id,
             file_object["id"],
             json.dumps(file_object)

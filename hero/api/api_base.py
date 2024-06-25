@@ -1,6 +1,7 @@
+from requests import Session
+
 from ..config import get_resilient_session
 from .resilient_session import ResilientSession
-from .standard_session import StandardSession
 from .session_hooks import log_request, check_for_errors
 
 class ApiBase:
@@ -13,7 +14,7 @@ class ApiBase:
         if self._resilient_session:
             session = ResilientSession()
         else:
-            session = StandardSession()
+            session = Session()
 
         session.hooks['response'] = [log_request, check_for_errors]
         return session

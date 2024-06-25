@@ -1,2 +1,2 @@
-from .task_engine import TaskEngine
-from .task_engine_resilient import TaskEngineResilient
+from .task_engine_service import TaskEngineService
+from .task_engine_resilient_service import TaskEngineResilientService

@@ -4,13 +4,7 @@ import math
 import time
 import urllib3
 
-from ..errors import ApiUnauthorized, ApiQueueDoesNotExist
-
 log = logging.getLogger("hero:auth:cognito")
-
-COGNITO_AUTH_URL = (
-    "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token"
-)
 
 urllib3.disable_warnings()
 
@@ -22,7 +16,6 @@ class ResilientSession(Session):
     """
 
     def request(self, method, url, **kwargs):
-
 
         counter = 0
         max_retries = 10
@@ -48,19 +41,3 @@ class ResilientSession(Session):
                 )
                 time.sleep(delay)
                 continue
-
-            # Raise to the client
-            if r.status_code == 401:
-                if r.json().get("message") == "Unauthorized":
-                    raise ApiUnauthorized("Unauthorized for this resource")
-                raise r.raise_for_status()
-            if r.status_code == 400:
-                if r.json().get("error") == "Bad Request":
-                    raise ApiQueueDoesNotExist("Queue does not exists")
-                raise r.raise_for_status()
-            # if r.status_code == 404:
-                # print(r.json())
-                # if r.json().get("error", {}).get("message") == "Item not found.":
-                #     raise ApiItemNotFound("Queue not found in Dynamo")
-                # raise r.raise_for_status()
-            return r

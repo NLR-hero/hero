@@ -2,7 +2,8 @@ from .. import config
 from .. import auth
 
 class ServiceBase:
-    def __init__(self):
+    def __init__(self, clientInstance):
+        self.client = clientInstance
         self._configure()
         self._login()
         self._after_init()

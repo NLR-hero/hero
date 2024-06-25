@@ -1,3 +1,3 @@
-from .data_repo import DataRepo, DataRepoResilient
-from .task_engine import TaskEngine, TaskEngineResilient
-from .m3s import M3S
+from .data_repo import DataRepoService, DataRepoResilientService
+from .task_engine import TaskEngineService, TaskEngineResilientService
+from .m3s import M3SService

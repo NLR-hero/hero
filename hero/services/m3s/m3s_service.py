@@ -5,7 +5,7 @@ from ...api import ApiBase
 
 from ...config import get_m3s_id, get_m3s_scopes, get_mlflow_tracking_uri
 
-class M3S(ServiceBase):
+class M3SService(ServiceBase):
 
     def __init__(self):
         self.tracking_uri = get_mlflow_tracking_uri()

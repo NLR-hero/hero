@@ -1,1 +1,1 @@
-from .m3s import M3S
+from .m3s_service import M3SService

@@ -6,9 +6,7 @@ from ...config import get_task_engine_id, get_task_engine_scopes
 
 from .queue import Queue
 from .task_engine_api import TaskEngineApi
-from .queue_api import QueueApi
-from .task_api import TaskApi
-from .task_engine import TaskEngine
+from .task_engine_service import TaskEngineService
 
 retryable_exceptions = (
     retry_if_exception_type(errors.ApiUnauthorized)
@@ -81,7 +79,7 @@ class ResilientServiceMeta(type):
         return super().__new__(cls, name, bases, dct)
 
 
-class TaskEngineResilient(TaskEngine, metaclass=ResilientServiceMeta):
+class TaskEngineResilientService(TaskEngineService, metaclass=ResilientServiceMeta):
     def __init__(self, queue_name):
         self._queue_name = queue_name
         self._queue = None
@@ -89,8 +87,6 @@ class TaskEngineResilient(TaskEngine, metaclass=ResilientServiceMeta):
 
     def _configure(self):
         self.api = TaskEngineApi(resilient_session=True)
-        self.queue_api = QueueApi(resilient_session=True)
-        self.task_api = TaskApi(resilient_session=True)
         self._task_engine_id = get_task_engine_id()
         self._scopes = get_task_engine_scopes()
 

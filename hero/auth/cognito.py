@@ -24,6 +24,5 @@ def get_token(api, client_id, client_secret, scopes):
         },
         verify=False,
     )
-    response.raise_for_status()
 
     return response.json()["access_token"]

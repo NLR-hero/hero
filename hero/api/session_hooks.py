@@ -1,8 +1,7 @@
 from requests import HTTPError
 import logging
 
-logger = logging.getLogger('hero:api:session')
-
+logger = logging.getLogger('hero:api')
 
 def log_request(resp, *args, **kwargs):
     """
