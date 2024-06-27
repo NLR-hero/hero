@@ -1,12 +1,10 @@
 from tenacity import retry, TryAgain, stop_after_attempt, wait_fixed, retry_if_exception_type
 
-from ... import errors
-from ...service import retry_method, track_calls
-from ...config import get_task_engine_id
+from .. import errors
+from ..lib import retry_method, track_calls
+from ..config import get_task_engine_id
 
-from .queue import Queue
-from .task_engine_api import TaskEngineApi
-from .task_engine_service import TaskEngineService
+from .task_engine import TaskEngineService
 
 retryable_exceptions = (
     retry_if_exception_type(errors.ApiUnauthorized)
@@ -80,13 +78,7 @@ class ResilientServiceMeta(type):
 
 
 class TaskEngineResilientService(TaskEngineService, metaclass=ResilientServiceMeta):
-    def __init__(self, queue_name):
-        self._queue_name = queue_name
-        self._queue = None
-        super().__init__()
-
-    def _configure(self):
-        self.api = TaskEngineApi(resilient_session=True)
-        self._task_engine_id = get_task_engine_id()
+    def __init__(self, clientInstance, resilient_session=False):
+        super().__init__(clientInstance, resilient_session)
 
 

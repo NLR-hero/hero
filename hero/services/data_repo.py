@@ -1,7 +1,7 @@
 import json
 
-from ...lib import ServiceBase, decorate_all, log_errors
-from ...config import get_data_repo_id
+from ..lib import ServiceBase, decorate_all, log_errors
+from ..config import get_data_repo_id
 
 @decorate_all(log_errors)
 class DataRepoService(ServiceBase):
