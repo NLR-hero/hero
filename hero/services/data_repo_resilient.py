@@ -1,11 +1,10 @@
 from tenacity import retry, TryAgain, stop_after_attempt, wait_fixed, retry_if_exception_type
 
-from ... import errors
-from ...service import retry_method, track_calls
-from ...config import get_data_repo_id
+from .. import errors
+from ..lib import retry_method, track_calls
+from ..config import get_data_repo_id
 
-from .data_repo_service import DataRepoService
-from .data_repo_api import DataRepoApi
+from .data_repo import DataRepoService
 
 retryable_exceptions = (
     retry_if_exception_type(errors.ApiUnauthorized)
@@ -60,9 +59,8 @@ class ResilientServiceMeta(type):
         return super().__new__(cls, name, bases, dct)
 
 class DataRepoResilientService(DataRepoService, metaclass=ResilientServiceMeta):
-    def _configure(self):
-        self.api = DataRepoApi(resilient_session=True)
-        self._datarepo_id = get_data_repo_id()
+    def __init__(self, clientInstance, resilient_session=False):
+        super().__init__(clientInstance, resilient_session)
 
 
 

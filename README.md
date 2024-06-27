@@ -6,8 +6,21 @@ Please check out the [HERO examples](https://github.nrel.gov/Hero/hero-examples)
 
 ## Installation
 
+### Local install / Editable Mode
+
+#### Poetry
+
+When using Poetry to manage your Python environment + dependencies, you can do the following to install.
+
+1. Clone this repo locally
+2. Ensure you checkout the target branch you wish to work from (e.g. `git checkout THE-TARGET-BRANCH-YOU-WISH-TO-WORK-FROM`)
+2. Open your project's `pyproject.toml` file
+3. Add the `hero = {path="THE-PATH-TO-THE-NEWLY-CLONED-HERO-REPO", develop=true}` to your dependencies
+
+#### PIP
+
 ```
-pip install git+https://github.nrel.gov/Hero/hero@main#egg=hero
+pip install git+https://github.nrel.gov/Hero/hero@THE-TARGET-BRANCH-YOU-WISH-TO-WORK-FROM#egg=hero
 ```
 
 ### Execute
@@ -22,6 +35,12 @@ export HERO_CLIENT_SECRET="*******************************"
 ```
 
 ## Development
+
+### Poetry
+
+Instructions to come...
+
+### Pip
 
 ```
 pip install virtualenv
@@ -49,20 +68,4 @@ deactivate
 
 
 
-
-export HERO_ENV="dev"
-export HERO_PROJECT="aeroportal-app"
-export HERO_CLIENT_ID="1c5ngb6o6lvtdfkus0sflstdq4"
-export HERO_CLIENT_SECRET="102hhfk1bdvc7cu307s15ljkda56hhc09qh4cp3b9hj6juhf5"
-
-export HERO_RESILIENT_SESSION=true
-
-hero
-    requests
-    config
-    errors
-    logging
-    DataRepo
-    TaskEngine
-    M3s
 

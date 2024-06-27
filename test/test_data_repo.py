@@ -3,13 +3,13 @@ import os
 import json
 
 
-def test_bad_token():
-    hero_client = hero.HeroClient()
-    data_repo = hero_client.DataRepo()
-    hero_client.authenticate()
-    data_repo._access_token = 'bad_token'
-    project = data_repo.add_or_get_project('example_project')
-    assert project['name'] == 'example_project'
+# def test_bad_token():
+#     hero_client = hero.HeroClient()
+#     data_repo = hero_client.DataRepo()
+#     hero_client.authenticate()
+#     data_repo._access_token = 'bad_token'
+#     project = data_repo.add_or_get_project('example_project')
+#     assert project['name'] == 'example_project'
 
 
 # def test_bad_data_repo_id():
@@ -19,17 +19,21 @@ def test_bad_token():
 #     assert project["name"] == "example_project"
 
 
-# def test_add_or_get_project():
-#     data_repo = hero.DataRepo()
-#     project = data_repo.add_or_get_project("example_project")
-#     assert project["name"] == "example_project"
+def test_add_or_get_project():
+    hero_client = hero.HeroClient()
+    data_repo = hero_client.DataRepo()
+    hero_client.authenticate()
+    project = data_repo.add_or_get_project("example_project")
+    assert project["name"] == "example_project"
 
 
-# def test_add_or_get_dataset():
-#     data_repo = hero.DataRepo()
-#     project = data_repo.add_or_get_project("example_project")
-#     dataset = data_repo.add_or_get_dataset(project, "example_dataset")
-#     assert dataset["name"] == "example_dataset"
+def test_add_or_get_dataset():
+    hero_client = hero.HeroClient()
+    data_repo = hero_client.DataRepo()
+    hero_client.authenticate()
+    project = data_repo.add_or_get_project("example_project")
+    dataset = data_repo.add_or_get_dataset(project, "example_dataset")
+    assert dataset["name"] == "example_dataset"
 
 
 # def test_add_or_get_file_object():

@@ -1,8 +1,32 @@
 import os
+import logging
 from functools import wraps
 from tenacity import stop_after_attempt, wait_fixed, wait_exponential
 
 from ..errors import HeroRetryError
+
+log = logging.getLogger('hero:service')
+
+def decorate_all(decorator):
+    def decorate(cls):
+        for attr in cls.__dict__:
+            if callable(getattr(cls, attr)) and not attr.startswith('__'):
+                setattr(cls, attr, decorator(getattr(cls, attr)))
+        return cls
+    return decorate
+
+def log_errors(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            # print('Hi, im about to do the function, woop woop')
+            res = func(*args, **kwargs)
+            # print('Function complete, woop woop')
+            return res
+        except:
+            log.error('Hero Service Error: \n', exc_info=True)
+    return wrapper
+
 
 def track_calls(func):
     @wraps(func)

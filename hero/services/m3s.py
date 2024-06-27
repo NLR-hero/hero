@@ -1,9 +1,8 @@
 import os
 
-from ...service import ServiceBase
-from ...api import ApiBase
+from ..lib import ServiceBase
 
-from ...config import get_m3s_api
+from ..config import get_m3s_api
 
 class M3SService(ServiceBase):
 
@@ -17,7 +16,6 @@ class M3SService(ServiceBase):
         '''
         Sets the API and adds the user scope
         '''
-        self.api = ApiBase()
         self.client.add_scope('m3s/user')
 
     def get_tracking_uri(self):
