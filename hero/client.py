@@ -1,12 +1,14 @@
-from requests import Session
-import base64
+
 import jwt
+import base64
+from requests import Session
 from jwt.exceptions import DecodeError
 
-from ..config import get_client_credentials, get_cognito_api
-from ..services import DataRepoService, TaskEngineService, M3SService
+from .url_map import URL_MAP
+from .lib import get_conf_from_collection, get_env
+from .services import DataRepoService, TaskEngineService, M3SService
 
-COGNITO_AUTH_URL = get_cognito_api()
+COGNITO_AUTH_URL = get_conf_from_collection(URL_MAP, 'HERO_COGNITO_API_URL')
 
 class HeroClient:
     '''
@@ -17,8 +19,9 @@ class HeroClient:
         Creates the Hero client.
         '''
         self._scopes = []
-        self.session = Session()
-        client_id, client_secret = get_client_credentials()
+        self.env = get_env()
+        self.api = Session()
+        client_id, client_secret = self.get_client_credentials()
         self._client_id = client_id
         self._client_secret = client_secret
 
@@ -32,7 +35,7 @@ class HeroClient:
         # Request access_token following client credentials grant flow
         basic_auth = f'Basic {base64.urlsafe_b64encode(app_client_id_secret).decode()}'
 
-        response = self.session.post(
+        response = self.api.post(
             COGNITO_AUTH_URL,
             data=f'grant_type=client_credentials&scope={" ".join(self._scopes)}&client_id={self._client_id}',
             headers={

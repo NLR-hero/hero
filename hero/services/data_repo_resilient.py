@@ -2,7 +2,7 @@ from tenacity import retry, TryAgain, stop_after_attempt, wait_fixed, retry_if_e
 
 from .. import errors
 from ..lib import retry_method, track_calls
-from ..config import get_data_repo_id
+from ..url_map import get_data_repo_id
 
 from .data_repo import DataRepoService
 

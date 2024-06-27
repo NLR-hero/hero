@@ -1,7 +1,7 @@
 import json
 
-from ..lib import ServiceBase, decorate_all, log_errors
-from ..config import get_data_repo_id
+from ..url_map import URL_MAP
+from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
 
 @decorate_all(log_errors)
 class DataRepoService(ServiceBase):
@@ -9,8 +9,8 @@ class DataRepoService(ServiceBase):
         '''
         Sets the API, adds data_repo id and required scope
         '''
-        self._datarepo_id = get_data_repo_id()
         self.client.add_scope('data-repo/user')
+        self.base_url = get_conf_from_collection(URL_MAP, 'HERO_DATA_REPO_API_URL')
 
     # export async function getProjects(setData, user, dataRepoId) {
     #     const requestHeaders = createRequestHeaders(user);
@@ -21,7 +21,7 @@ class DataRepoService(ServiceBase):
     # }
     def get_projects(self, datarepo_id):
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.datarepo_id}/projects'
+        url = f'{self.base_url}/{datarepo_id}/projects'
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
