@@ -6,7 +6,7 @@ import os
 APP_ID = 'dev-hero-test-framework'
 
 # previously created queue
-TESTABLE_QUEUE_ID = 'f465d37c-8de9-4f39-8e91-70a00dcd4d45'
+TESTABLE_QUEUE_ID = '4427b372-67a5-46c8-9e82-52fa979553d7'
 
 def test_get_queues():
     hero_client = hero.HeroClient()
@@ -20,6 +20,7 @@ def test_get_queue():
     task_engine = hero_client.TaskEngine()
     hero_client.authenticate()
     queue = task_engine.get_queue(APP_ID, TESTABLE_QUEUE_ID)
+    print(queue)
     assert queue['id'] == TESTABLE_QUEUE_ID
 
 def test_add_and_delete_queue():
@@ -33,7 +34,6 @@ def test_add_and_delete_queue():
         'description': 'example_description'
     }
     queue = task_engine.add_queue(APP_ID, queue_attributes)
-    print(queue)
     tmp_queue_id = queue['id']
     assert queue['name'] == 'example_queue'
 
