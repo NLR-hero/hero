@@ -1,7 +1,7 @@
 import json
 
 from ..url_map import URL_MAP
-from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
+from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection, HeroRetryError
 
 @decorate_all(log_errors)
 class TaskEngineService(ServiceBase):
@@ -28,11 +28,11 @@ class TaskEngineService(ServiceBase):
     def get_queues(self, task_engine_id):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{task_engine_id}/queues'
-        params = json.dumps({
+        params = {
             'metatype': 'Queue',
             'state': 'active'
-        })
-        response = self.api.request('GET', url, headers, params=params)
+        }
+        response = self.api.request('GET', url, headers=headers, params=params)
         return response.json()
 
     # export async function getQueue(setData, user, taskEngineId, queueId) {
@@ -45,7 +45,7 @@ class TaskEngineService(ServiceBase):
     def get_queue(self, task_engine_id, queue_id):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{task_engine_id}/queue/{queue_id}'
-        response = self.api.request('GET', url, headers)
+        response = self.api.request('GET', url, headers=headers)
         return response.json()
 
     # export async function deleteQueue(user, taskEngineId, queueId) {
@@ -58,7 +58,7 @@ class TaskEngineService(ServiceBase):
     def delete_queue(self, task_engine_id, queue_id):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{task_engine_id}/queue/{queue_id}'
-        response = self.api.request('DELETE', url, headers)
+        response = self.api.request('DELETE', url, headers=headers)
         return response.json()
 
     # export async function addQueue(user, taskEngineId, attributes) {
@@ -108,10 +108,10 @@ class TaskEngineService(ServiceBase):
     def get_tasks(self, task_engine_id, queue_id, metatype, state):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{task_engine_id}/queue/{queue_id}/tasks'
-        params = json.dumps({
+        params = {
             'metatype': metatype,
             'state': state
-        })
+        }
         response = self.api.request('GET', url, headers=headers, params=params)
         return response.json()
 
@@ -125,7 +125,7 @@ class TaskEngineService(ServiceBase):
     def get_task(self, task_engine_id, task_id):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{task_engine_id}/task/{task_id}'
-        response = self.api.request('GET', url, headers)
+        response = self.api.request('GET', url, headers=headers)
         return response.json()
 
     # export async function deleteTask(user, taskEngineId, taskId) {
@@ -138,7 +138,7 @@ class TaskEngineService(ServiceBase):
     def delete_task(self, task_engine_id, task_id):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{task_engine_id}/task/{task_id}'
-        response = self.api.request('DELETE', url, headers)
+        response = self.api.request('DELETE', url, headers=headers)
         return response.json()
 
     # export async function addTask(user, taskEngineId, attributes) {

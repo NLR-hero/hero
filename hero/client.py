@@ -5,7 +5,7 @@ from requests import Session
 from jwt.exceptions import DecodeError
 
 from .url_map import URL_MAP
-from .lib import get_conf_from_collection, get_env
+from .lib import get_conf_from_collection, get_env, get_client_credentials
 from .services import DataRepoService, TaskEngineService, M3SService
 
 COGNITO_AUTH_URL = get_conf_from_collection(URL_MAP, 'HERO_COGNITO_API_URL')
@@ -21,7 +21,7 @@ class HeroClient:
         self._scopes = []
         self.env = get_env()
         self.api = Session()
-        client_id, client_secret = self.get_client_credentials()
+        client_id, client_secret = get_client_credentials()
         self._client_id = client_id
         self._client_secret = client_secret
 
@@ -87,11 +87,11 @@ class HeroClient:
         '''
         return DataRepoService(self)
 
-    def TaskEngine(self, queue_name):
+    def TaskEngine(self):
         '''
         Returns a TaskEngineService instance.
         '''
-        return TaskEngineService(self, queue_name)
+        return TaskEngineService(self)
 
     def M3S(self, m3s_name):
         '''

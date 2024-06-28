@@ -3,7 +3,7 @@ import logging
 from functools import wraps
 from tenacity import stop_after_attempt, wait_fixed, wait_exponential
 
-from ..errors import HeroRetryError
+from .errors import HeroRetryError
 
 log = logging.getLogger('hero:service')
 

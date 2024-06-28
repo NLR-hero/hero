@@ -3,98 +3,42 @@ import pytest
 import uuid
 import os
 
-ATTEMPT_NUMBER = 2
-os.environ['HERO_RETRY_ATTEMPTS'] = f'{ATTEMPT_NUMBER}'
-os.environ['HERO_RETRY_WAIT'] = 'fix'  # ['fix', 'exp']
+APP_ID = 'dev-hero-test-framework'
 
+# previously created queue
+TESTABLE_QUEUE_ID = 'f465d37c-8de9-4f39-8e91-70a00dcd4d45'
 
-# def test_bad_token():
-#     hero_client = hero.HeroClient()
-#     task_engine = hero_client.TaskEngine('queue-003')
-#     hero_client.authenticate()
-#     task_engine.clear_queue()
-#     task_engine._token = 'badtoken'
-#     queue_id = task_engine.queue_id
-#     assert queue_id is not None
+def test_get_queues():
+    hero_client = hero.HeroClient()
+    task_engine = hero_client.TaskEngine()
+    hero_client.authenticate()
+    queues = task_engine.get_queues(APP_ID)
+    assert queues is not None
 
+def test_get_queue():
+    hero_client = hero.HeroClient()
+    task_engine = hero_client.TaskEngine()
+    hero_client.authenticate()
+    queue = task_engine.get_queue(APP_ID, TESTABLE_QUEUE_ID)
+    assert queue['id'] == TESTABLE_QUEUE_ID
 
-# def test_no_active_queue():
-#     hero_client = hero.HeroClient()
-#     queue_name = f'queue-{str(uuid.uuid4())}'
-#     task_engine = hero_client.TaskEngine(queue_name)
-#     hero_client.authenticate()
-#     with pytest.raises(hero.errors.HeroRetryError) as e_info:
-#         queue_id = task_engine.queue_id
-#         assert e_info.value.message == f'{queue_name} queue not active in DynamoDB'
-#         assert e_info.value.attempt_number == ATTEMPT_NUMBER
+def test_add_and_delete_queue():
+    hero_client = hero.HeroClient()
+    task_engine = hero_client.TaskEngine()
+    hero_client.authenticate()
 
+    # add a queue
+    queue_attributes = {
+        'name': 'example_queue',
+        'description': 'example_description'
+    }
+    queue = task_engine.add_queue(APP_ID, queue_attributes)
+    print(queue)
+    tmp_queue_id = queue['id']
+    assert queue['name'] == 'example_queue'
 
-# def test_bad_queue():
-#     task_engine = hero.TaskEngine("queue-003")
-#     task_engine.clear_queue()
-#     task_engine._queue = "bad_queue"
-#     queue_id = task_engine.queue_id
-#     assert queue_id is not None
+    # now delete the same queue
+    queue = task_engine.delete_queue(APP_ID, tmp_queue_id)
+    tmp_queue_id = None
+    assert queue['GSI1SK'] == 'METATYPE#Queue|deleted'
 
-
-# def test_old_sqs_queue():
-#     task_engine = hero.TaskEngine("queue-003")
-#     task_engine.clear_queue()
-
-#     task_worker = hero.TaskEngine("queue-003")
-#     queue_id = task_worker.queue_id
-#     task_engine.clear_queue()
-
-#     assert queue_id == task_worker.queue_id
-#     assert task_engine.queue_id != task_worker.queue_id
-#     tasks = task_worker.estimate_ready_tasks()
-#     assert task_engine.queue_id == task_worker.queue_id
-
-
-# def test_put_tasks():
-#     task_engine = hero.TaskEngine("queue-003")
-#     task_engine.clear_queue()
-#     task_engine.put_tasks([{}])
-
-
-# def test_pull_task_from_old_queue():
-#     task_engine = hero.TaskEngine("queue-003")
-#     task_engine.clear_queue()
-
-#     task_worker = hero.TaskEngine("queue-003")
-#     queue_id = task_worker.queue_id
-#     task_engine.clear_queue()
-#     task_engine.put_tasks([{}])
-
-#     assert queue_id == task_worker.queue_id
-#     assert task_engine.queue_id != task_worker.queue_id
-#     tasks = task_worker.pull_tasks(attempts=4)
-#     assert len(tasks) == 1
-
-
-# def test_put_tasks_deleted_queue():
-#     task_engine = hero.TaskEngine("queue-003")
-#     task_engine.add_or_get_queue()
-#     task_engine.delete_queue()
-#     with pytest.raises(hero.errors.HeroRetryError) as e_info:
-#         task_engine.put_tasks([{}], attempts=1)
-#         assert e_info.value.attempt_number == 1
-#         assert e_info.value.message == "queue-003 queue not active in DynamoDB"
-
-
-# def test_update_task():
-#     task_engine = hero.TaskEngine("queue-003")
-#     task_engine.add_or_get_queue()
-#     task_engine.put_tasks([{}])
-#     tasks = task_engine.pull_tasks()
-#     for task in tasks:
-#         task_engine.update_task(task, {"results": "done"})
-
-
-# def test_pull_tasks():
-#     task_engine = hero.TaskEngine("queue-003")
-#     task_engine.clear_queue()
-#     with pytest.raises(hero.errors.HeroRetryError) as e_info:
-#         task_engine.pull_tasks(attempts=5, wait="exp")
-#         assert e_info.value.message == "queue-003 queue is not active"
-#         assert e_info.value.attempt_number == 2

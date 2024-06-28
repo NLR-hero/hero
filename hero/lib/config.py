@@ -7,8 +7,8 @@ def get_service_id(key):
     env = get_env()
     return f'{env}-{os.environ[key]}'
 
-def get_conf_value_from_collection(self, collection, key):
-    return os.environ.get(key, collection[self.get_env()][key])
+def get_conf_from_collection(collection, key):
+    return os.environ.get(key, collection[get_env()][key])
 
 def get_resilient_session():
     return os.environ.get('HERO_RESILIENT_SESSION', 'False').lower() in ('true')

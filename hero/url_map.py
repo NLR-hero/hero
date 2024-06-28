@@ -27,16 +27,3 @@ URL_MAP = {
 
     },
 }
-
-# def get_project():
-#     '''Get the project from the environment'''
-#     return os.environ['HERO_PROJECT']
-
-# def get_task_engine_id():
-#     env = os.environ.get('HERO_ENV', 'dev')
-#     return f'{env}-{os.environ["HERO_PROJECT"]}'
-
-# def get_data_repo_id():
-#     env = os.environ.get('HERO_ENV', 'dev')
-#     return f'{env}-{os.environ["HERO_PROJECT"]}'
-

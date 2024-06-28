@@ -1,6 +1,6 @@
 from requests import Session
 
-from ..config import get_resilient_session
+from .config import get_resilient_session
 from .resilient_session import ResilientSession
 from .session_hooks import log_request, check_for_errors
 
