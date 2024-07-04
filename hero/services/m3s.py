@@ -1,5 +1,7 @@
 import json
 import os
+from tqdm import tqdm
+import requests
 
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, get_conf_from_collection
@@ -86,17 +88,39 @@ class M3SService(ServiceBase):
         '''
         Downloads the artifact from the given run ID
         '''
-        headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.m3s_name}/run/{run_id}/artifacts/{artifact_path}'
-        response = self.api.request('GET', url, headers=headers)
-        # TODO: Save the file to the local path
-        return response.content
+        try:
+            headers = self.get_headers(self.client.get_token())
+            url = f'{self.base_url}/{self.m3s_name}/run/{run_id}/artifacts/{artifact_path}'
+            response = self.api.request('GET', url, headers=headers)
+
+            # Get the total file size from the headers
+            total_size = int(response.headers.get('content-length', 0))
+
+            # Open the file in write-binary mode
+            with open(local_path, 'wb') as file, tqdm(
+                desc=local_path,
+                total=total_size,
+                unit='B',
+                unit_scale=True,
+                unit_divisor=1024,
+            ) as bar:
+                for chunk in response.iter_content(chunk_size=10000):
+                    if chunk:
+                        file.write(chunk)
+                        bar.update(len(chunk))
+            print(f"File downloaded successfully and saved to {local_path}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading file: {e}")
 
     def download_artifacts(self, run_id, artifact_path, local_path):
         '''
         Downloads the artifacts from the given run ID
         '''
-        pass
+        artifacts = self.list_artifacts(self, run_id)
+        for artifact in artifacts:
+            artifact_path = artifact['path']
+            save_path = os.path.join(local_path, artifact_path)
+            self.download_artifact(run_id, artifact_path, save_path)
 
     def search_runs(self, experiment_ids, filter_string, run_view_type, max_results, order_by, page_token):
         '''
