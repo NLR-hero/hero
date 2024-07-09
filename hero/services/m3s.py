@@ -84,14 +84,25 @@ class M3SService(ServiceBase):
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
-    def download_artifact(self, run_id, artifact_path, local_path):
+    def download_artifact(self, run_id, local_path, artifact_path):
         '''
         Downloads the artifact from the given run ID
         '''
         try:
+            print(f'Downloading artifact "{artifact_path}"...')
             headers = self.get_headers(self.client.get_token())
-            url = f'{self.base_url}/registry/{self.m3s_name}/run/{run_id}/artifacts/{artifact_path}'
-            response = self.api.request('GET', url, headers=headers)
+            url = f'{self.base_url}/registry/{self.m3s_name}/run/{run_id}/artifact/'
+            params = {
+                "artifactPath": artifact_path
+            }
+            response = self.api.request('GET', url, headers=headers, params=params)
+
+            local_path = os.path.join(local_path, artifact_path)
+
+            # Create the directories if they do not exist
+            directory = os.path.dirname(local_path)
+            if not os.path.exists(directory):
+                os.makedirs(directory)
 
             # Get the total file size from the headers
             total_size = int(response.headers.get('content-length', 0))
@@ -112,15 +123,14 @@ class M3SService(ServiceBase):
         except requests.exceptions.RequestException as e:
             print(f"Error downloading file: {e}")
 
-    def download_artifacts(self, run_id, artifact_path, local_path):
+    def download_artifacts(self, run_id, local_path):
         '''
         Downloads the artifacts from the given run ID
         '''
-        artifacts = self.list_artifacts(self, run_id)
+        artifacts = self.list_artifacts(run_id)
         for artifact in artifacts:
             artifact_path = artifact['path']
-            save_path = os.path.join(local_path, artifact_path)
-            self.download_artifact(run_id, artifact_path, save_path)
+            self.download_artifact(run_id, local_path, artifact_path)
 
     def search_runs(self, experiment_ids, filter_string, run_view_type, max_results, order_by, page_token):
         '''
