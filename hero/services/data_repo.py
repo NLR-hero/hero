@@ -53,6 +53,13 @@ class DataRepoService(ServiceBase):
         url = f'{self.base_url}/{datarepo_id}/project/{project_id}'
         response = self.api.request('GET', url, headers=headers)
         return response.json()
+    
+    def read_project_by_name(self, datarepo_id, metatype, name):
+        headers = self.get_headers(self.client.get_token())
+        url = f'{self.base_url}/{datarepo_id}/project/metatype/{metatype}'
+        params = f'name={name}'
+        response = self.api.request('GET', url, headers=headers, params=params)
+        return response.json()
 
     # export async function deleteProject(user, dataRepoId, projectId) {
     #     const requestHeaders = createRequestHeaders(user);
@@ -123,6 +130,14 @@ class DataRepoService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{datarepo_id}/dataset/{dataset_id}'
         response = self.api.request('GET', url, headers=headers)
+        return response.json()
+
+    def read_dataset_by_name(self, datarepo_id, metatype, name):
+        headers = self.get_headers(self.client.get_token())
+        url = f'{self.base_url}/{datarepo_id}/dataset/metatype/{metatype}'
+        params = f'name={name}'
+        response = self.api.request('GET', url, headers=headers, params=params)
+        response.raise_for_status()
         return response.json()
 
     # export async function getDatasetFiles(setData, user, dataRepoId, datasetId) {
@@ -209,6 +224,12 @@ class DataRepoService(ServiceBase):
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
+    def read_file_by_name(self, datarepo_id, metatype, name):
+        headers = self.get_headers(self.client.get_token())
+        url = f'{self.base_url}/{datarepo_id}/file/metatype/{metatype}'
+        params = f'name={name}'
+        response = self.api.request('GET', url, headers=headers, params=params)
+        return response.json()
 
     # /**
     # * Get file download url
@@ -302,4 +323,5 @@ class DataRepoService(ServiceBase):
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
-
+    def hello(self):
+        print('hello')
