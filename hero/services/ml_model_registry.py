@@ -6,13 +6,13 @@ import requests
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, get_conf_from_collection
 
-class M3SService(ServiceBase):
+class MLModelRegistry(ServiceBase):
 
-    def __init__(self, clientInstance, m3s_name):
-        if not m3s_name:
-            raise ValueError('m3s_name must be provided')
-        self.base_url = get_conf_from_collection(URL_MAP, 'HERO_M3S_TRACKER_URL')
-        self.m3s_name = m3s_name
+    def __init__(self, clientInstance, registry_name):
+        if not registry_name:
+            raise ValueError('registry_name must be provided')
+        self.base_url = get_conf_from_collection(URL_MAP, 'HERO_ML_MODEL_REGISTRY_URL')
+        self.registry_name = registry_name
         super().__init__(clientInstance)
 
     def _configure(self):
@@ -26,14 +26,14 @@ class M3SService(ServiceBase):
         Sets the MLFlow tracking token in the environment and returns the tracking URI
         '''
         os.environ['MLFLOW_TRACKING_TOKEN'] = self.client.get_token()
-        return f'{self.base_url}/proxy/{self.m3s_name}'
+        return f'{self.base_url}/proxy/{self.registry_name}'
 
     def read_experiment(self, experiment_id):
         '''
         Reads the experiment with the given ID
         '''
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/registry/{self.m3s_name}/experiment/{experiment_id}'
+        url = f'{self.base_url}/registry/{self.registry_name}/experiment/{experiment_id}'
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
@@ -43,7 +43,7 @@ class M3SService(ServiceBase):
         Note: Only `name` can be updated
         '''
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/registry/{self.m3s_name}/experiment/{experiment_id}'
+        url = f'{self.base_url}/registry/{self.registry_name}/experiment/{experiment_id}'
         data = json.dumps(attributes)
         response = self.api.request('PUT', url, headers=headers, json=data)
         return response.json()
@@ -53,7 +53,7 @@ class M3SService(ServiceBase):
         Deletes the experiment with the given ID
         '''
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/registry/{self.m3s_name}/experiment/{experiment_id}'
+        url = f'{self.base_url}/registry/{self.registry_name}/experiment/{experiment_id}'
         response = self.api.request('DELETE', url, headers=headers)
         return response.json()
 
@@ -62,7 +62,7 @@ class M3SService(ServiceBase):
         Reads the run with the given ID
         '''
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/registry/{self.m3s_name}/run/{run_id}'
+        url = f'{self.base_url}/registry/{self.registry_name}/run/{run_id}'
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
@@ -71,7 +71,7 @@ class M3SService(ServiceBase):
         Deletes the run with the given ID
         '''
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/registry/{self.m3s_name}/run/{run_id}'
+        url = f'{self.base_url}/registry/{self.registry_name}/run/{run_id}'
         response = self.api.request('DELETE', url, headers=headers)
         return response.json()
 
@@ -80,7 +80,7 @@ class M3SService(ServiceBase):
         Lists the artifacts for a given run ID
         '''
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/registry/{self.m3s_name}/run/{run_id}/artifacts'
+        url = f'{self.base_url}/registry/{self.registry_name}/run/{run_id}/artifacts'
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
@@ -91,7 +91,7 @@ class M3SService(ServiceBase):
         try:
             print(f'Downloading artifact "{artifact_path}"...')
             headers = self.get_headers(self.client.get_token())
-            url = f'{self.base_url}/registry/{self.m3s_name}/run/{run_id}/artifact/'
+            url = f'{self.base_url}/registry/{self.registry_name}/run/{run_id}/artifact/'
             params = {
                 "artifactPath": artifact_path
             }
@@ -137,7 +137,7 @@ class M3SService(ServiceBase):
         Searches the runs with the given parameters
         '''
         # headers = self.get_headers(self.client.get_token())
-        # url = f'{self.base_url}/registry/{self.m3s_name}/runs/search'
+        # url = f'{self.base_url}/registry/{self.registry_name}/runs/search'
         # data = {
         #     'experiment_ids': experiment_ids,
         #     'filter': filter_string,
