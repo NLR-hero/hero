@@ -37,13 +37,6 @@ class DataRepoService(ServiceBase):
         response = self.api.request('GET', url, headers=headers, params=params)
         return response.json()
 
-    # export async function deleteProject(user, dataRepoId, projectId) {
-    #     const requestHeaders = createRequestHeaders(user);
-    #     const response = await api.delete(`${dataRepoId}/project/${projectId}`, {
-    #         headers: requestHeaders
-    #     });
-    #     return response.data;
-    # }
     def delete_project(self, datarepo_id, project_id):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{datarepo_id}/project/{project_id}'
@@ -164,5 +157,3 @@ class DataRepoService(ServiceBase):
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
-    def hello(self):
-        print('hello')
