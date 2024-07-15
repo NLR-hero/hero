@@ -30,6 +30,20 @@ class DataRepoService(ServiceBase):
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
+    def read_project_by_name(self, datarepo_id, metatype, name):
+        headers = self.get_headers(self.client.get_token())
+        url = f'{self.base_url}/{datarepo_id}/project/metatype/{metatype}'
+        params = f'name={name}'
+        response = self.api.request('GET', url, headers=headers, params=params)
+        return response.json()
+
+    # export async function deleteProject(user, dataRepoId, projectId) {
+    #     const requestHeaders = createRequestHeaders(user);
+    #     const response = await api.delete(`${dataRepoId}/project/${projectId}`, {
+    #         headers: requestHeaders
+    #     });
+    #     return response.data;
+    # }
     def delete_project(self, datarepo_id, project_id):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{datarepo_id}/project/{project_id}'
@@ -60,6 +74,14 @@ class DataRepoService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{datarepo_id}/dataset/{dataset_id}'
         response = self.api.request('GET', url, headers=headers)
+        return response.json()
+
+    def read_dataset_by_name(self, datarepo_id, metatype, name):
+        headers = self.get_headers(self.client.get_token())
+        url = f'{self.base_url}/{datarepo_id}/dataset/metatype/{metatype}'
+        params = f'name={name}'
+        response = self.api.request('GET', url, headers=headers, params=params)
+        response.raise_for_status()
         return response.json()
 
     def read_dataset_files(self, datarepo_id, dataset_id):
@@ -100,6 +122,12 @@ class DataRepoService(ServiceBase):
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
+    def read_file_by_name(self, datarepo_id, metatype, name):
+        headers = self.get_headers(self.client.get_token())
+        url = f'{self.base_url}/{datarepo_id}/file/metatype/{metatype}'
+        params = f'name={name}'
+        response = self.api.request('GET', url, headers=headers, params=params)
+        return response.json()
     def read_file_download_url(self, datarepo_id, file_id):
         headers = self.get_headers(self.client.get_token())
         url = f'{self.base_url}/{datarepo_id}/files/download/{file_id}'
@@ -136,4 +164,5 @@ class DataRepoService(ServiceBase):
         response = self.api.request('GET', url, headers=headers)
         return response.json()
 
-
+    def hello(self):
+        print('hello')
