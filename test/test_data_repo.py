@@ -7,18 +7,18 @@ APP_ID = 'dev-hero-test-framework'
 # previously created project
 TESTABLE_PROJECT_ID = 'd16c1abb-b9a9-449e-aef4-af48d4958826'
 
-def test_get_project():
+def test_read_project():
     hero_client = hero.HeroClient()
     data_repo = hero_client.DataRepo()
     hero_client.authenticate()
-    project = data_repo.get_project(APP_ID, TESTABLE_PROJECT_ID)
+    project = data_repo.read_project(APP_ID, TESTABLE_PROJECT_ID)
     assert project['name'] == 'example_project'
 
-def test_get_projects():
+def test_read_projects():
     hero_client = hero.HeroClient()
     data_repo = hero_client.DataRepo()
     hero_client.authenticate()
-    projects = data_repo.get_projects(APP_ID)
+    projects = data_repo.read_projects(APP_ID)
     assert projects is not None
 
 def test_add_and_delete_project():
