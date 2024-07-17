@@ -371,40 +371,50 @@ class DataRepoService(ServiceBase):
             dataset = self.add_dataset(DATA_REPO_ID, project_id, dataset_name)
             return dataset
 
-    def add_file_if_not_exists(self, DATA_REPO_ID, dataset_id, filename):
-        assert os.path.exists(filename)
-        base_name = os.path.basename(filename)
+    def add_file_if_not_exists(
+        self, DATA_REPO_ID, dataset_id, local_filepath, filename=None
+    ):
+        assert os.path.exists(local_filepath)
+        if filename is None:
+            filename = os.path.basename(local_filepath).replace("&", "and")
         try:
-            fileobj = self.read_file_by_name(DATA_REPO_ID, base_name)
+            fileobj = self.read_file_by_name(DATA_REPO_ID, filename)
             return fileobj
         except HTTPError as err:
-            fileobj = self.add_file(DATA_REPO_ID, dataset_id, base_name)
+            fileobj = self.add_file(DATA_REPO_ID, dataset_id, filename)
             url = self.get_file_upload_url(DATA_REPO_ID, fileobj["id"])
-            self.upload_file(url["url"], filename)
-            fileobj = self.read_file_by_name(DATA_REPO_ID, base_name)
+            self.upload_file(url["url"], local_filepath)
+            # not necessary... but a check.
+            fileobj = self.read_file_by_name(DATA_REPO_ID, filename)
             return fileobj
 
-    def add_or_replace_file(self, DATA_REPO_ID, dataset_id, filename):
-        assert os.path.exists(filename)
-        base_name = os.path.basename(filename)
+    def add_or_replace_file(
+        self, DATA_REPO_ID, dataset_id, local_filepath, filename=None
+    ):
+        assert os.path.exists(local_filepath)
+        if filename is None:
+            filename = os.path.basename(local_filepath).replace("&", "and")
         try:
-            fileobj = self.read_file_by_name(DATA_REPO_ID, base_name)
+            fileobj = self.read_file_by_name(DATA_REPO_ID, filename)
         except HTTPError as err:
-            fileobj = self.add_file(DATA_REPO_ID, dataset_id, base_name)
+            fileobj = self.add_file(DATA_REPO_ID, dataset_id, filename)
         finally:
             url = self.get_file_upload_url(DATA_REPO_ID, fileobj["id"])
-            self.upload_file(url["url"], filename)
-            fileobj = self.read_file_by_name(DATA_REPO_ID, base_name)
+            self.upload_file(url["url"], local_filepath)
+            fileobj = self.read_file_by_name(DATA_REPO_ID, filename)
             return fileobj
 
-    def download_file_as(self, DATA_REPO_ID, filename, new_filename):
+    def download_file_by_filename(self, DATA_REPO_ID, filename, local_filepath):
         fileobj = self.read_file_by_name(DATA_REPO_ID, filename)
-        url = self.get_file_download_url(DATA_REPO_ID, fileobj["id"])
+        self.download_file_by_file_id(DATA_REPO_ID, fileobj["id"], local_filepath)
+
+    def download_file_by_file_id(self, DATA_REPO_ID, file_id, local_filepath):
+        url = self.get_file_download_url(DATA_REPO_ID, file_id)
 
         with self.api.get(url["url"], stream=True) as r:
             r.raise_for_status()
             try:
-                with open(new_filename, "wb") as f:
+                with open(local_filepath, "wb") as f:
                     for chunk in r.iter_content(chunk_size=8192):
                         f.write(chunk)
             except Exception as e:

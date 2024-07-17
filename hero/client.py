@@ -45,6 +45,7 @@ class HeroClient:
             verify=False,
         )
 
+        print(response.json())
         self._access_token = response.json()['access_token']
 
     def _decode_token(self, token):
