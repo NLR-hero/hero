@@ -1,12 +1,15 @@
 import hero
 import os
 import json
+import time
 
 HERO_ENV = "dev"
 HERO_APP_NAME = "hero-test-framework"
 
 
 def get_data_repo():
+    # slow down for localhost testing...
+    time.sleep(1)
     hero_client = hero.HeroClient()
     data_repo = hero_client.DataRepo()
     hero_client.authenticate()
@@ -53,6 +56,10 @@ def test_get_projects():
 
 
 def test_create_public_file():
+    """
+    The API doesn't return `private` in the fileobj, so I uesed the web app to verify.
+    Also
+    """
     data_repo = get_data_repo()
     data_repo.remove_project_by_name("testing_public")
     project = data_repo.get_or_create_project("testing_public", private=False)
@@ -62,10 +69,78 @@ def test_create_public_file():
     dataset = data_repo.get_or_create_dataset(
         project["id"], "testing_dataset_public", private=False
     )
-    print("test_create_public_file", dataset)
+    print("testing_dataset_public", dataset)
     assert dataset["name"] == "testing_dataset_public"
-    assert "private" in dataset.keys()  # issue
     assert dataset["private"] == False
+
+    fileobj = data_repo.add_file_if_not_exists(
+        dataset["id"], "pyproject.toml", "testing_file_public", private=False
+    )
+    assert fileobj["name"] == "testing_file_public"
+    print(fileobj)
+
+
+def test_create_private_file():
+    """
+    The API doesn't return `private` in the fileobj, so I uesed the web app to verify.
+    BUG: Also, setting a project to private means it no longer is visible in the web app
+    even when logged in.
+    """
+    data_repo = get_data_repo()
+    data_repo.remove_project_by_name("testing_private")
+    project = data_repo.get_or_create_project("testing_private", private=True)
+    assert project["name"] == "testing_private"
+    assert project["private"] == True
+
+    dataset = data_repo.get_or_create_dataset(
+        project["id"], "testing_dataset_private", private=True
+    )
+    print("testing_dataset_private", dataset)
+    assert dataset["name"] == "testing_dataset_private"
+    assert dataset["private"] == True
+
+    fileobj = data_repo.add_file_if_not_exists(
+        dataset["id"], "pyproject.toml", "testing_file_private", private=True
+    )
+    assert fileobj["name"] == "testing_file_private"
+    print(fileobj)
+
+
+def test_file_update():
+    """
+    The updateItem method fails on the API
+    Error inserting item: TypeError: Cannot read properties of undefined (reading 'S')
+    at AttributeValue.visit (/Users/mlunacek/research/hero/hero-data-repo-api/node_modules/@aws-sdk/client-dynamodb/dist-cjs/models/models_0.js:620:19)
+    at se_AttributeValue (/Users/mlunacek/research/hero/hero-data-repo-api/node_modules/@aws-sdk/client-dynamodb/dist-cjs/protocols/Aws_json1_0.js:2948:38)
+    at /Users/mlunacek/research/hero/hero-data-repo-api/node_modules/@aws-sdk/client-dynamodb/dist-cjs/protocols/Aws_json1_0.js:3151:20
+    at Array.reduce (<anonymous>)
+    at se_ExpressionAttributeValueMap (/Users/mlunacek/research/hero/hero-data-repo-api/node_modules/@aws-sdk/client-dynamodb/dist-cjs/protocols/Aws_json1_0.js:3147:34)
+    at ExpressionAttributeValues (/Users/mlunacek/research/hero/hero-data-repo-api/node_modules/@aws-sdk/client-dynamodb/dist-cjs/protocols/Aws_json1_0.js:3535:43)
+    at applyInstruction (/Users/mlunacek/research/hero/hero-data-repo-api/node_modules/@aws-sdk/client-dynamodb/node_modules/@smithy/smithy-client/dist-cjs/object-mapping.js:73:33)
+    at take (/Users/mlunacek/research/hero/hero-data-repo-api/node_modules/@aws-sdk/client-dynamodb/node_modules/@smithy/smithy-client/dist-cjs/object-mapping.js:44:9)
+    at se_UpdateItemInput (/Users/mlunacek/research/hero/hero-data-repo-api/node_modules/@aws-sdk/client-dynamodb/dist-cjs/protocols/Aws_json1_0.js:3529:37)
+    at se_UpdateItemCommand (/Users/mlunacek/research/hero/hero-data-repo-api/node_modules/@aws-sdk/client-dynamodb/dist-cjs/protocols/Aws_json1_0.js:357:27)
+    """
+    data_repo = get_data_repo()
+    data_repo.remove_project_by_name("testing_public")
+    project = data_repo.get_or_create_project("testing_public", private=False)
+    assert project["name"] == "testing_public"
+    assert project["private"] == False
+
+    dataset = data_repo.get_or_create_dataset(
+        project["id"], "testing_dataset_public", private=False
+    )
+    print("testing_dataset_public", dataset)
+    assert dataset["name"] == "testing_dataset_public"
+    assert dataset["private"] == False
+
+    fileobj = data_repo.add_file_if_not_exists(
+        dataset["id"], "pyproject.toml", "testing_file_public", private=False
+    )
+    assert fileobj["name"] == "testing_file_public"
+
+    fileobj = data_repo.update_file(fileobj["id"], {"private": True})
+    print(fileobj)
 
 
 # Previous tests that use the original attributes API.
