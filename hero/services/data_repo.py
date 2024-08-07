@@ -3,7 +3,7 @@ import json
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
 
-@decorate_all(log_errors)
+# @decorate_all(log_errors)
 class DataRepoService(ServiceBase):
     def _configure(self):
         '''

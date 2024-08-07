@@ -3,7 +3,7 @@ import json
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection, HeroRetryError
 
-@decorate_all(log_errors)
+# @decorate_all(log_errors)
 class TaskEngineService(ServiceBase):
 
     def _configure(self):
