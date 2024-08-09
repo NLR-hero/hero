@@ -16,7 +16,24 @@ class DataRepoService(ServiceBase):
         self.client.add_scope("data-repo/user")
         self.base_url = get_conf_from_collection(URL_MAP, "HERO_DATA_REPO_API_URL")
 
-    def read_projects(self, datarepo_id):
+    def read_project_by_name(self, name, metatype="Project"):
+        """This returns a single project even if there are many with the same name
+        and returns an 404 error if there are no projects, nice!
+        """
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/{self.data_repo_id}/project/metatype/{metatype}"
+        params = f"name={name}"
+        response = self.api.request("GET", url, headers=headers, params=params)
+        return response.json()
+
+    def delete_project(self, project_id):
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/{self.data_repo_id}/project/{project_id}"
+        response = self.api.request("DELETE", url, headers=headers)
+        return response
+        # return response.json()
+
+    def read_projects(self):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/projects"
         response = self.api.request("GET", url, headers=headers)

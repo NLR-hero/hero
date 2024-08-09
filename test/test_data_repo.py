@@ -6,8 +6,6 @@ import time
 HERO_ENV = "dev"
 HERO_APP_NAME = "hero-test-framework"
 
-
-<<<<<<< HEAD
 def test_read_project():
     hero_client = hero.HeroClient()
     data_repo = hero_client.DataRepo()
@@ -15,12 +13,53 @@ def test_read_project():
     project = data_repo.read_project(APP_ID, TESTABLE_PROJECT_ID)
     assert project['name'] == 'example_project'
 
+def get_data_repo():
+    # slow down for localhost testing...
+    time.sleep(1)
+    hero_client = hero.HeroClient()
+    data_repo = hero_client.DataRepo()
+    hero_client.authenticate()
+    return data_repo
+
+
+def test_delete():
+    data_repo = get_data_repo()
+    data_repo.remove_project_by_name("testing")
+    projects = data_repo.get_projects()
+    assert "testing" not in [p["name"] for p in projects]
+
+
+def test_create_project_dataset_file():
+    data_repo = get_data_repo()
+    project = data_repo.get_or_create_project("testing")
+    assert project["name"] == "testing"
+
+    dataset = data_repo.get_or_create_dataset(project["id"], "testing_dataset")
+    assert dataset["name"] == "testing_dataset"
+
+    fileobj = data_repo.add_file_if_not_exists(
+        dataset["id"], "pyproject.toml", "testing_file"
+    )
+    assert fileobj["name"] == "testing_file"
+
+
+def test_read_by_name():
+    data_repo = get_data_repo()
+    project2 = data_repo.read_project_by_name("testing")
+    assert project2["name"] == "testing"
+
+    dataset2 = data_repo.read_dataset_by_name("testing_dataset")
+    assert dataset2["name"] == "testing_dataset"
+
+    fileobj2 = data_repo.read_file_by_name("testing_file")
+    assert fileobj2["name"] == "testing_file"
+
 def test_read_projects():
     hero_client = hero.HeroClient()
     data_repo = hero_client.DataRepo()
     hero_client.authenticate()
     projects = data_repo.read_projects(APP_ID)
-=======
+
 def get_data_repo():
     # slow down for localhost testing...
     time.sleep(1)
@@ -66,7 +105,6 @@ def test_read_by_name():
 def test_get_projects():
     data_repo = get_data_repo()
     projects = data_repo.get_projects()
->>>>>>> 465dac6 (adding tests for data repo)
     assert projects is not None
 
 
