@@ -138,7 +138,7 @@ class DataRepoService(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return response
 
-    def add_dataset(self, project_id, dataset_name, metatype="Dataset", metadata={}, private=False):
+    def add_dataset(self, project_id, dataset_name, metatype="Dataset", metadata={}, private=True):
         attributes = {
             "projectId": project_id,
             "name": dataset_name,
@@ -196,12 +196,13 @@ class DataRepoService(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return response
 
-    def add_file(self, dataset_id, filename, metatype="File", metadata={}):
+    def add_file(self, dataset_id, filename, metatype="File", metadata={}, private=True):
         attributes = {
             "name": filename,
             "datasetId": dataset_id,
             "metatype": metatype,
             "metadata": metadata,
+            "private": private,
         }
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/file"
@@ -223,7 +224,8 @@ class DataRepoService(ServiceBase):
         url = f"{self.base_url}/{self.data_repo_id}/file/{file_id}"
         data = json.dumps(attributes)
         response = self.api.request("PUT", url, headers=headers, data=data)
-        return response.json()
+        # does not return json()
+        return response
 
     def read_file_upload_url(self, file_id):
         headers = self.get_headers(self.client.get_token())
@@ -236,14 +238,15 @@ class DataRepoService(ServiceBase):
             project = self.read_project_by_name(project_name, metatype=metatype)
             return project
         except HTTPError as err:
-            project = self.add_project(project_name, metatype=metatype, private=False)
+            project = self.add_project(project_name, metatype=metatype, private=private)
             return project
 
-    def get_or_create_dataset(self, project_id, dataset_name, metatype="Dataset", private=False, metadata={}):
+    def get_or_create_dataset(self, project_id, dataset_name, metatype="Dataset", private=True, metadata={}):
         try:
             dataset = self.read_dataset_by_name(dataset_name)
             return dataset
         except HTTPError as err:
+            print(f"creating dataset with {private}")
             dataset = self.add_dataset(
                 project_id,
                 dataset_name,
@@ -253,7 +256,9 @@ class DataRepoService(ServiceBase):
             )
             return dataset
 
-    def add_file_if_not_exists(self, dataset_id, local_filepath, filename=None):
+    def add_file_if_not_exists(
+        self, dataset_id, local_filepath, filename=None, private=True
+    ):
         assert os.path.exists(local_filepath)
         if filename is None:
             filename = os.path.basename(local_filepath).replace("&", "and")
@@ -261,21 +266,23 @@ class DataRepoService(ServiceBase):
             fileobj = self.read_file_by_name(filename)
             return fileobj
         except HTTPError as err:
-            fileobj = self.add_file(dataset_id, filename)
+            fileobj = self.add_file(dataset_id, filename, private=private)
             url = self.get_file_upload_url(fileobj["id"])
             self.upload_file(url["url"], local_filepath)
             # not necessary... but a check.
             fileobj = self.read_file_by_name(filename)
             return fileobj
 
-    def add_or_replace_file(self, dataset_id, local_filepath, filename=None):
+    def add_or_replace_file(
+        self, dataset_id, local_filepath, filename=None, private=True
+    ):
         assert os.path.exists(local_filepath)
         if filename is None:
             filename = os.path.basename(local_filepath).replace("&", "and")
         try:
             fileobj = self.read_file_by_name(filename)
         except HTTPError as err:
-            fileobj = self.add_file(dataset_id, filename)
+            fileobj = self.add_file(dataset_id, filename, private=private)
         finally:
             url = self.get_file_upload_url(fileobj["id"])
             self.upload_file(url["url"], local_filepath)
