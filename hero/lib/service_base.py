@@ -1,3 +1,4 @@
+import os
 from requests import Session
 
 from .config import get_resilient_session
@@ -5,8 +6,9 @@ from .resilient_session import ResilientSession
 from .session_hooks import log_request, check_for_errors
 
 class ServiceBase:
-    def __init__(self, clientInstance, resilient_session=False):
+    def __init__(self, clientInstance, application_id, resilient_session=False):
         self.client = clientInstance
+        self.application_id = application_id or f"{os.environ.get('HERO_ENV')}-{os.environ.get('HERO_PROJECT')}"
         self._configure()
         is_resilient = resilient_session or get_resilient_session()
         self.api = self.get_request_session(is_resilient)

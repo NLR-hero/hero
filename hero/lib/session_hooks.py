@@ -24,7 +24,7 @@ def check_for_errors(resp, *args, **kwargs):
     try:
         resp.raise_for_status()
     except HTTPError:
-        logger.error('Received error %s', resp.text)
+        logger.debug('Received error %s', resp.text)
         raise
     else:
         logger.debug('Received response %s', resp.text)

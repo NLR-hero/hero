@@ -82,17 +82,17 @@ class HeroClient:
         if access_token_decoded:
             return self._access_token
 
-    def DataRepo(self):
+    def DataRepo(self, application_id):
         '''
         Returns a DataRepoService instance.
         '''
-        return DataRepoService(self)
+        return DataRepoService(self, application_id)
 
-    def TaskEngine(self):
+    def TaskEngine(self, application_id):
         '''
         Returns a TaskEngineService instance.
         '''
-        return TaskEngineService(self)
+        return TaskEngineService(self, application_id)
 
     def MLModelRegistry(self, m3s_name):
         '''
