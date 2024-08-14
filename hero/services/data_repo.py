@@ -273,6 +273,12 @@ class DataRepoService(ServiceBase):
             )
             return dataset
 
+    def get_file_upload_url(self, file_id):
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/{self.data_repo_id}/files/upload/{file_id}"
+        response = self.api.request("GET", url, headers=headers)
+        return response.json()
+
     def add_file_if_not_exists(
         self, dataset_id, local_filepath, filename=None, private=True
     ):
