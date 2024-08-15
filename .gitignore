@@ -7,3 +7,6 @@ __pycache__
 docs
 build
 dist
+
+test/download.json
+test/example.json

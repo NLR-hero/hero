@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "hero"
+version = "0.2.0"
+authors = [
+    "Monte Lunacek <monte.lunacek@nrel.gov>",
+    "Nick Wunder <nick.wunder@nrel.gov>"
+]
+maintainers = [
+    "Monte Lunacek <monte.lunacek@nrel.gov>",
+    "Nick Wunder <nick.wunder@nrel.gov>",
+    "Joseph Smith <joseph.smith@nrel.gov>"
+]
+description = "Python client for HERO"
+readme = "README.md"
+license = "Proprietary"
+keywords = ["hero", "task engine", "data repo", "search"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.32.3"
+tenacity = "^8.3.0"
+pyjwt = "^2.8.0"
+tqdm = "^4.66.4"
+
+[tool.poetry.extras]
+dev = ["pytest"]
+
+[tool.poetry.urls]
+Homepage = "https://github.nrel.gov/Hero/hero"
+Documentation = "https://github.nrel.gov/Hero/hero"
+Repository = "https://github.nrel.gov/Hero/hero"
+"Bug Tracker" = "https://github.nrel.gov/Hero/hero/issues"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

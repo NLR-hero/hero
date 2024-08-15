@@ -1,5 +1,0 @@
-HERO_PROJECT="test-project-2"
-HERO_QUEUE="test-queue"
-HERO_CLIENT_ID="70pj7rpoukmgnhl442jcmugl6i"
-HERO_CLIENT_SECRET="thae66jbq4e01nm96btcpahv0f2d45s079q4m0ufv9f1ft2sfli"
-HERO_QUEUE_VISIBILITY_TIMEOUT="60"

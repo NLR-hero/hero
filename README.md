@@ -1,65 +1,77 @@
-# Hero
+# HERO Python SDK
 
-This is the Python client for Hero.
+This is the Python SDK for HERO.
 
-## Installation
+## Using the HERO SDK
 
-```
-pip install git+https://github.nrel.gov/Hero/hero@master#egg=hero
-```
-
-
-## Development
+### Installation
 
 ```
-python3 -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-python setup.py develop
+pip install git+https://github.nrel.gov/Hero/hero@0.9.0#egg=hero
 ```
 
-If you are using `pyenv` then the virtual environment will automaticall load if available from the `.python-version` file.
-
-To create a new venv through pyenv run:
-
-```
-pyenv virtualenv 3.9 hero_3.9
-pyenv activate hero_3.9
-pip install -r requirements.txt
-python setup.py develop
-```
-
-## Execute
+### Execute
 
 You need to have the following environment variables defined.
 
 ```
-export HERO_PROJECT="test-project"
-export HERO_QUEUE="queue-001"
-export HERO_QUEUE_VISIBILITY_TIMEOUT=300
-
-export HERO_DATABASE_PASSWORD=""
-
-export AWS_DEFAULT_OUTPUT=json
-export AWS_DEFAULT_REGION=us-west-2
-
-export AWS_ACCESS_KEY_ID=""
-export AWS_SECRET_ACCESS_KEY=""
-export AWS_SESSION_TOKEN=""
+export HERO_ENV=["dev", "stage", "prod"]
+export HERO_PROJECT="aeroportal-app"
+export HERO_CLIENT_ID="*******************************"
+export HERO_CLIENT_SECRET="*******************************"
 ```
 
-On eagle, you'll need to load the following modules.
+### Examples
+
+Note: these are stale and need to be updated.
+
+Please check out the [HERO examples](https://github.nrel.gov/Hero/hero-examples).
+
+
+
+### Development: Local install / Editable Mode
+
+#### Pip
 
 ```
-module load openmpi
+pip install virtualenv
+python -m virtualenv venv
+source venv/bin/activate
+python -m pip install --editable '.[dev]'
 ```
 
-### Building Pdoc in CodeBuild
+#### Poetry
 
-aws codebuild start-build \
---project-name "REDACTED_CODEBUILD_PROJECT" \
---source-version "scaling-nw" \
---buildspec-override "pdoc/buildspec.yml" \
---environment-variables-override \
-name=GITHUB_TOKEN_ARN,value='arn:aws:secretsmanager:us-west-2:REDACTED_AWS_ACCOUNT_ID:secret:/nrel/github_packages/REDACTED_SECRET_PATH:GITHUB_TOKEN',type=PLAINTEXT \
-name=DISTRIBUTION_ID,value=REDACTED_CF_DIST_ID,type=PLAINTEXT
+When using Poetry to manage your Python environment + dependencies, you can do the following to install.
+
+1. Clone this repo locally
+2. Ensure you checkout the target branch you wish to work from (e.g. `git checkout THE-TARGET-BRANCH-YOU-WISH-TO-WORK-FROM`)
+2. Open your project's `pyproject.toml` file
+3. Add the `hero = {path="THE-PATH-TO-THE-NEWLY-CLONED-HERO-REPO", develop=true}` to your dependencies
+
+
+## Using Poetry
+
+To start the shell and install any packages (note, Poetry will create a local .venv for you if one does not exist)
+
+```
+poetry shell
+poetry install
+```
+
+(develop as normal)
+
+To deactivate the poetry shell
+
+```
+deactivate
+```
+
+## How to Release
+
+[] Update the version in `pyproject.toml`.
+[] Update the version in the Installation section in the README.
+[] Merge the working branch into main.
+[] Tag the main branch with the new version
+[] Push with tags
+
