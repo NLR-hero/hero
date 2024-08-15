@@ -1,8 +1,8 @@
-# Hero
+# HERO Python SDK
 
-This is the Python client for Hero.
+This is the Python SDK for HERO.
 
-## Using the Hero client
+## Using the HERO SDK
 
 ### Installation
 
@@ -22,6 +22,8 @@ export HERO_CLIENT_SECRET="*******************************"
 ```
 
 ### Examples
+
+Note: these are stale and need to be updated.
 
 Please check out the [HERO examples](https://github.nrel.gov/Hero/hero-examples).
 
@@ -65,36 +67,11 @@ To deactivate the poetry shell
 deactivate
 ```
 
-## Monte's notes
+## How to Release
 
-
-Adding defaults and parameters
-
-        read_project_by_name(self, datarepo_id, name, metatype="Project")
-
-        add_project(self, datarepo_id, project_name, metatype="Project")
-
-        read_dataset_by_name(self, datarepo_id, name, metatype="Dataset")
-
-        def add_dataset(
-            self, datarepo_id, project_id, dataset_name, metatype="Dataset", metadata={}
-        ):
-
-There is no json response in
-
-        delete_project(self, datarepo_id, project_id) 
-        delete_dataset...
-
-
-The class level decorator makes it not possible to catch errors
-@decorate_all(log_errors)
-
-        try:
-            project = data_repo.read_project_by_name(DATA_REPO_ID, "streaming")
-        except HTTPError as err:
-            print("catching error", err)
-            project = data_repo.add_project(DATA_REPO_ID, "streaming")
-
-
-
+[] Update the version in `pyproject.toml`.
+[] Update the version in the Installation section in the README.
+[] Merge the working branch into main.
+[] Tag the main branch with the new version
+[] Push with tags
 
