@@ -21,9 +21,10 @@ name: pdoc to Github Pages
       #   - '*'
 
 # build the documentation whenever a release is created, edited, or published
-on:
-    release:
-        types: [published]
+on:  
+  push:
+    branches:
+      - main
   
 # security: restrict permissions for CI jobs.
 permissions:
