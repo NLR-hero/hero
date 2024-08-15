@@ -31,14 +31,14 @@ class DataRepoService(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
     
-    def read_project(self, project_id=None):
+    def read_project(self, id: str=None) -> dict:
         """
         Read a project by id.
 
         Parameters
         -----------
 
-        project_id : str, required
+        id : str, required
             The project UUID
 
         Returns
@@ -55,11 +55,11 @@ class DataRepoService(ServiceBase):
             If the project does not exists
         
         """
-        if project_id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "project_id"')
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/{self.data_repo_id}/project/{project_id}"
+        url = f"{self.base_url}/{self.data_repo_id}/project/{id}"
         try: 
             response = self.api.request("GET", url, headers=headers)
             return response.json()
@@ -204,24 +204,6 @@ class DataRepoService(ServiceBase):
                 return None
             raise e
 
-    def remove_project(self, id):
-        """
-        Remove a project and all of its related resources.
-
-        This method will remove all objects in the project from the bottom up using the delete methods.        
-        
-        Parameters
-        -----------
-        id : str, required
-            The UUID of the project to remove.
-
-        Returns
-        --------
-        None
-
-        """
-        return self._delete_project_with_cascade(id, cascade=True)
-
     def remove_project_by_name(self, name):
         """
         Remove a project and all of its related resources.
@@ -292,13 +274,13 @@ class DataRepoService(ServiceBase):
         response = self.api.request("POST", url, headers=headers, data=data)
         return response.json()
 
-    def update_project(self, project_id=None, name=None, metadata=None, private=None):
+    def update_project(self, id=None, name=None, metadata=None, private=None):
         """
         Update the attributes of a project.
 
         Parameters
         -----------
-        project_id : str, required
+        id : str, required
             The UUID of a project
 
         name : str, required
@@ -328,8 +310,8 @@ class DataRepoService(ServiceBase):
         # * [API] doesn't update the name in the GSI
         # * [API] requires both name and metadata to be defined no matter what you want to update and the API doesn't throw an error but returns a 200 with an empty body if you one of name or metadata. it only works when you include both
 
-        if project_id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "project_id"')
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
         
         attributes = {
             "name": name,
@@ -347,7 +329,7 @@ class DataRepoService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "metadata"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.data_repo_url}/project/{project_id}"
+        url = f"{self.data_repo_url}/project/{id}"
         data = json.dumps(attributes)
         response = self.api.request("PUT", url, headers=headers, data=data)
         try:
@@ -355,15 +337,12 @@ class DataRepoService(ServiceBase):
         except JSONDecodeError:
             raise HEROAPIResponseException()
         
-    def get_or_create_project(self, name=None, metatype="Project", private=False, metadata={}):
+    def get_or_create_project(self, name=None, metatype="Project", metadata={}, private=False):
         """
         Attempt to read a project or create it if it does not exist.
 
         Parameters
         -----------
-        project_id : str, required
-            The UUID of a project
-
         name : str, required
             The project name
 
@@ -404,14 +383,14 @@ class DataRepoService(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def read_dataset(self, dataset_id=None):
+    def read_dataset(self, id=None):
         """
         Read a dataset by id.
 
         Parameters
         -----------
 
-        dataset_id : str, required
+        id : str, required
             The dataset UUID
 
         Returns
@@ -428,11 +407,11 @@ class DataRepoService(ServiceBase):
             If the dataset does not exists
         
         """        
-        if dataset_id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "dataset_id"')
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/{self.data_repo_id}/dataset/{dataset_id}"
+        url = f"{self.base_url}/{self.data_repo_id}/dataset/{id}"
         try: 
             response = self.api.request("GET", url, headers=headers)
             return response.json()
@@ -524,7 +503,6 @@ class DataRepoService(ServiceBase):
             The dataset UUID to delete.
 
         cascade : bool, optional
-
             A flag to delete all realted resources of the dataset.
         
         Returns
@@ -575,26 +553,6 @@ class DataRepoService(ServiceBase):
             if e.response.status_code == 404:
                 return []
             raise e
-        
-    def remove_dataset(self, id=None):
-        """
-        [Deprecated] Will be removed soon. Use the cascade flag in delete_dataset, instead.
-
-        Remove a dataset and all of its related resources.
-
-        This method will remove all objects in the dataset from the bottom up using the delete methods.        
-        
-        Parameters
-        -----------
-        id : str, required
-            The UUID of the dataset to remove.
-
-        Returns
-        --------
-        None
-
-        """
-        return self._delete_dataset_with_cascade(id)
 
     def remove_dataset_by_name(self, name=None, cascade=False):
         """
@@ -771,14 +729,14 @@ class DataRepoService(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def read_file(self, file_id=None):
+    def read_file(self, id=None):
         """
         Read a file by id.
 
         Parameters
         -----------
 
-        file_id : str, required
+        id : str, required
             The file UUID
 
         Returns
@@ -796,11 +754,11 @@ class DataRepoService(ServiceBase):
         
         """
 
-        if file_id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "file_id"')
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
         
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/{self.data_repo_id}/file/{file_id}"
+        url = f"{self.base_url}/{self.data_repo_id}/file/{id}"
         try: 
             response = self.api.request("GET", url, headers=headers)
             return response.json()
@@ -846,7 +804,7 @@ class DataRepoService(ServiceBase):
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
-    def delete_file(self, file_id=None):
+    def delete_file(self, id=None):
         """
         Delete a file.
 
@@ -854,7 +812,7 @@ class DataRepoService(ServiceBase):
 
         Parameters
         -----------
-        file_id : str, required
+        id : str, required
             The file UUID to delete.
         
         Returns
@@ -869,11 +827,11 @@ class DataRepoService(ServiceBase):
         """
         #TODO: this doesn't remove the file from S3, right now nothing does...
 
-        if file_id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "file_id"')
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.data_repo_url}/file/{file_id}"
+        url = f"{self.data_repo_url}/file/{id}"
         response = self.api.request("DELETE", url, headers=headers)
         return None
 
@@ -882,7 +840,7 @@ class DataRepoService(ServiceBase):
         Create a new file.
 
         Parameters
-        -----------
+        ----------
         dataset_id : str, required
             The dataset name.
 
@@ -899,12 +857,12 @@ class DataRepoService(ServiceBase):
             The visibility of the file. Defaults to True.
 
         Returns
-        --------
+        -------
         file : dict
             The file attributes
         
         Raises
-        -------
+        ------
         MissingRequiredAttribute
             If a required attribute is missing
         """
@@ -1108,7 +1066,7 @@ class DataRepoService(ServiceBase):
             return file_resource
         except HERODataRepoFileNotFound as e:
             file_resource = self.add_file(dataset_id, name, metatype, metadata, private=private)
-            url = self.get_file_upload_url(file_resource["id"])
+            url = self.read_file_upload_url(file_resource["id"])
             self.upload_file(url, local_filepath)
             return file_resource
 
@@ -1161,9 +1119,9 @@ class DataRepoService(ServiceBase):
         try:
             file_resource = self.read_file_by_name(name)
         except HERODataRepoFileNotFound as err:
-            file_resource = self.add_file(dataset_id, name, private=private)
+            file_resource = self.add_file(dataset_id, name=name, metatype=metatype, metadata=metadata, private=private)
         finally:
-            url = self.get_file_upload_url(file_resource["id"])
+            url = self.read_file_upload_url(file_resource["id"])
             self.upload_file(url, local_filepath)
             return file_resource
 
