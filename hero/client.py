@@ -1,4 +1,3 @@
-
 import jwt
 import base64
 from requests import Session

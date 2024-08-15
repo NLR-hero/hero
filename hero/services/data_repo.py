@@ -21,7 +21,7 @@ class DataRepoService(ServiceBase):
         List projects.
 
         Returns
-        --------
+        -------
         projects : list of dict
             A list of projects where each dict is project attributes.
 
@@ -31,23 +31,22 @@ class DataRepoService(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
     
-    def read_project(self, id: str=None) -> dict:
+    def read_project(self, id: str) -> dict:
         """
         Read a project by id.
 
         Parameters
-        -----------
-
+        ----------
         id : str, required
             The project UUID
 
         Returns
-        --------
+        -------
         project : dict
             The project attributes.
 
         Raises
-        -------
+        ------
         MissingRequiredAttribute
             If a required attribute is missing
         
@@ -151,6 +150,9 @@ class DataRepoService(ServiceBase):
         -----------
         id : str, required
             The project UUID to delete.
+
+        cascade : bool, optional
+            A flag to delete all realted resources of the project.
         
         Returns
         --------
@@ -798,11 +800,19 @@ class DataRepoService(ServiceBase):
 
         """
 
+        if name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "name"')
+
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/file/metatype/{metatype}"
         params = f"name={name}"
-        response = self.api.request("GET", url, headers=headers, params=params)
-        return response.json()
+        try: 
+            response = self.api.request("GET", url, headers=headers, params=params)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HERODataRepoFileNotFound()
+            raise e
 
     def delete_file(self, id=None):
         """
@@ -1066,9 +1076,13 @@ class DataRepoService(ServiceBase):
             return file_resource
         except HERODataRepoFileNotFound as e:
             file_resource = self.add_file(dataset_id, name, metatype, metadata, private=private)
-            url = self.read_file_upload_url(file_resource["id"])
-            self.upload_file(url, local_filepath)
-            return file_resource
+            try:
+                url = self.read_file_upload_url(file_resource["id"])
+                self.upload_file(url, local_filepath)
+                return file_resource
+            except:
+                #TODO: if there is a problem uploading the file to S3 after the file resource is created we should clean it up and remove it so this call will work next time.
+                self.delete_file(id=file_resource['id'])
 
     def add_or_replace_file(self, dataset_id=None, local_filepath=None, name=None, metatype="File", metadata={}, private=True):
         """
@@ -1156,8 +1170,8 @@ class DataRepoService(ServiceBase):
         if local_filepath is None:
             raise MissingRequiredAttribute('Missing required attribute: "local_filepath"')
 
-        fileobj = self.read_file_by_name(name)
-        self.download_file_by_file_id(fileobj["id"], local_filepath)
+        file_resource = self.read_file_by_name(name)
+        self.download_file_by_id(file_resource["id"], local_filepath)
 
     def download_file_by_id(self, file_id=None, local_filepath=None):
         """
@@ -1187,7 +1201,7 @@ class DataRepoService(ServiceBase):
         if local_filepath is None:
             raise MissingRequiredAttribute('Missing required attribute: "local_filepath"')
 
-        url = self.get_file_download_url(file_id)
+        url = self.read_file_download_url(file_id)
         self.download_file(url, local_filepath)
 
     def upload_file(self, url=None, local_filepath=None):

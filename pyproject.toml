@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hero"
-version = "0.1.9"
+version = "0.2.0"
 authors = [
     "Monte Lunacek <monte.lunacek@nrel.gov>",
     "Nick Wunder <nick.wunder@nrel.gov>"

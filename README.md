@@ -7,7 +7,7 @@ This is the Python client for Hero.
 ### Installation
 
 ```
-pip install git+https://github.nrel.gov/Hero/hero@main#egg=hero
+pip install git+https://github.nrel.gov/Hero/hero@0.9.0#egg=hero
 ```
 
 ### Execute

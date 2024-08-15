@@ -34,6 +34,14 @@ class HERODataRepoFileNotFound(Exception):
     def __init__(self, message="HERO Data Repo file not found"):
         super().__init__(message)
 
+class HEROTaskEngineQueueNotFound(Exception):
+    def __init__(self, message="HERO Task Engine queue not found"):
+        super().__init__(message)
+
+class HEROTaskEngineTaskNotFound(Exception):
+    def __init__(self, message="HERO Task Engine task not found"):
+        super().__init__(message)
+
 class ClientPullTasksEmpty(Exception):
     pass
 
