@@ -7,7 +7,7 @@ This is the Python SDK for HERO.
 ### Installation
 
 ```
-pip install git+https://github.nrel.gov/Hero/hero@0.9.0#egg=hero
+pip install git+https://github.nrel.gov/Hero/hero@0.2.0#egg=hero
 ```
 
 ### Execute
@@ -69,9 +69,9 @@ deactivate
 
 ## How to Release
 
-[] Update the version in `pyproject.toml`.
-[] Update the version in the Installation section in the README.
-[] Merge the working branch into main.
-[] Tag the main branch with the new version
-[] Push with tags
+- [] Update the version in `pyproject.toml`.
+- [] Update the version in the Installation section in the README.
+- [] Merge the working branch into main.
+- [] Tag the main branch with the new version
+- [] Push with tags
 
