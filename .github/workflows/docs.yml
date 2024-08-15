@@ -1,0 +1,67 @@
+# This workflow will publish pdoc to Github Pages on each published release
+
+# How it works:
+# This workflow runs pdoc.sh which generates the documentation
+# The static documentation pages gets bundled up into an artifact as a tarball
+# In the deploy phase the artifact gets uploaded to Github Pages
+
+name: pdoc to Github Pages
+
+# build the documentation whenever a pull request is made
+# on:
+#     pull_request:
+
+# build the documentation whenever there are new commits on main
+# on:
+    # push:
+    #   branches:
+        # - main
+      # Alternative: only build for tags.
+      # tags:
+      #   - '*'
+
+# build the documentation whenever a release is created, edited, or published
+on:
+    release:
+        types: [published]
+  
+# security: restrict permissions for CI jobs.
+permissions:
+    contents: read
+  
+jobs:
+    # Build the documentation and upload the static HTML files as an artifact.
+    build:
+      runs-on: [ self-hosted ]
+      steps:
+        - uses: actions/checkout@v3
+        - uses: actions/setup-python@v4
+          with:
+            python-version: '3.9'
+  
+        # ADJUST THIS: install all dependencies (including pdoc)
+        - run: pip install .
+        - run: pip install pdoc
+        # ADJUST THIS: build your documentation into docs/.
+        # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
+        - run: pdoc ./hero --template-dir ./pdoc/templates --output-dir docs
+        # - run: PUT COMMAND TO MOVE FILES UP A DIR HERE <- we don't need this anymore
+  
+        - uses: actions/upload-pages-artifact@v1
+          with:
+            path: docs
+  
+    # Deploy the artifact to GitHub pages.
+    # This is a separate job so that only actions/deploy-pages has the necessary permissions.
+    deploy:
+      needs: build
+      runs-on: [ self-hosted ]
+      permissions:
+        pages: write
+        id-token: write
+      environment:
+        name: github-pages
+        url: ${{ steps.deployment.outputs.page_url }}
+      steps:
+        - id: deployment
+          uses: actions/deploy-pages@v2
