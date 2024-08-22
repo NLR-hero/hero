@@ -352,6 +352,9 @@ class DataRepoService(ServiceBase):
 
         HEROAPIResponseException
             When there is a problem trying to parse the response as json
+
+        HERODataRepoProjectAlreadyExists
+            If an update is made and the name matches an existing resource
         """
 
         # TODO: Problems with update_project:
@@ -379,11 +382,16 @@ class DataRepoService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.data_repo_url}/project/{id}"
         data = json.dumps(attributes)
-        response = self.api.request("PUT", url, headers=headers, data=data)
         try:
+            response = self.api.request("PUT", url, headers=headers, data=data)
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                response_error = e.response.json()
+                raise HERODataRepoProjectAlreadyExists(response_error['error']['message'])
+            raise e
         
     def get_or_create_project(self, name=None, data_repo_id=None, metatype="Project", metadata={}, private=False):
         """
@@ -747,6 +755,9 @@ class DataRepoService(ServiceBase):
 
         HEROAPIResponseException
             When there is a problem trying to parse the response as json
+
+        HERODataRepoDatasetAlreadyExists
+            If the resource already exists
         """
         attributes = {
             "datasetId": dataset_id,
@@ -767,11 +778,16 @@ class DataRepoService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/dataset/{dataset_id}"
         data = json.dumps(attributes)
-        response = self.api.request("PUT", url, headers=headers, data=data)
         try:
+            response = self.api.request("PUT", url, headers=headers, data=data)
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                response_error = e.response.json()
+                raise HERODataRepoDatasetAlreadyExists(response_error['error']['message'])
+            raise e
     
     def get_or_create_dataset(self, project_id=None, name=None, metatype="Dataset", metadata={}, private=True):
         """
@@ -1005,7 +1021,6 @@ class DataRepoService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/file"
         data = json.dumps(attributes)
-
         try:
             response = self.api.request("POST", url, headers=headers, data=data)
             return response.json()
@@ -1046,6 +1061,9 @@ class DataRepoService(ServiceBase):
 
         HEROAPIResponseException
             When there is a problem trying to parse the response as json
+
+        HERODataRepoFileAlreadyExists
+            If the resource already exists
         """
         if file_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "file_id"')
@@ -1068,11 +1086,16 @@ class DataRepoService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/file/{file_id}"
         data = json.dumps(attributes)
-        response = self.api.request("PUT", url, headers=headers, data=data)
         try:
+            response = self.api.request("PUT", url, headers=headers, data=data)
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                response_error = e.response.json()
+                raise HERODataRepoFileAlreadyExists(response_error['error']['message'])
+            raise e
         
     def get_or_create_file(self, dataset_id=None, name=None, metatype="File", metadata={}, private=True):
         """
