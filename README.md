@@ -7,7 +7,7 @@ This is the Python SDK for HERO.
 ### Installation
 
 ```
-pip install git+https://github.nrel.gov/Hero/hero@0.2.0#egg=hero
+pip install git+https://github.nrel.gov/Hero/hero@0.3.0#egg=hero
 ```
 
 ### Execute
