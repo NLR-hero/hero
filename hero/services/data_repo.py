@@ -26,6 +26,9 @@ class DataRepoService(ServiceBase):
         projects : list of dict
             A list of projects where each dict is project attributes.
 
+        Notes
+        -----
+        New in version 0.2.0.
         """
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/projects"
@@ -54,6 +57,9 @@ class DataRepoService(ServiceBase):
         HERODataRepoProjectNotFound
             If the project does not exists
         
+        Notes
+        -----
+        New in version 0.2.0.
         """
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
@@ -104,6 +110,8 @@ class DataRepoService(ServiceBase):
         
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Improved building the set API params.
+
+        New in version 0.2.0.
         """
         #TODO: eventually this will be required.
         if data_repo_id is None:
@@ -145,6 +153,9 @@ class DataRepoService(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         
+        Notes
+        -----
+        New in version 0.2.0.
         """
         if project_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "project_id"')
@@ -177,6 +188,9 @@ class DataRepoService(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
 
+        Notes
+        -----
+        New in version 0.2.0.
         """
 
         if cascade:
@@ -190,7 +204,7 @@ class DataRepoService(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return None
     
-    def _delete_project_with_cascade(self, id, metatype, cascade):
+    def _delete_project_with_cascade(self, id, cascade):
         """
         Remove a project and all of its related resources.
 
@@ -213,13 +227,14 @@ class DataRepoService(ServiceBase):
 
         Notes
         -----
-        Changed in version 0.3.0: Forward arguments to subsequent methods that need them
+        Changed in version 0.3.0: Forward arguments to subsequent methods that need them.
+
+        New in version 0.2.0.
         """
         try:
             datasets = self.read_project_datasets(project_id=id)
             for dataset in datasets:
-                #TODO: Replace this with a call to remove_dataset. We already have the dataset UUID we don't need another API call here.
-                self.remove_dataset_by_name(name=dataset["name"], metatype=metatype, cascade=cascade)
+                self.delete_dataset(id=dataset['id'], cascade=cascade)
             self.delete_project(id)
 
         except HTTPError as e:
@@ -229,7 +244,7 @@ class DataRepoService(ServiceBase):
                 return None
             raise e
 
-    def remove_project_by_name(self, data_repo_id=None, name=None):
+    def remove_project_by_name(self, data_repo_id=None, name=None, metatype='Project'):
         """
         Remove a project and all of its related resources.
 
@@ -241,7 +256,10 @@ class DataRepoService(ServiceBase):
             The Data Repo UUID.
 
         name : str, required
-            The name of the project to remove.        
+            The name of the project to remove.  
+
+        metatype : str, required
+            The project's metatype.      
         
         Returns
         --------
@@ -250,9 +268,12 @@ class DataRepoService(ServiceBase):
         Notes
         -----
         Changed in version 0.3.0: Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
+
+        New in version 0.2.0.
         """
-        project = self.read_project_by_name(data_repo_id=data_repo_id, name=name)
-        self.remove_project(id=project['id'])
+        project = self.read_project_by_name(data_repo_id=data_repo_id, name=name, metatype=metatype)
+        self.delete_project(id=project['id'])
+        return
 
     def add_project(self, name=None, data_repo_id=None, metatype="Project", metadata={}, private=False):
         """
@@ -295,6 +316,8 @@ class DataRepoService(ServiceBase):
         
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Added new exception when trying to add a resource that already exists.
+
+        New in version 0.2.0.
         """
         #TODO: name, and data_repo_id are out of order to support older code that uses positional arguments, eventually this will be deprecated and the order restored to project, name and both argument should be named
         if data_repo_id is None:
@@ -355,6 +378,10 @@ class DataRepoService(ServiceBase):
 
         HERODataRepoProjectAlreadyExists
             If an update is made and the name matches an existing resource
+
+        Notes
+        -----
+        New in version 0.2.0.
         """
 
         # TODO: Problems with update_project:
@@ -422,6 +449,8 @@ class DataRepoService(ServiceBase):
         Notes
         -----
         Changed in version 0.3.0: Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
+
+        New in version 0.2.0.
         """
         try:
             project = self.read_project_by_name(data_repo_id=data_repo_id, name=name, metatype=metatype)
@@ -468,6 +497,9 @@ class DataRepoService(ServiceBase):
         HERODataRepoDatasetNotFound
             If the dataset does not exists
         
+        Notes
+        -----
+        New in version 0.2.0.
         """        
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
@@ -517,6 +549,8 @@ class DataRepoService(ServiceBase):
         
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Improved building the set API params.
+
+        New in version 0.2.0.
         """
         #TODO: (name, project_id) need to be switched (there are several of these) it is this way to to not break existing code that uses postiional arguments.
         if name is None:
@@ -555,6 +589,9 @@ class DataRepoService(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         
+        Notes
+        -----
+        New in version 0.2.0.
         """
         if dataset_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "dataset_id"')
@@ -587,6 +624,9 @@ class DataRepoService(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
 
+        Notes
+        -----
+        New in version 0.2.0.
         """
         if cascade:
             return self._delete_dataset_with_cascade(id, cascade)
@@ -599,7 +639,7 @@ class DataRepoService(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return response
 
-    def _delete_dataset_with_cascade(self, id=None):
+    def _delete_dataset_with_cascade(self, id=None, cascade=False):
         """
         Remove a dataset and all of its related resources.
 
@@ -610,10 +650,16 @@ class DataRepoService(ServiceBase):
         id : str, required
             The UUID of the dataset to remove.
 
+        cascade : bool, optional
+            A flag to delete all realted resources of the dataset.
+
         Returns
         --------
         None
 
+        Notes
+        -----
+        New in version 0.2.0.
         """
         try:
             files = self.read_dataset_files(id)
@@ -643,6 +689,9 @@ class DataRepoService(ServiceBase):
 
         metatype : str, optional
             The dataset metatype. Defaults to "Dataset".   
+            
+        cascade : bool, optional
+            A flag to delete all realted resources of the dataset.
         
         Returns
         --------
@@ -654,7 +703,8 @@ class DataRepoService(ServiceBase):
         
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Forward arguments to subsequent methods that need them
-        
+
+        New in version 0.2.0.
         """
         dataset = self.read_dataset_by_name(project_id=project_id, name=name, metatype=metatype)
         self.delete_dataset(id=dataset['id'], cascade=cascade)
@@ -699,6 +749,8 @@ class DataRepoService(ServiceBase):
         
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Added new exception when trying to add a resource that already exists.
+
+        New in version 0.2.0.
         """
         attributes = {
             "projectId": project_id,
@@ -758,6 +810,10 @@ class DataRepoService(ServiceBase):
 
         HERODataRepoDatasetAlreadyExists
             If the resource already exists
+
+        Notes
+        -----
+        New in version 0.2.0.
         """
         attributes = {
             "datasetId": dataset_id,
@@ -818,6 +874,8 @@ class DataRepoService(ServiceBase):
         Notes
         -----
         Changed in version 0.3.0: Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
+
+        New in version 0.2.0.
         """
         try:
             dataset = self.read_dataset_by_name(project_id=project_id, name=name, metatype=metatype)
@@ -865,6 +923,9 @@ class DataRepoService(ServiceBase):
         HERODataRepoFileNotFound
             If the file does not exists
         
+        Notes
+        -----
+        New in version 0.2.0.
         """
 
         if id is None:
@@ -915,6 +976,10 @@ class DataRepoService(ServiceBase):
         
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Improved building the set API params.
+
+        Notes
+        -----
+        New in version 0.2.0.
         """
 
         if name is None:
@@ -953,6 +1018,9 @@ class DataRepoService(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
 
+        Notes
+        -----
+        New in version 0.2.0.
         """
         #TODO: this doesn't remove the file from S3, right now nothing does...
 
@@ -1004,6 +1072,8 @@ class DataRepoService(ServiceBase):
         
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Added new exception when trying to add a resource that already exists.
+
+        New in version 0.2.0.
         """
         attributes = {
             "name": name,
@@ -1064,6 +1134,10 @@ class DataRepoService(ServiceBase):
 
         HERODataRepoFileAlreadyExists
             If the resource already exists
+
+        Notes
+        -----
+        New in version 0.2.0.
         """
         if file_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "file_id"')
@@ -1155,6 +1229,10 @@ class DataRepoService(ServiceBase):
 
         HEROAPIResponseException
             When there is a problem trying to parse the response as json
+
+        Notes
+        -----
+        New in version 0.2.0.
         """
         #TODO: I feel like this should be get_file_download_url, Maybe we add both?
 
@@ -1190,6 +1268,10 @@ class DataRepoService(ServiceBase):
 
         HEROAPIResponseException
             When there is a problem trying to parse the response as json
+
+        Notes
+        -----
+        New in version 0.2.0.
         """
         #TODO: I feel like this should be get_file_upload_url, Maybe we add both?
 
@@ -1243,6 +1325,8 @@ class DataRepoService(ServiceBase):
         Notes
         -----
         Changed in version 0.3.0: Forward arguments to subsequent methods that need them
+
+        New in version 0.2.0.
         """
         if dataset_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "dataset_id"')
@@ -1304,7 +1388,9 @@ class DataRepoService(ServiceBase):
 
         Notes
         -----
-        Changed in version 0.3.0: Forward arguments to subsequent methods that need them
+        Changed in version 0.3.0: Forward arguments to subsequent methods that need them.
+
+        New in version 0.2.0.
         """
 
         if dataset_id is None:
@@ -1359,6 +1445,8 @@ class DataRepoService(ServiceBase):
         Notes
         -----
         Changed in version 0.3.0: Forward arguments to subsequent methods that need them
+
+        New in version 0.2.0.
         """
 
         if name is None:
@@ -1390,6 +1478,9 @@ class DataRepoService(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
 
+        Notes
+        -----
+        New in version 0.2.0.
         """
 
         if file_id is None:
@@ -1421,6 +1512,9 @@ class DataRepoService(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
 
+        Notes
+        -----
+        New in version 0.2.0.
         """
 
         if url is None:
@@ -1457,6 +1551,9 @@ class DataRepoService(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
 
+        Notes
+        -----
+        New in version 0.2.0.
         """
 
         if url is None:

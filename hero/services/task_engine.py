@@ -82,7 +82,7 @@ class TaskEngineService(ServiceBase):
                 raise HEROTaskEngineQueueNotFound()
             raise e
     
-    def read_queue_by_name(self, task_engine_id=None, name=None, metatype="Queue"):
+    def read_queue_by_name(self, task_engine_id : str=None, name : str=None, metatype : str="Queue", state : str=None) -> dict:
         """
         Read a queue by name.
 
@@ -96,6 +96,9 @@ class TaskEngineService(ServiceBase):
 
         metatype : str, required
             Queue metatype. Defaults to "Queue".
+
+        state : str, optional
+            The state of the queue. Could be one of {"active", "deleted"}
 
         Returns
         --------
@@ -120,7 +123,7 @@ class TaskEngineService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.task_engine_url}/queue/metatype/{metatype}"
 
-        params = kwargs_to_json_for_request(name=name, taskEngineId=task_engine_id)
+        params = kwargs_to_json_for_request(name=name, taskEngineId=task_engine_id, state=state)
 
         try: 
             response = self.api.request("GET", url, headers=headers, params=params)
