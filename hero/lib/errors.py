@@ -26,12 +26,24 @@ class HERODataRepoProjectNotFound(Exception):
     def __init__(self, message="HERO Data Repo project not found"):
         super().__init__(message)
 
+class HERODataRepoProjectAlreadyExists(Exception):
+    def __init__(self, message="HERO Data Repo project already exists"):
+        super().__init__(message)
+
 class HERODataRepoDatasetNotFound(Exception):
     def __init__(self, message="HERO Data Repo dataset not found"):
         super().__init__(message)
 
+class HERODataRepoDatasetAlreadyExists(Exception):
+    def __init__(self, message="HERO Data Repo dataset already exists"):
+        super().__init__(message)
+
 class HERODataRepoFileNotFound(Exception):
     def __init__(self, message="HERO Data Repo file not found"):
+        super().__init__(message)
+
+class HERODataRepoFileAlreadyExists(Exception):
+    def __init__(self, message="HERO Data Repo file already exists"):
         super().__init__(message)
 
 class HEROTaskEngineQueueNotFound(Exception):

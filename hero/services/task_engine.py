@@ -4,6 +4,7 @@ from requests.exceptions import HTTPError, JSONDecodeError
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection, HeroRetryError
 from ..lib.errors import MissingRequiredAttribute, HEROTaskEngineQueueNotFound, HEROTaskEngineTaskNotFound
+from ..lib.helpers import kwargs_to_json_for_request
 
 # @decorate_all(log_errors)
 class TaskEngineService(ServiceBase):
@@ -72,9 +73,60 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "queue_id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.task_engine_id}/queue/{queue_id}'
+        url = f'{self.task_engine_url}/queue/{queue_id}'
         try: 
             response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HEROTaskEngineQueueNotFound()
+            raise e
+    
+    def read_queue_by_name(self, task_engine_id : str=None, name : str=None, metatype : str="Queue", state : str=None) -> dict:
+        """
+        Read a queue by name.
+
+        Parameters
+        -----------
+        task_engine_id : str, optional
+            The parent task engine name. Note: in the future this will likely be a UUID.
+
+        name : str, required
+            The queue name.
+
+        metatype : str, required
+            Queue metatype. Defaults to "Queue".
+
+        state : str, optional
+            The state of the queue. Could be one of {"active", "deleted"}
+
+        Returns
+        --------
+        queue : dict
+            The queue attributes.
+
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROTaskEngineQueueNotFound
+            If the queue does not exist
+
+        Notes
+        -----
+        Added in version 0.3.0.
+        """
+        if name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "name"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.task_engine_url}/queue/metatype/{metatype}"
+
+        params = kwargs_to_json_for_request(name=name, taskEngineId=task_engine_id, state=state)
+
+        try: 
+            response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
         except HTTPError as e:
             if e.response.status_code == 404:
@@ -105,7 +157,7 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "queue_id"')
         
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.task_engine_id}/queue/{queue_id}'
+        url = f'{self.task_engine_url}/queue/{queue_id}'
         response = self.api.request('DELETE', url, headers=headers)
         return None
 
@@ -151,7 +203,7 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "metadata"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.task_engine_id}/queue'
+        url = f'{self.task_engine_url}/queue'
         data = json.dumps(attributes)
         response = self.api.request('POST', url, headers=headers, data=data)
         return response.json()
@@ -195,7 +247,7 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "name"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.task_engine_id}/queue/{queue_id}'
+        url = f'{self.task_engine_url}/queue/{queue_id}'
         data = json.dumps(attributes)
         response = self.api.request('POST', url, headers=headers, data=data)
         return response.json()
@@ -222,7 +274,7 @@ class TaskEngineService(ServiceBase):
 
         """
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.task_engine_id}/queue/{queue_id}/tasks'
+        url = f'{self.task_engine_url}/queue/{queue_id}/tasks'
         params = {
             'metatype': metatype,
             'state': state
@@ -258,10 +310,58 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "task_id"')
         
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.task_engine_id}/task/{task_id}'
+        url = f'{self.task_engine_url}/task/{task_id}'
         response = self.api.request('GET', url, headers=headers)
         try: 
             response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HEROTaskEngineTaskNotFound()
+            raise e
+        
+    def read_task_by_name(self, queue_id=None, name=None, metatype="Task"):
+        """
+        Read a task by name.
+
+        Parameters
+        -----------
+        queue_id : str, optional
+            The parent task engine UUID.
+
+        name : str, required
+            The task name.
+
+        metatype : str, required
+            Task metatype. Defaults to "Task".
+
+        Returns
+        --------
+        task : dict
+            The task attributes.
+
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROTaskEngineTaskNotFound
+            If the task does not exist
+
+        Notes
+        -----
+        Added in version 0.3.0.
+        """
+        if name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "name"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.task_engine_url}/task/metatype/{metatype}"
+
+        params = kwargs_to_json_for_request(name=name, queueId=queue_id)
+
+        try: 
+            response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
         except HTTPError as e:
             if e.response.status_code == 404:
@@ -292,7 +392,7 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "task_id"')
         
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.task_engine_id}/task/{task_id}'
+        url = f'{self.task_engine_url}/task/{task_id}'
         response = self.api.request('DELETE', url, headers=headers)
         return response.json()
 
@@ -344,7 +444,7 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "metadata"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.task_engine_id}/task'
+        url = f'{self.task_engine_url}/task'
         data = json.dumps(attributes)
         response = self.api.request('POST', url, headers=headers, data=data)
         return response.json()
@@ -391,7 +491,7 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "name"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.base_url}/{self.task_engine_id}/task/{task_id}'
+        url = f'{self.task_engine_url}/task/{task_id}'
         data = json.dumps(attributes)
         response = self.api.request('POST', url, headers=headers, data=data)
         return response.json()
