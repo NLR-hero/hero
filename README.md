@@ -7,7 +7,7 @@ This is the Python SDK for HERO.
 ### Installation
 
 ```
-pip install git+https://github.nrel.gov/Hero/hero@0.3.0#egg=hero
+pip install git+https://github.nrel.gov/Hero/hero@0.3.1#egg=hero
 ```
 
 ### Execute
@@ -74,4 +74,3 @@ deactivate
 - [] Merge the working branch into main.
 - [] Tag the main branch with the new version
 - [] Push with tags
-
