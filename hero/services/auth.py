@@ -18,7 +18,7 @@ class AuthService(ServiceBase):
 
     def create_permission(self, appType=None, appId=None, principalType=None, principalId=None, resourceType=None, resourceId=None, permissionSet=None):
         """
-        Creates a permission for the data repo
+        Creates a permission for the given app, principal, and resource
 
         Parameters
         ----------
@@ -88,7 +88,7 @@ class AuthService(ServiceBase):
 
     def read_permission(self, appType=None, appId=None, principalType=None, principalId=None, resourceType=None, resourceId=None):
         """
-        Reads a permission for the data repo
+        Reads a permission for the given app, principal, and resource
 
         Parameters
         ----------
@@ -149,7 +149,7 @@ class AuthService(ServiceBase):
 
     def read_permissions(self, appType=None, appId=None):
         """
-        Reads and returns a collection of permissions in the data repo
+        Reads and returns a collection of permissions in the given app, principal, and resource
 
         Parameters
         ----------
@@ -194,7 +194,7 @@ class AuthService(ServiceBase):
 
     def update_permission(self, appType=None, appId=None, principalType=None, principalId=None, resourceType=None, resourceId=None, permissionSet=None):
         """
-        Updates a permission for the data repo
+        Updates a permission for the given app, principal, and resource
 
         Parameters
         ----------
@@ -263,7 +263,7 @@ class AuthService(ServiceBase):
 
     def delete_permission(self, appType=None, appId=None, principalType=None, principalId=None, resourceType=None, resourceId=None):
         """
-        Deletes a permission for the data repo
+        Deletes a permission for the given app, principal, and resource
 
         Parameters
         ----------
