@@ -6,42 +6,42 @@ def test_create_permission():
         auth = hero_client.Auth()
         hero_client.authenticate()
 
-        appType = "data-hub"
-        appId = "dev-hero-test-framework"
-        principalType = "user"
-        principalId = "python-app-test-user"
-        resourceType = "data-repo"
-        resourceId = "dev-hero-test-framework"
-        permissionSet = [
+        app_type = "data-hub"
+        app_id = "dev-hero-test-framework"
+        principal_type = "user"
+        principal_id = "python-app-test-user"
+        resource_type = "data-repo"
+        resource_id = "dev-hero-test-framework"
+        permission_set = [
             "READ_PROJECT",
             "READ_DATASET",
             "READ_FILE"
         ]
 
-        res = auth.create_permission(appType=appType, appId=appId, principalType=principalType, principalId=principalId, resourceType=resourceType, resourceId=resourceId, permissionSet=permissionSet)
+        res = auth.create_permission(app_type=app_type, app_id=app_id, principal_type=principal_type, principal_id=principal_id, resource_type=resource_type, resource_id=resource_id, permission_set=permission_set)
         assert type(res) is dict
-        assert res["permissionSet"] == permissionSet
+        assert res["permissionSet"] == permission_set
 
 def test_read_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
     hero_client.authenticate()
 
-    appType = "data-hub"
-    appId = "dev-hero-test-framework"
-    principalType = "user"
-    principalId = "python-app-test-user"
-    resourceType = "data-repo"
-    resourceId = "dev-hero-test-framework"
+    app_type = "data-hub"
+    app_id = "dev-hero-test-framework"
+    principal_type = "user"
+    principal_id = "python-app-test-user"
+    resource_type = "data-repo"
+    resource_id = "dev-hero-test-framework"
 
-    res = auth.read_permission(appType=appType, appId=appId, principalType=principalType, principalId=principalId, resourceType=resourceType, resourceId=resourceId)
+    res = auth.read_permission(app_type=app_type, app_id=app_id, principal_type=principal_type, principal_id=principal_id, resource_type=resource_type, resource_id=resource_id)
     assert type(res) is dict
-    assert res["appType"] == appType
-    assert res["appId"] == appId
-    assert res["principalType"] == principalType
-    assert res["principalId"] == principalId
-    assert res["resourceType"] == resourceType
-    assert res["resourceId"] == resourceId
+    assert res["appType"] == app_type
+    assert res["appId"] == app_id
+    assert res["principalType"] == principal_type
+    assert res["principalId"] == principal_id
+    assert res["resourceType"] == resource_type
+    assert res["resourceId"] == resource_id
     assert res["permissionSet"] == [
         "READ_PROJECT",
         "READ_DATASET",
@@ -53,10 +53,10 @@ def test_read_permissions():
     auth = hero_client.Auth()
     hero_client.authenticate()
 
-    appType = "data-hub"
-    appId = "dev-hero-test-framework"
+    app_type = "data-hub"
+    app_id = "dev-hero-test-framework"
 
-    permissions = auth.read_permissions(appType=appType, appId=appId)
+    permissions = auth.read_permissions(app_type=app_type, app_id=app_id)
     assert type(permissions) is list
 
 def test_update_permission():
@@ -64,13 +64,13 @@ def test_update_permission():
     auth = hero_client.Auth()
     hero_client.authenticate()
 
-    appType = "data-hub"
-    appId = "dev-hero-test-framework"
-    principalType = "user"
-    principalId = "python-app-test-user"
-    resourceType = "data-repo"
-    resourceId = "dev-hero-test-framework"
-    permissionSet = [
+    app_type = "data-hub"
+    app_id = "dev-hero-test-framework"
+    principal_type = "user"
+    principal_id = "python-app-test-user"
+    resource_type = "data-repo"
+    resource_id = "dev-hero-test-framework"
+    permission_set = [
         "READ_PROJECT",
         "READ_DATASET",
         "READ_FILE",
@@ -79,30 +79,30 @@ def test_update_permission():
         "WRITE_FILE"
     ]
 
-    res = auth.update_permission(appType=appType, appId=appId, principalType=principalType, principalId=principalId, resourceType=resourceType, resourceId=resourceId, permissionSet=permissionSet)
+    res = auth.update_permission(app_type=app_type, app_id=app_id, principal_type=principal_type, principal_id=principal_id, resource_type=resource_type, resource_id=resource_id, permission_set=permission_set)
     assert type(res) is dict
-    assert res["permissionSet"] == permissionSet
+    assert res["permissionSet"] == permission_set
 
 def test_delete_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
     hero_client.authenticate()
 
-    appType = "data-hub"
-    appId = "dev-hero-test-framework"
-    principalType = "user"
-    principalId = "python-app-test-user"
-    resourceType = "data-repo"
-    resourceId = "dev-hero-test-framework"
+    app_type = "data-hub"
+    app_id = "dev-hero-test-framework"
+    principal_type = "user"
+    principal_id = "python-app-test-user"
+    resource_type = "data-repo"
+    resource_id = "dev-hero-test-framework"
 
-    res = auth.delete_permission(appType=appType, appId=appId, principalType=principalType, principalId=principalId, resourceType=resourceType, resourceId=resourceId)
+    res = auth.delete_permission(app_type=app_type, app_id=app_id, principal_type=principal_type, principal_id=principal_id, resource_type=resource_type, resource_id=resource_id)
     assert type(res) is dict
-    assert res["appType"] == appType
-    assert res["appId"] == appId
-    assert res["principalType"] == principalType
-    assert res["principalId"] == principalId
-    assert res["resourceType"] == resourceType
-    assert res["resourceId"] == resourceId
+    assert res["appType"] == app_type
+    assert res["appId"] == app_id
+    assert res["principalType"] == principal_type
+    assert res["principalId"] == principal_id
+    assert res["resourceType"] == resource_type
+    assert res["resourceId"] == resource_id
 
 def test_user_create():
     hero_client = hero.HeroClient()
