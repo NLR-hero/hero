@@ -34,7 +34,7 @@ class DataRepoService(ServiceBase):
         url = f"{self.base_url}/{self.data_repo_id}/projects"
         response = self.api.request("GET", url, headers=headers)
         return response.json()
-    
+
     def read_project(self, id: str) -> dict:
         """
         Read a project by id.
@@ -53,10 +53,10 @@ class DataRepoService(ServiceBase):
         ------
         MissingRequiredAttribute
             If a required attribute is missing
-        
+
         HERODataRepoProjectNotFound
             If the project does not exists
-        
+
         Notes
         -----
         New in version 0.2.0.
@@ -66,7 +66,7 @@ class DataRepoService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/project/{id}"
-        try: 
+        try:
             response = self.api.request("GET", url, headers=headers)
             return response.json()
         except HTTPError as e:
@@ -77,7 +77,7 @@ class DataRepoService(ServiceBase):
     def read_project_by_name(self, name=None, data_repo_id=None, metatype="Project"):
         """
         Read a project by name.
-        
+
         This returns a single project even if there are many with the same name and returns an 404 error if there are no projects, nice!
 
         Parameters
@@ -106,8 +106,8 @@ class DataRepoService(ServiceBase):
 
         Notes
         -----
-        Changed in version 0.3.0: 
-        
+        Changed in version 0.3.0:
+
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Improved building the set API params.
 
@@ -125,14 +125,13 @@ class DataRepoService(ServiceBase):
 
         params = kwargs_to_json_for_request(name=name, dataRepoId=data_repo_id)
 
-        try: 
+        try:
             response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise HERODataRepoProjectNotFound()
             raise e
-
 
     def read_project_datasets(self, project_id=None):
         """
@@ -152,7 +151,7 @@ class DataRepoService(ServiceBase):
         -------
         MissingRequiredAttribute
             If a required attribute is missing
-        
+
         Notes
         -----
         New in version 0.2.0.
@@ -178,11 +177,11 @@ class DataRepoService(ServiceBase):
 
         cascade : bool, optional
             A flag to delete all realted resources of the project.
-        
+
         Returns
         --------
         None
-        
+
         Raises
         -------
         MissingRequiredAttribute
@@ -198,18 +197,18 @@ class DataRepoService(ServiceBase):
 
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
-        
+
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/project/{id}"
         response = self.api.request("DELETE", url, headers=headers)
         return None
-    
+
     def _delete_project_with_cascade(self, id, cascade):
         """
         Remove a project and all of its related resources.
 
-        This method will remove all objects in the project from the bottom up using the delete methods.        
-        
+        This method will remove all objects in the project from the bottom up using the delete methods.
+
         Parameters
         -----------
         id : str, required
@@ -248,23 +247,23 @@ class DataRepoService(ServiceBase):
         """
         Remove a project and all of its related resources.
 
-        This method will remove all objects in the project from the bottom up using the delete methods.        
-        
+        This method will remove all objects in the project from the bottom up using the delete methods.
+
         Parameters
         -----------
         data_repo_id : str, optional
             The Data Repo UUID.
 
         name : str, required
-            The name of the project to remove.  
+            The name of the project to remove.
 
         metatype : str, required
-            The project's metatype.      
-        
+            The project's metatype.
+
         Returns
         --------
         None
-        
+
         Notes
         -----
         Changed in version 0.3.0: Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
@@ -301,7 +300,7 @@ class DataRepoService(ServiceBase):
         --------
         project : dict
             The project attributes
-        
+
         Raises
         -------
         MissingRequiredAttribute
@@ -309,11 +308,11 @@ class DataRepoService(ServiceBase):
 
         HERODataRepoProjectAlreadyExists
             If the resource already exists
-        
+
         Notes
         -----
-        Changed in version 0.3.0: 
-        
+        Changed in version 0.3.0:
+
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Added new exception when trying to add a resource that already exists.
 
@@ -390,7 +389,7 @@ class DataRepoService(ServiceBase):
 
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
-        
+
         attributes = {
             "name": name,
             "metadata": metadata,
@@ -419,7 +418,7 @@ class DataRepoService(ServiceBase):
                 response_error = e.response.json()
                 raise HERODataRepoProjectAlreadyExists(response_error['error']['message'])
             raise e
-        
+
     def get_or_create_project(self, name=None, data_repo_id=None, metatype="Project", metadata={}, private=False):
         """
         Attempt to read a project or create it if it does not exist.
@@ -493,20 +492,20 @@ class DataRepoService(ServiceBase):
         -------
         MissingRequiredAttribute
             If a required attribute is missing
-        
+
         HERODataRepoDatasetNotFound
             If the dataset does not exists
-        
+
         Notes
         -----
         New in version 0.2.0.
-        """        
+        """
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/dataset/{id}"
-        try: 
+        try:
             response = self.api.request("GET", url, headers=headers)
             return response.json()
         except HTTPError as e:
@@ -545,8 +544,8 @@ class DataRepoService(ServiceBase):
 
         Notes
         -----
-        Changed in version 0.3.0: 
-        
+        Changed in version 0.3.0:
+
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Improved building the set API params.
 
@@ -561,7 +560,7 @@ class DataRepoService(ServiceBase):
 
         params = kwargs_to_json_for_request(name=name, projectId=project_id)
 
-        try: 
+        try:
             response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
         except HTTPError as e:
@@ -588,7 +587,7 @@ class DataRepoService(ServiceBase):
         -------
         MissingRequiredAttribute
             If a required attribute is missing
-        
+
         Notes
         -----
         New in version 0.2.0.
@@ -613,12 +612,12 @@ class DataRepoService(ServiceBase):
             The dataset UUID to delete.
 
         cascade : bool, optional
-            A flag to delete all realted resources of the dataset.
-        
+            A flag to delete all related resources of the dataset.
+
         Returns
         -------
         None
-        
+
         Raises
         ------
         MissingRequiredAttribute
@@ -633,7 +632,7 @@ class DataRepoService(ServiceBase):
 
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
-        
+
         headers = self.get_headers(self.client.get_token())
         url = f"{self.data_repo_url}/dataset/{id}"
         response = self.api.request("DELETE", url, headers=headers)
@@ -643,8 +642,8 @@ class DataRepoService(ServiceBase):
         """
         Remove a dataset and all of its related resources.
 
-        This method will remove all objects in the dataset from the bottom up using the delete methods.        
-        
+        This method will remove all objects in the dataset from the bottom up using the delete methods.
+
         Parameters
         -----------
         id : str, required
@@ -677,8 +676,8 @@ class DataRepoService(ServiceBase):
         """
         Remove a dataset and all of its related resources.
 
-        This method will remove all objects in the dataset from the bottom up using the delete methods.        
-        
+        This method will remove all objects in the dataset from the bottom up using the delete methods.
+
         Parameters
         -----------
         project_id : str, optional
@@ -688,19 +687,19 @@ class DataRepoService(ServiceBase):
             The name of the dataset to remove.
 
         metatype : str, optional
-            The dataset metatype. Defaults to "Dataset".   
-            
+            The dataset metatype. Defaults to "Dataset".
+
         cascade : bool, optional
             A flag to delete all realted resources of the dataset.
-        
+
         Returns
         --------
         None
-        
+
         Notes
         -----
-        Changed in version 0.3.0: 
-        
+        Changed in version 0.3.0:
+
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Forward arguments to subsequent methods that need them
 
@@ -734,7 +733,7 @@ class DataRepoService(ServiceBase):
         --------
         dataset : dict
             The dataset attributes
-        
+
         Raises
         -------
         MissingRequiredAttribute
@@ -745,8 +744,8 @@ class DataRepoService(ServiceBase):
 
         Notes
         -----
-        Changed in version 0.3.0: 
-        
+        Changed in version 0.3.0:
+
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Added new exception when trying to add a resource that already exists.
 
@@ -844,7 +843,7 @@ class DataRepoService(ServiceBase):
                 response_error = e.response.json()
                 raise HERODataRepoDatasetAlreadyExists(response_error['error']['message'])
             raise e
-    
+
     def get_or_create_dataset(self, project_id=None, name=None, metatype="Dataset", metadata={}, private=True):
         """
         Attempt to read a dataset or create it if it does not exist.
@@ -919,10 +918,10 @@ class DataRepoService(ServiceBase):
         -------
         MissingRequiredAttribute
             If a required attribute is missing
-        
+
         HERODataRepoFileNotFound
             If the file does not exists
-        
+
         Notes
         -----
         New in version 0.2.0.
@@ -930,10 +929,10 @@ class DataRepoService(ServiceBase):
 
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
-        
+
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/file/{id}"
-        try: 
+        try:
             response = self.api.request("GET", url, headers=headers)
             return response.json()
         except HTTPError as e:
@@ -944,7 +943,7 @@ class DataRepoService(ServiceBase):
     def read_file_by_name(self, dataset_id=None, name=None, metatype="File"):
         """
         Read a file by name.
-        
+
         Parameters
         -----------
         dataset_id : str, optional
@@ -972,8 +971,8 @@ class DataRepoService(ServiceBase):
 
         Notes
         -----
-        Changed in version 0.3.0: 
-        
+        Changed in version 0.3.0:
+
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Improved building the set API params.
 
@@ -990,7 +989,7 @@ class DataRepoService(ServiceBase):
 
         params = kwargs_to_json_for_request(name=name, datasetId=dataset_id)
 
-        try: 
+        try:
             response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
         except HTTPError as e:
@@ -1008,11 +1007,11 @@ class DataRepoService(ServiceBase):
         -----------
         id : str, required
             The file UUID to delete.
-        
+
         Returns
         --------
         None
-        
+
         Raises
         -------
         MissingRequiredAttribute
@@ -1057,7 +1056,7 @@ class DataRepoService(ServiceBase):
         -------
         file : dict
             The file attributes
-        
+
         Raises
         ------
         MissingRequiredAttribute
@@ -1065,11 +1064,11 @@ class DataRepoService(ServiceBase):
 
         HERODataRepoFileAlreadyExists
             If the resource already exists
-        
+
         Notes
         -----
-        Changed in version 0.3.0: 
-        
+        Changed in version 0.3.0:
+
         - Added support to uniquely qualify this resource in the data repo hierarchy by providing the parent resource id.
         - Added new exception when trying to add a resource that already exists.
 
@@ -1087,7 +1086,7 @@ class DataRepoService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "datasetId"')
         if "name" not in attributes.keys():
             raise MissingRequiredAttribute('Missing required attribute: "name"')
-        
+
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/file"
         data = json.dumps(attributes)
@@ -1099,7 +1098,6 @@ class DataRepoService(ServiceBase):
                 response_error = e.response.json()
                 raise HERODataRepoFileAlreadyExists(response_error['error']['message'])
             raise e
-
 
     def update_file(self, file_id=None, name=None, metadata=None, private=None):
         """
@@ -1170,7 +1168,7 @@ class DataRepoService(ServiceBase):
                 response_error = e.response.json()
                 raise HERODataRepoFileAlreadyExists(response_error['error']['message'])
             raise e
-        
+
     def get_or_create_file(self, dataset_id=None, name=None, metatype="File", metadata={}, private=True):
         """
         Attempt to read a file or create it if it does not exist.
@@ -1207,7 +1205,7 @@ class DataRepoService(ServiceBase):
         except HERODataRepoFileNotFound as err:
             file = self.add_file(dataset_id=dataset_id, name=name, private=private, metadata=metadata, metatype=metatype)
             return file
-    
+
     def read_file_download_url(self, file_id=None):
         """
         Get a signed S3 URL from where to download the file with a GET request.
@@ -1332,7 +1330,7 @@ class DataRepoService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "dataset_id"')
         if local_filepath is None:
             raise MissingRequiredAttribute('Missing required attribute: "local_filepath"')
-    
+
         #TODO: what does this throw? add it to the docs.
         assert os.path.exists(local_filepath)
         if name is None:
@@ -1412,7 +1410,7 @@ class DataRepoService(ServiceBase):
             self.upload_file(url, local_filepath)
             return file_resource
 
-    def download_file_by_name(self, dataset_id=None, name=None, metatype='File', local_filepath=None):        
+    def download_file_by_name(self, dataset_id=None, name=None, metatype='File', local_filepath=None):
         """
         Download a file with the file resource name.
 
@@ -1521,7 +1519,7 @@ class DataRepoService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "url"')
         if local_filepath is None:
             raise MissingRequiredAttribute('Missing required attribute: "local_filepath"')
-        
+
         # Read the file data
         with open(local_filepath, "rb") as file:
             file_data = file.read()
@@ -1560,7 +1558,7 @@ class DataRepoService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "url"')
         if local_filepath is None:
             raise MissingRequiredAttribute('Missing required attribute: "local_filepath"')
-    
+
         with self.api.get(url, stream=True) as r:
             r.raise_for_status()
             try:

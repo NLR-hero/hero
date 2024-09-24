@@ -1,3 +1,4 @@
+from .auth import AuthService
 from .data_repo import DataRepoService
 from .data_repo_resilient import DataRepoResilientService
 from .ml_model_registry import MLModelRegistry
