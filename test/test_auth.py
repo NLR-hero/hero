@@ -219,12 +219,13 @@ def test_create_role():
     auth = hero_client.Auth()
     hero_client.authenticate()
 
-    role_name = "test-auth-resource/test-auth-scope"
+    resource = "test-auth-resource"
+    scope = "test-auth-scope"
     description = "Test Auth Role"
 
-    res = auth.create_role(name=role_name, description=description)
+    res = auth.create_role(resource=resource, scope=scope, description=description)
     assert type(res) is dict
-    assert res["name"] == role_name
+    assert res["name"] == f"{resource}/{scope}"
     assert res["description"] == description
 
 def test_read_role():
