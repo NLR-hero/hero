@@ -189,11 +189,14 @@ class AuthService(ServiceBase):
         url = f"{self.base_url}/permissions/{app_type}/{app_id}"
 
         # Add principal_id and principal_type to the URL if provided to query permissions for a specific principal
+        params = None
         if principal_id and principal_type:
-            url = f"{url}?{principal_type}={principal_id}"
+            params = {
+                principal_type: principal_id
+            }
 
         try:
-            response = self.api.request("GET", url, headers=headers)
+            response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
