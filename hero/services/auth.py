@@ -147,7 +147,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def read_permissions(self, app_type=None, app_id=None):
+    def read_permissions(self, app_type=None, app_id=None, principal_type=None, principal_id=None):
         """
         Reads and returns a collection of permissions in the given app, principal, and resource
 
@@ -157,6 +157,10 @@ class AuthService(ServiceBase):
             The type of the app
         app_id : str, required
             The ID of the app
+        principal_type : str, optional
+            The type of the principal
+        principal_id : str, optional
+            The ID of the principal
 
         Returns
         -------
@@ -184,8 +188,15 @@ class AuthService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/permissions/{app_type}/{app_id}"
 
+        # Add principal_id and principal_type to the URL if provided to query permissions for a specific principal
+        params = None
+        if principal_id and principal_type:
+            params = {
+                principal_type: principal_id
+            }
+
         try:
-            response = self.api.request("GET", url, headers=headers)
+            response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
