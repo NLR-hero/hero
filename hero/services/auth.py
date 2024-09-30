@@ -173,7 +173,9 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def read_permissions(self, app_type=None, app_id=None, principal_type=None, principal_id=None):
+    def read_permissions(
+        self, app_type=None, app_id=None, principal_type=None, principal_id=None
+    ):
         """
         Reads and returns a collection of permissions in the given app, principal, and resource
 
@@ -217,9 +219,7 @@ class AuthService(ServiceBase):
         # Add principal_id and principal_type to the URL if provided to query permissions for a specific principal
         params = None
         if principal_id and principal_type:
-            params = {
-                principal_type: principal_id
-            }
+            params = {principal_type: principal_id}
 
         try:
             response = self.api.request("GET", url, headers=headers, params=params)
