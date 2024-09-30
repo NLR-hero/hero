@@ -5,6 +5,7 @@ URL_MAP = {
         # "HERO_DATA_REPO_API_URL": "http://localhost:8002/data-repo/api/v1",
         "HERO_DATA_REPO_API_URL": "https://dev-hero.nrel.gov/data-repo/api/v1",
         "HERO_SEARCH_API_URL": "https://dev-hero.nrel.gov/search/api/v1",
+        # "HERO_AUTH_API_URL": "http://localhost:8001/auth/api/v1",
         "HERO_AUTH_API_URL": "https://dev-hero.nrel.gov/auth/api/v1",
         "HERO_COGNITO_API_URL": "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
         "HERO_ML_MODEL_REGISTRY_URL": "https://REDACTED_APIGW_ID.execute-api.us-west-2.amazonaws.com/dev/m3s/api/v1",
