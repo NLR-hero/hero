@@ -81,9 +81,17 @@ class SearchService(ServiceBase):
         """
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.search_api_url}/search/{search_index}/_msearch"
-        body = json.dumps(ndjson_query)
-        response = self.api.post(url, headers=headers, data=body)
+        
+        additional_headers = {
+            "Content-Type": "Application/x-ndjson",
+            "Accept": "Application/json"
+        }
+        headers.update(additional_headers)
+        
+        url = f"{self.search_api_url}/{search_index}/_msearch"
+        
+        response = self.api.post(url, headers=headers, data=ndjson_query)
+        
         if response.status_code != 200:
             raise HEROAPIResponseException
         return response.json()
