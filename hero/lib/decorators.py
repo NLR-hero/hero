@@ -25,6 +25,7 @@ def log_errors(func):
             return res
         except:
             log.error('Hero Service Error: \n', exc_info=True)
+            raise
     return wrapper
 
 
