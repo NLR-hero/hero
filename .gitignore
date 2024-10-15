@@ -10,3 +10,5 @@ dist
 
 test/download.json
 test/example.json
+
+.DS_Store
