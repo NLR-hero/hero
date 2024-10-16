@@ -16,7 +16,7 @@ class SearchService(ServiceBase):
         # self.search_index = search_index
         self.search_api_url = get_conf_from_collection(URL_MAP, "HERO_SEARCH_API_URL")
 
-    def msearch(self, search_index:str, ndjson_query: str):
+    def msearch(self, search_index:str, ndjson_query: list):
         """
         Perform a multi-search query
 
@@ -24,8 +24,10 @@ class SearchService(ServiceBase):
         ----------
         search_index : str
             The index to be searched
-        ndjson_query : str
-            The query to be performed in NDJSON format as text string
+        ndjson_query : list
+            The query to be performed in NDJSON format (newline-delimited JSON). 
+            Each element in the list is a valid JSON object, interpersed of metadata and query JSON.
+            If the metadata element is empty, the default index will be used.
 
         Returns
         -------
@@ -41,7 +43,7 @@ class SearchService(ServiceBase):
         --------
         ** Basic Usage **
         >>> search_service = SearchService(environment="test")
-        >>> ndjson_query = '{"index": "my_index"}\n{"query": {"match_all": {}}}\n'
+        >>> ndjson_query = [{},{"query": {"match_all": {}}}]
         >>> search_index = 'hero-data-repo-dev-chemcatbio-app'
         >>> search_service.msearch(search_index, ndjson_query)
 
@@ -57,26 +59,28 @@ class SearchService(ServiceBase):
             Query\n
         Metadata lines include options, such as which indexes to search and the type of search.
         Query lines use the query DSL.
+        User input is passed as a JSON object, and converted to NDJSON format before being sent to the API.
 
         - Basic keyword search
-        {"index": "hero-data-repo-dev-chemcatbio-app"}\n{"query": {"match": {"name": "test"}}}\n
+        [{},
+        {"query": {"match": {"name": "test"}}}]
 
         - Basic list resources: list all resources, limit output to 10 results.
-        {"index": "hero-data-repo-dev-chemcatbio-app"}
-        {"query":{"match_all":{}},"size": 10}
+        [{},
+        {"query":{"match_all":{}},"size": 10}]
 
         - List resources by resource type, e.g. only Projects or only Files
-        {"index": "hero-data-repo-dev-chemcatbio-app"}
-        {"query": {"match": {"metatype": "Project"}}}
+        [{},
+        {"query": {"match": {"metatype": "Project"}}}]
 
         - List resources by specific metadata fields
-        {"index": "hero-data-repo-dev-chemcatbio-app"}
-        {"query": {"match": {"metadata.format": "CSV"}}}
+        [{},
+        {"query": {"match": {"metadata.format": "CSV"}}}]
 
         - Get resource aggregations by metadata fields: take average of the file size
         (This might now work with search_api for now, as aggs are not supported in permission insersion yet)
-        {"index": "hero-data-repo-dev-chemcatbio-app"}
-        {"size":0, "aggs":{"avg_size":{"avg":{"field":"metadata.size"}}}}
+        [{},
+        {"size":0, "aggs":{"avg_size":{"avg":{"field":"metadata.size"}}}}]
 
         """
 
@@ -90,7 +94,10 @@ class SearchService(ServiceBase):
         
         url = f"{self.search_api_url}/{search_index}/_msearch"
         
-        response = self.api.post(url, headers=headers, data=ndjson_query)
+        # Generate NDJSON string
+        ndjson_string = "\n".join([json.dumps(action) for action in ndjson_query]) + "\n"
+
+        response = self.api.post(url, headers=headers, data=ndjson_string)
         
         if response.status_code != 200:
             raise HEROAPIResponseException
