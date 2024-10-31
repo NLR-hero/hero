@@ -1,4 +1,4 @@
-<%!    
+<%!
     # Enable offline search using Lunr.js. For explanation of 'fuzziness' parameter, which is
     # added to every query word, see: https://lunrjs.com/guides/searching.html#fuzzy-matches
     # If 'index_docstrings' is False, a shorter index is built, indexing only

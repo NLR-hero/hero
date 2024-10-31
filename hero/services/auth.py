@@ -16,7 +16,16 @@ class AuthService(ServiceBase):
         self.client.add_scope("hero-auth/user")
         self.base_url = get_conf_from_collection(URL_MAP, "HERO_AUTH_API_URL")
 
-    def create_permission(self, app_type=None, app_id=None, principal_type=None, principal_id=None, resource_type=None, resource_id=None, permission_set=None):
+    def create_permission(
+        self,
+        app_type=None,
+        app_id=None,
+        principal_type=None,
+        principal_id=None,
+        resource_type=None,
+        resource_id=None,
+        permission_set=None,
+    ):
         """
         Creates a permission for the given app, principal, and resource
 
@@ -60,19 +69,23 @@ class AuthService(ServiceBase):
         if app_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "app_id"')
         if principal_type is None:
-            raise MissingRequiredAttribute('Missing required attribute: "principal_type"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "principal_type"'
+            )
         if principal_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "principal_id"')
         if resource_type is None:
-            raise MissingRequiredAttribute('Missing required attribute: "resource_type"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "resource_type"'
+            )
         if resource_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "resource_id"')
         if permission_set is None:
-            raise MissingRequiredAttribute('Missing required attribute: "permission_set"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "permission_set"'
+            )
 
-        attributes = {
-            "permissionSet": permission_set
-        }
+        attributes = {"permissionSet": permission_set}
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/permission/{app_type}/{app_id}/{principal_type}/{principal_id}/{resource_type}/{resource_id}"
@@ -86,7 +99,15 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def read_permission(self, app_type=None, app_id=None, principal_type=None, principal_id=None, resource_type=None, resource_id=None):
+    def read_permission(
+        self,
+        app_type=None,
+        app_id=None,
+        principal_type=None,
+        principal_id=None,
+        resource_type=None,
+        resource_id=None,
+    ):
         """
         Reads a permission for the given app, principal, and resource
 
@@ -128,11 +149,15 @@ class AuthService(ServiceBase):
         if app_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "app_id"')
         if principal_type is None:
-            raise MissingRequiredAttribute('Missing required attribute: "principal_type"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "principal_type"'
+            )
         if principal_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "principal_id"')
         if resource_type is None:
-            raise MissingRequiredAttribute('Missing required attribute: "resource_type"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "resource_type"'
+            )
         if resource_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "resource_id"')
 
@@ -147,7 +172,9 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def read_permissions(self, app_type=None, app_id=None, principal_type=None, principal_id=None):
+    def read_permissions(
+        self, app_type=None, app_id=None, principal_type=None, principal_id=None
+    ):
         """
         Reads and returns a collection of permissions in the given app, principal, and resource
 
@@ -191,9 +218,7 @@ class AuthService(ServiceBase):
         # Add principal_id and principal_type to the URL if provided to query permissions for a specific principal
         params = None
         if principal_id and principal_type:
-            params = {
-                principal_type: principal_id
-            }
+            params = {principal_type: principal_id}
 
         try:
             response = self.api.request("GET", url, headers=headers, params=params)
@@ -203,7 +228,16 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def update_permission(self, app_type=None, app_id=None, principal_type=None, principal_id=None, resource_type=None, resource_id=None, permission_set=None):
+    def update_permission(
+        self,
+        app_type=None,
+        app_id=None,
+        principal_type=None,
+        principal_id=None,
+        resource_type=None,
+        resource_id=None,
+        permission_set=None,
+    ):
         """
         Updates a permission for the given app, principal, and resource
 
@@ -247,19 +281,23 @@ class AuthService(ServiceBase):
         if app_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "app_id"')
         if principal_type is None:
-            raise MissingRequiredAttribute('Missing required attribute: "principal_type"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "principal_type"'
+            )
         if principal_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "principal_id"')
         if resource_type is None:
-            raise MissingRequiredAttribute('Missing required attribute: "resource_type"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "resource_type"'
+            )
         if resource_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "resource_id"')
         if permission_set is None:
-            raise MissingRequiredAttribute('Missing required attribute: "permission_set"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "permission_set"'
+            )
 
-        attributes = {
-            "permissionSet": permission_set
-        }
+        attributes = {"permissionSet": permission_set}
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/permission/{app_type}/{app_id}/{principal_type}/{principal_id}/{resource_type}/{resource_id}"
         data = json.dumps(attributes)
@@ -272,7 +310,15 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def delete_permission(self, app_type=None, app_id=None, principal_type=None, principal_id=None, resource_type=None, resource_id=None):
+    def delete_permission(
+        self,
+        app_type=None,
+        app_id=None,
+        principal_type=None,
+        principal_id=None,
+        resource_type=None,
+        resource_id=None,
+    ):
         """
         Deletes a permission for the given app, principal, and resource
 
@@ -314,11 +360,15 @@ class AuthService(ServiceBase):
         if app_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "app_id"')
         if principal_type is None:
-            raise MissingRequiredAttribute('Missing required attribute: "principal_type"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "principal_type"'
+            )
         if principal_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "principal_id"')
         if resource_type is None:
-            raise MissingRequiredAttribute('Missing required attribute: "resource_type"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "resource_type"'
+            )
         if resource_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "resource_id"')
 
@@ -376,12 +426,9 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/principals/user"
-        data = json.dumps({
-            "username": username,
-            "name": name,
-            "email": email,
-            "roles": roles
-        })
+        data = json.dumps(
+            {"username": username, "name": name, "email": email, "roles": roles}
+        )
 
         try:
             response = self.api.request("POST", url, headers=headers, data=data)
@@ -574,7 +621,14 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def create_machine(self, name=None, roles=None, generate_secret=None, callback_urls=None, logout_urls=None):
+    def create_machine(
+        self,
+        name=None,
+        roles=None,
+        generate_secret=None,
+        callback_urls=None,
+        logout_urls=None,
+    ):
         """
         Creates a new machine client
 
@@ -615,13 +669,15 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/principals/machine"
-        data = json.dumps({
-            "name": name,
-            "roles": roles,
-            "generateSecret": generate_secret,
-            "callbackUrls": callback_urls,
-            "logoutUrls": logout_urls
-        })
+        data = json.dumps(
+            {
+                "name": name,
+                "roles": roles,
+                "generateSecret": generate_secret,
+                "callbackUrls": callback_urls,
+                "logoutUrls": logout_urls,
+            }
+        )
 
         try:
             response = self.api.request("POST", url, headers=headers, data=data)
@@ -716,7 +772,15 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def update_machine(self, id=None, name=None, roles=None, generate_secret=None, callback_urls=None, logout_urls=None):
+    def update_machine(
+        self,
+        id=None,
+        name=None,
+        roles=None,
+        generate_secret=None,
+        callback_urls=None,
+        logout_urls=None,
+    ):
         """
         Updates a machine client
 
@@ -757,13 +821,15 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/principals/machine/{id}"
-        data = json.dumps({
-            "name": name,
-            "roles": roles,
-            "generateSecret": generate_secret,
-            "callbackUrls": callback_urls,
-            "logoutUrls": logout_urls
-        })
+        data = json.dumps(
+            {
+                "name": name,
+                "roles": roles,
+                "generateSecret": generate_secret,
+                "callbackUrls": callback_urls,
+                "logoutUrls": logout_urls,
+            }
+        )
 
         try:
             response = self.api.request("PUT", url, headers=headers, data=data)
@@ -852,10 +918,7 @@ class AuthService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/role"
 
-        data = json.dumps({
-            "name": name,
-            "description": description
-        })
+        data = json.dumps({"name": name, "description": description})
 
         try:
             response = self.api.request("POST", url, headers=headers, data=data)
@@ -993,9 +1056,7 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/role/{resource}/{scope}"
-        data = json.dumps({
-            "description": description
-        })
+        data = json.dumps({"description": description})
 
         try:
             response = self.api.request("PUT", url, headers=headers, data=data)
@@ -1048,6 +1109,3 @@ class AuthService(ServiceBase):
             raise HEROAPIResponseException()
         except HTTPError as e:
             raise e
-
-
-
