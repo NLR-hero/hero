@@ -8,7 +8,7 @@ URL_MAP = {
         # "HERO_AUTH_API_URL": "http://localhost:8001/auth/api/v1",
         "HERO_AUTH_API_URL": "https://dev-hero.nrel.gov/auth/api/v1",
         "HERO_COGNITO_API_URL": "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
-        "HERO_ML_MODEL_REGISTRY_URL": "https://REDACTED_APIGW_ID.execute-api.us-west-2.amazonaws.com/dev/m3s/api/v1",
+        "HERO_ML_MODEL_REGISTRY_URL": "https://dev-hero.nrel.gov/ml-model-registry/api/v1",
     },
     "stage": {
         "HERO_TASK_ENGINE_API_URL": "https://stage-hero.nrel.gov/task-engine/api/v1",
@@ -16,7 +16,7 @@ URL_MAP = {
         "HERO_SEARCH_API_URL": "https://stage-hero.nrel.gov/search/api/v1",
         "HERO_AUTH_API_URL": "https://stage-hero.nrel.gov/auth/api/v1",
         "HERO_COGNITO_API_URL": "https://stage-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
-        "HERO_ML_MODEL_REGISTRY_URL": "https://REDACTED_APIGW_ID.execute-api.us-west-2.amazonaws.com/dev/m3s/api/v1",
+        "HERO_ML_MODEL_REGISTRY_URL": "",
     },
     "production": {
         "HERO_TASK_ENGINE_API_URL": "https://hero.nrel.gov/task-engine/api/v1",
@@ -24,6 +24,6 @@ URL_MAP = {
         "HERO_SEARCH_API_URL": "https://hero.nrel.gov/search/api/v1",
         "HERO_AUTH_API_URL": "https://hero.nrel.gov/auth/api/v1",
         "HERO_COGNITO_API_URL": "https://nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
-        "HERO_ML_MODEL_REGISTRY_URL": "https://REDACTED_APIGW_ID.execute-api.us-west-2.amazonaws.com/dev/m3s/api/v1",
+        "HERO_ML_MODEL_REGISTRY_URL": "",
     },
 }
