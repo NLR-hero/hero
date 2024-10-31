@@ -4,9 +4,10 @@ from tqdm import tqdm
 import requests
 
 from ..url_map import URL_MAP
-from ..lib import ServiceBase, get_conf_from_collection
+from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
 
 
+@decorate_all(log_errors)
 class MLModelRegistry(ServiceBase):
 
     def __init__(self, clientInstance, registry_name):
