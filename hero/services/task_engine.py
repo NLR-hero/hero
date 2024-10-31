@@ -448,9 +448,9 @@ class TaskEngineService(ServiceBase):
         response = self.api.request("POST", url, headers=headers, data=data)
         return response.json()
 
-    def update_task(self, task_id, name, metadata={}):
+    def update_task(self, task_id, name, state, metadata={}):
         """
-        Create a new task.
+        Update an existing task.
 
         Parameters
         ----------
@@ -470,7 +470,7 @@ class TaskEngineService(ServiceBase):
         --------
         task : dict
             The task attributes
-
+        
         Raises
         -------
         MissingRequiredAttribute
@@ -478,16 +478,22 @@ class TaskEngineService(ServiceBase):
 
         """
 
-        if "task_id" not in attributes.keys():
-            raise MissingRequiredAttribute('Missing required attribute: "task_id"')
-
-        attributes = {"name": name, "metadata": metadata}
+        attributes = {
+            "name": name,
+            "metadata": metadata,
+            "state": state,
+            # "inputs": inputs,
+            # "outputs": outputs
+        }
 
         if "name" not in attributes.keys():
             raise MissingRequiredAttribute('Missing required attribute: "name"')
+        
+        # if "task_id" not in attributes.keys():
+        #     raise MissingRequiredAttribute('Missing required attribute: "task_id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.task_engine_url}/task/{task_id}"
+        url = f'{self.task_engine_url}/task/{task_id}'
         data = json.dumps(attributes)
-        response = self.api.request("POST", url, headers=headers, data=data)
+        response = self.api.request('POST', url, headers=headers, data=data)
         return response.json()
