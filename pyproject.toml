@@ -20,7 +20,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.9, <=3.12"
 requests = "^2.32.3"
 tenacity = "^8.3.0"
 pyjwt = "^2.8.0"
@@ -35,7 +35,10 @@ Documentation = "https://github.nrel.gov/Hero/hero"
 Repository = "https://github.nrel.gov/Hero/hero"
 "Bug Tracker" = "https://github.nrel.gov/Hero/hero/issues"
 
+[tool.poetry.group.dev.dependencies]
+black = "^24.8.0"
+pre-commit = "^3.8.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-

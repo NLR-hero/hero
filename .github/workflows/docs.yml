@@ -21,15 +21,15 @@ name: pdoc to Github Pages
       #   - '*'
 
 # build the documentation whenever a release is created, edited, or published
-on:  
+on:
   push:
     branches:
       - main
-  
+
 # security: restrict permissions for CI jobs.
 permissions:
     contents: read
-  
+
 jobs:
     # Build the documentation and upload the static HTML files as an artifact.
     build:
@@ -39,7 +39,7 @@ jobs:
         - uses: actions/setup-python@v4
           with:
             python-version: '3.9'
-  
+
         # ADJUST THIS: install all dependencies (including pdoc)
         - run: pip install .
         - run: pip install pdoc
@@ -47,11 +47,11 @@ jobs:
         # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
         - run: pdoc ./hero --template-dir ./pdoc/templates --output-dir docs
         # - run: PUT COMMAND TO MOVE FILES UP A DIR HERE <- we don't need this anymore
-  
+
         - uses: actions/upload-pages-artifact@v1
           with:
             path: docs
-  
+
     # Deploy the artifact to GitHub pages.
     # This is a separate job so that only actions/deploy-pages has the necessary permissions.
     deploy:

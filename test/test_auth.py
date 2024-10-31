@@ -1,26 +1,32 @@
 import pytest
 import hero
 
+
 def test_create_permission():
-        hero_client = hero.HeroClient()
-        auth = hero_client.Auth()
-        hero_client.authenticate()
+    hero_client = hero.HeroClient()
+    auth = hero_client.Auth()
+    hero_client.authenticate()
 
-        app_type = "data-hub"
-        app_id = "dev-hero-test-framework"
-        principal_type = "user"
-        principal_id = "python-app-test-user"
-        resource_type = "data-repo"
-        resource_id = "dev-hero-test-framework"
-        permission_set = [
-            "READ_PROJECT",
-            "READ_DATASET",
-            "READ_FILE"
-        ]
+    app_type = "data-hub"
+    app_id = "dev-hero-test-framework"
+    principal_type = "user"
+    principal_id = "python-app-test-user"
+    resource_type = "data-repo"
+    resource_id = "dev-hero-test-framework"
+    permission_set = ["READ_PROJECT", "READ_DATASET", "READ_FILE"]
 
-        res = auth.create_permission(app_type=app_type, app_id=app_id, principal_type=principal_type, principal_id=principal_id, resource_type=resource_type, resource_id=resource_id, permission_set=permission_set)
-        assert type(res) is dict
-        assert res["permissionSet"] == permission_set
+    res = auth.create_permission(
+        app_type=app_type,
+        app_id=app_id,
+        principal_type=principal_type,
+        principal_id=principal_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        permission_set=permission_set,
+    )
+    assert type(res) is dict
+    assert res["permissionSet"] == permission_set
+
 
 def test_read_permission():
     hero_client = hero.HeroClient()
@@ -34,7 +40,14 @@ def test_read_permission():
     resource_type = "data-repo"
     resource_id = "dev-hero-test-framework"
 
-    res = auth.read_permission(app_type=app_type, app_id=app_id, principal_type=principal_type, principal_id=principal_id, resource_type=resource_type, resource_id=resource_id)
+    res = auth.read_permission(
+        app_type=app_type,
+        app_id=app_id,
+        principal_type=principal_type,
+        principal_id=principal_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+    )
     assert type(res) is dict
     assert res["appType"] == app_type
     assert res["appId"] == app_id
@@ -42,11 +55,8 @@ def test_read_permission():
     assert res["principalId"] == principal_id
     assert res["resourceType"] == resource_type
     assert res["resourceId"] == resource_id
-    assert res["permissionSet"] == [
-        "READ_PROJECT",
-        "READ_DATASET",
-        "READ_FILE"
-    ]
+    assert res["permissionSet"] == ["READ_PROJECT", "READ_DATASET", "READ_FILE"]
+
 
 def test_read_permissions():
     hero_client = hero.HeroClient()
@@ -58,6 +68,7 @@ def test_read_permissions():
 
     permissions = auth.read_permissions(app_type=app_type, app_id=app_id)
     assert type(permissions) is list
+
 
 def test_update_permission():
     hero_client = hero.HeroClient()
@@ -76,12 +87,21 @@ def test_update_permission():
         "READ_FILE",
         "WRITE_PROJECT",
         "WRITE_DATASET",
-        "WRITE_FILE"
+        "WRITE_FILE",
     ]
 
-    res = auth.update_permission(app_type=app_type, app_id=app_id, principal_type=principal_type, principal_id=principal_id, resource_type=resource_type, resource_id=resource_id, permission_set=permission_set)
+    res = auth.update_permission(
+        app_type=app_type,
+        app_id=app_id,
+        principal_type=principal_type,
+        principal_id=principal_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        permission_set=permission_set,
+    )
     assert type(res) is dict
     assert res["permissionSet"] == permission_set
+
 
 def test_delete_permission():
     hero_client = hero.HeroClient()
@@ -95,7 +115,14 @@ def test_delete_permission():
     resource_type = "data-repo"
     resource_id = "dev-hero-test-framework"
 
-    res = auth.delete_permission(app_type=app_type, app_id=app_id, principal_type=principal_type, principal_id=principal_id, resource_type=resource_type, resource_id=resource_id)
+    res = auth.delete_permission(
+        app_type=app_type,
+        app_id=app_id,
+        principal_type=principal_type,
+        principal_id=principal_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+    )
     assert type(res) is dict
     assert res["appType"] == app_type
     assert res["appId"] == app_id
@@ -104,9 +131,10 @@ def test_delete_permission():
     assert res["resourceType"] == resource_type
     assert res["resourceId"] == resource_id
 
+
 def test_user_create():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -123,9 +151,10 @@ def test_user_create():
     assert res["email"] == email
     assert res["roles"] == roles
 
+
 def test_read_user():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -135,9 +164,10 @@ def test_read_user():
     assert type(res) is dict
     assert res["username"] == username
 
+
 def test_update_user():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -149,9 +179,10 @@ def test_update_user():
     assert res["username"] == username
     assert res["roles"] == roles
 
+
 def test_delete_user():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -161,9 +192,10 @@ def test_delete_user():
     assert type(res) is dict
     assert res["username"] == username
 
+
 def test_list_users():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -171,9 +203,10 @@ def test_list_users():
     assert type(res) is dict
     assert type(res["users"]) is list
 
+
 def test_machine_crud():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -203,9 +236,10 @@ def test_machine_crud():
     assert type(res) is dict
     assert res["name"] == machine_name
 
+
 def test_list_machines():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -213,9 +247,10 @@ def test_list_machines():
     assert type(res) is dict
     assert type(res["machines"]) is list
 
+
 def test_create_role():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -228,9 +263,10 @@ def test_create_role():
     assert res["name"] == f"{resource}/{scope}"
     assert res["description"] == description
 
+
 def test_read_role():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -241,9 +277,10 @@ def test_read_role():
     assert type(res) is dict
     assert res["name"] == f"{resource}/{scope}"
 
+
 def test_update_role():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 
@@ -256,9 +293,10 @@ def test_update_role():
     assert res["name"] == f"{resource}/{scope}"
     assert res["description"] == description
 
+
 def test_delete_role():
     hero_client = hero.HeroClient()
-    hero_client.add_scope('hero-auth/admin')
+    hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
     hero_client.authenticate()
 

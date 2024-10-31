@@ -1,4 +1,10 @@
-from tenacity import retry, TryAgain, stop_after_attempt, wait_fixed, retry_if_exception_type
+from tenacity import (
+    retry,
+    TryAgain,
+    stop_after_attempt,
+    wait_fixed,
+    retry_if_exception_type,
+)
 
 from ..lib import errors
 from ..lib import errors, retry_method, track_calls
@@ -13,6 +19,7 @@ retryable_exceptions = (
     | retry_if_exception_type(errors.ClientCreateFileObject)
 )
 
+
 @retry(
     stop=stop_after_attempt(4),
     wait=wait_fixed(1),
@@ -20,9 +27,9 @@ retryable_exceptions = (
     retry=retryable_exceptions,
 )
 def handle_resilient_exceptions(self, func, *args, **kwargs):
-    '''Functions, such as self._login and self._get_active_queue should
+    """Functions, such as self._login and self._get_active_queue should
     not trigger a retry because this will cause an infinite loop.
-    '''
+    """
     try:
         return func(self, *args, **kwargs)
 
@@ -42,25 +49,20 @@ def handle_resilient_exceptions(self, func, *args, **kwargs):
 
 class ResilientServiceMeta(type):
     def __new__(cls, name, bases, dct):
-        dct['_calls'] = 0
-        dct['default_attempts']  = 10
-        dct['default_wait']  = 'fix'
+        dct["_calls"] = 0
+        dct["default_attempts"] = 10
+        dct["default_wait"] = "fix"
 
         for attr in dct:
             if callable(dct[attr]):
-                if not attr.startswith('__'):
-                    if not attr.startswith('_'):
-                        dct[attr] = retry_method(
-                            dct[attr],
-                            handle_resilient_exceptions)
+                if not attr.startswith("__"):
+                    if not attr.startswith("_"):
+                        dct[attr] = retry_method(dct[attr], handle_resilient_exceptions)
                     dct[attr] = track_calls(dct[attr])
 
         return super().__new__(cls, name, bases, dct)
 
+
 class DataRepoResilientService(DataRepoService, metaclass=ResilientServiceMeta):
     def __init__(self, clientInstance, resilient_session=False):
         super().__init__(clientInstance, resilient_session)
-
-
-
-
