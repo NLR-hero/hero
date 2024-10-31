@@ -16,8 +16,7 @@ from ..lib.errors import (
 )
 from ..lib.helpers import kwargs_to_json_for_request
 
-
-# @decorate_all(log_errors)
+@decorate_all(log_errors)
 class TaskEngineService(ServiceBase):
 
     def _configure(self):
@@ -81,7 +80,7 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "queue_id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.task_engine_url}/queue/{queue_id}"
+        url = f'{self.task_engine_url}/queue/{queue_id}'
         try:
             response = self.api.request("GET", url, headers=headers)
             return response.json()
@@ -90,13 +89,7 @@ class TaskEngineService(ServiceBase):
                 raise HEROTaskEngineQueueNotFound()
             raise e
 
-    def read_queue_by_name(
-        self,
-        task_engine_id: str = None,
-        name: str = None,
-        metatype: str = "Queue",
-        state: str = None,
-    ) -> dict:
+    def read_queue_by_name(self, task_engine_id : str=None, name : str=None, metatype : str="Queue", state : str=None) -> dict:
         """
         Read a queue by name.
 
@@ -316,8 +309,8 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "task_id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.task_engine_url}/task/{task_id}"
-        response = self.api.request("GET", url, headers=headers)
+        url = f'{self.task_engine_url}/task/{task_id}'
+        response = self.api.request('GET', url, headers=headers)
         try:
             response = self.api.request("GET", url, headers=headers)
             return response.json()

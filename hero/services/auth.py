@@ -6,8 +6,7 @@ from requests.exceptions import HTTPError, JSONDecodeError
 from ..lib.errors import MissingRequiredAttribute, HEROAPIResponseException
 from ..lib.helpers import kwargs_to_json_for_request
 
-
-# @decorate_all(log_errors)
+@decorate_all(log_errors)
 class AuthService(ServiceBase):
 
     def _configure(self):

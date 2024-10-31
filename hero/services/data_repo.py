@@ -15,8 +15,7 @@ from ..lib.errors import (
 )
 from ..lib.helpers import kwargs_to_json_for_request
 
-
-# @decorate_all(log_errors)
+@decorate_all(log_errors)
 class DataRepoService(ServiceBase):
     def _configure(self):
         """
