@@ -6,6 +6,7 @@ from jwt.exceptions import DecodeError
 from .url_map import URL_MAP
 from .lib import get_conf_from_collection, get_env, get_client_credentials
 from .services import AuthService, DataRepoService, TaskEngineService, MLModelRegistry
+from .services import SearchService
 
 COGNITO_AUTH_URL = get_conf_from_collection(URL_MAP, "HERO_COGNITO_API_URL")
 
@@ -107,3 +108,9 @@ class HeroClient:
         Returns a MLModelRegistry instance.
         """
         return MLModelRegistry(self, m3s_name)
+    
+    def Search(self):
+        """
+        Returns a SearchService instance.
+        """
+        return SearchService(self)
