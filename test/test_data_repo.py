@@ -71,7 +71,7 @@ def test_datasets():
             name=dataset_name, project_id=project["id"]
         )
 
-    # This endpoint does not exists: Not Found for url: https://dev-hero.nrel.gov/data-repo/api/v1/dev-dfw-app/datasets
+    # This endpoint does not exists: Not Found for url: https://dev-hero.nrel.gov/data-repo/api/v1/PROJECT-NAME/datasets
     datasets = data_repo.read_datasets()
     for dataset in datasets:
         print(dataset)
