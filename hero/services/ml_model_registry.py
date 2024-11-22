@@ -5,6 +5,7 @@ import requests
 
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
+from ..lib.errors import MissingRequiredAttribute
 
 
 @decorate_all(log_errors)
@@ -30,26 +31,87 @@ class MLModelRegistry(ServiceBase):
         os.environ["MLFLOW_TRACKING_TOKEN"] = self.client.get_token()
         return f"{self.base_url}/proxy/{self.registry_name}"
 
+    def list_experiments(self, count=None, next_token=None):
+        """
+        Lists the experiments in the registry
+
+        Parameters
+        ----------
+        count : int, optional
+            The number of experiments to list, by default None
+        next_token : str, optional
+            The token to get the next set of experiments, by default None
+
+        Returns
+        -------
+        experiment_collection: dict
+            The collection of experiments
+        """
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiments"
+        params = {"count": count, "nextToken": next_token}
+        response = self.api.request("GET", url, headers=headers, params=params)
+        return response.json()
+
     def read_experiment(self, experiment_id):
         """
         Reads the experiment with the given ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to read
+
+        Returns
+        -------
+        experiment : dict
+            The experiment with the given ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
         """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+
         headers = self.get_headers(self.client.get_token())
-        url = (
-            f"{self.base_url}/registry/{self.registry_name}/experiment/{experiment_id}"
-        )
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}"
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
     def update_experiment(self, experiment_id, attributes):
         """
         Updates the experiment with the given ID
-        Note: Only `name` can be updated
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to update
+        attributes : dict
+            The attributes to update Note: Only `name` can be updated
+
+        Returns
+        -------
+        experiment : dict
+            The updated experiment
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
         """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if attributes is None:
+            raise MissingRequiredAttribute('Missing required attribute: "attributes"')
+
         headers = self.get_headers(self.client.get_token())
-        url = (
-            f"{self.base_url}/registry/{self.registry_name}/experiment/{experiment_id}"
-        )
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}"
         data = json.dumps(attributes)
         response = self.api.request("PUT", url, headers=headers, json=data)
         return response.json()
@@ -57,51 +119,175 @@ class MLModelRegistry(ServiceBase):
     def delete_experiment(self, experiment_id):
         """
         Deletes the experiment with the given ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to delete
+
+        Returns
+        -------
+        experiment : dict
+            The deleted experiment
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
         """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+
         headers = self.get_headers(self.client.get_token())
-        url = (
-            f"{self.base_url}/registry/{self.registry_name}/experiment/{experiment_id}"
-        )
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}"
         response = self.api.request("DELETE", url, headers=headers)
+        return response.json()
+
+    def list_runs(self, experiment_id, count=None, next_token=None):
+        """
+        Lists the runs for the given experiment ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to list runs for
+        count : int, optional
+            The number of runs to list, by default None
+        next_token : str, optional
+            The token to get the next set of runs, by default None
+
+        Returns
+        -------
+        run_collection : dict
+            The collection of runs for the given experiment ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/runs"
+        params = {"count": count, "nextToken": next_token}
+        response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
     def read_run(self, run_id):
         """
         Reads the run with the given ID
+
+        Parameters
+        ----------
+        run_id : str
+            The ID of the run to read
+
+        Returns
+        -------
+        run : dict
+            The run with the given ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
         """
+        if run_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/registry/{self.registry_name}/run/{run_id}"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}"
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
     def delete_run(self, run_id):
         """
         Deletes the run with the given ID
+
+        Parameters
+        ----------
+        run_id : str
+            The ID of the run to delete
+
+        Returns
+        -------
+        run : dict
+            The deleted run
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
         """
+        if run_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/registry/{self.registry_name}/run/{run_id}"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}"
         response = self.api.request("DELETE", url, headers=headers)
         return response.json()
 
     def list_artifacts(self, run_id):
         """
         Lists the artifacts for a given run ID
+
+        Parameters
+        ----------
+        run_id : str
+            The ID of the run to list artifacts for
+
+        Returns
+        -------
+        artifact_collection : dict
+            The collection of artifacts for the given run ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
         """
+        if run_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/registry/{self.registry_name}/run/{run_id}/artifacts"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}/artifacts"
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
     def download_artifact(self, run_id, local_path, artifact_path):
         """
         Downloads the artifact from the given run ID
+
+        Parameters
+        ----------
+        run_id : str
+            The ID of the run to download the artifact from
+        local_path : str
+            The local path to save the artifact to
+        artifact_path : str
+            The path of the artifact in remote storage to download
+
+        Raises
+        ------
+        requests.exceptions.RequestException
+            If there is an error downloading the file
         """
+        if run_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
+        if local_path is None:
+            raise MissingRequiredAttribute('Missing required attribute: "local_path"')
+        if artifact_path is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "artifact_path"'
+            )
+
         try:
             print(f'Downloading artifact "{artifact_path}"...')
             headers = self.get_headers(self.client.get_token())
-            url = (
-                f"{self.base_url}/registry/{self.registry_name}/run/{run_id}/artifact/"
-            )
+            url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}/artifact/"
             params = {"artifactPath": artifact_path}
             response = self.api.request("GET", url, headers=headers, params=params)
 
@@ -133,7 +319,19 @@ class MLModelRegistry(ServiceBase):
 
     def download_artifacts(self, run_id, local_path):
         """
-        Downloads the artifacts from the given run ID
+        Downloads all artifacts associated with the given run ID
+
+        Parameters
+        ----------
+        run_id : str
+            The ID of the run to download artifacts from
+        local_path : str
+            The local path to save the artifacts to
+
+        Raises
+        ------
+        requests.exceptions.RequestException
+            If there is an error downloading a file
         """
         artifacts = self.list_artifacts(run_id)
         for artifact in artifacts:
@@ -153,7 +351,7 @@ class MLModelRegistry(ServiceBase):
         Searches the runs with the given parameters
         """
         # headers = self.get_headers(self.client.get_token())
-        # url = f'{self.base_url}/registry/{self.registry_name}/runs/search'
+        # url = f'{self.base_url}/project/{self.registry_name}/runs/search'
         # data = {
         #     'experiment_ids': experiment_ids,
         #     'filter': filter_string,
