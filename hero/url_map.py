@@ -9,6 +9,7 @@ URL_MAP = {
         # "HERO_AUTH_API_URL": "http://localhost:8001/auth/api/v1",
         "HERO_AUTH_API_URL": "https://dev-hero.nrel.gov/auth/api/v1",
         "HERO_COGNITO_API_URL": "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
+        # "HERO_ML_MODEL_REGISTRY_URL": "http://localhost:8008/ml-model-registry/api/v1",
         "HERO_ML_MODEL_REGISTRY_URL": "https://dev-hero.nrel.gov/ml-model-registry/api/v1",
     },
     "stage": {

@@ -145,7 +145,14 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return response.json()
 
-    def list_runs(self, experiment_id, count=None, next_token=None):
+    def list_runs(
+        self,
+        experiment_id,
+        count=None,
+        next_token=None,
+        search_key=None,
+        sort_order=None,
+    ):
         """
         Lists the runs for the given experiment ID
 
@@ -157,6 +164,10 @@ class MLModelRegistry(ServiceBase):
             The number of runs to list, by default None
         next_token : str, optional
             The token to get the next set of runs, by default None
+        search_key : str, optional
+            The key to search for, by default None (API default is 'attributes.start_time')
+        sort_order : str, optional
+            The order to sort the runs, by default None (API default is 'DESC')
 
         Returns
         -------
@@ -175,7 +186,12 @@ class MLModelRegistry(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/runs"
-        params = {"count": count, "nextToken": next_token}
+        params = {
+            "count": count,
+            "nextToken": next_token,
+            "searchKey": search_key,
+            "sortOrder": sort_order,
+        }
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
