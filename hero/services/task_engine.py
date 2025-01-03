@@ -16,6 +16,7 @@ from ..lib.errors import (
 )
 from ..lib.helpers import kwargs_to_json_for_request
 
+
 @decorate_all(log_errors)
 class TaskEngineService(ServiceBase):
 
@@ -80,7 +81,7 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "queue_id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.task_engine_url}/queue/{queue_id}'
+        url = f"{self.task_engine_url}/queue/{queue_id}"
         try:
             response = self.api.request("GET", url, headers=headers)
             return response.json()
@@ -89,7 +90,13 @@ class TaskEngineService(ServiceBase):
                 raise HEROTaskEngineQueueNotFound()
             raise e
 
-    def read_queue_by_name(self, task_engine_id : str=None, name : str=None, metatype : str="Queue", state : str=None) -> dict:
+    def read_queue_by_name(
+        self,
+        task_engine_id: str = None,
+        name: str = None,
+        metatype: str = "Queue",
+        state: str = None,
+    ) -> dict:
         """
         Read a queue by name.
 
@@ -309,8 +316,8 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "task_id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.task_engine_url}/task/{task_id}'
-        response = self.api.request('GET', url, headers=headers)
+        url = f"{self.task_engine_url}/task/{task_id}"
+        response = self.api.request("GET", url, headers=headers)
         try:
             response = self.api.request("GET", url, headers=headers)
             return response.json()
@@ -470,7 +477,7 @@ class TaskEngineService(ServiceBase):
         --------
         task : dict
             The task attributes
-        
+
         Raises
         -------
         MissingRequiredAttribute
@@ -488,12 +495,86 @@ class TaskEngineService(ServiceBase):
 
         if "name" not in attributes.keys():
             raise MissingRequiredAttribute('Missing required attribute: "name"')
-        
+
         # if "task_id" not in attributes.keys():
         #     raise MissingRequiredAttribute('Missing required attribute: "task_id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f'{self.task_engine_url}/task/{task_id}'
+        url = f"{self.task_engine_url}/task/{task_id}"
         data = json.dumps(attributes)
-        response = self.api.request('POST', url, headers=headers, data=data)
+        response = self.api.request("POST", url, headers=headers, data=data)
+        return response.json()
+
+    def create_event_source(self, queue_id, lambda_name):
+        """
+        This method adds a task engine queue (queue_id) as an event source to an existing lambda function.
+
+        Parameters
+        ----------
+        queue_id : str, required
+            A queue UUID.
+
+        name : str, required
+            The name of the lambda function (e.g. dev-aeroportal-kb-amelia-AeroportalKBAmelia-b1D4WXqKe9WO).
+
+        Returns
+        --------
+        response : dict
+            The response json object with an event_id
+            {
+                'metadata': {
+                    'events': [{
+                        'worker': {
+                            'name': 'dev-aeroportal-kb-amelia-AeroportalKBAmelia-b1D4WXqKe9WO'
+                        },
+                        'id': '00c88f8c-8278-40e9-a48e-c8e5d745f9af'
+                    }]
+                },
+                'updatedOn': '2025-01-02T23:19:59.491Z'
+            }
+
+        Raises
+        -------
+        requests.exceptions.HTTPError:
+            400 Client Error if the request fails either because the link exists or another reason.
+
+        """
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.task_engine_url}/queue/{queue_id}/event"
+        payload = json.dumps({"worker": {"name": lambda_name}})
+        response = self.api.request("POST", url, headers=headers, data=payload)
+        return response.json()
+
+    def delete_event(self, queue_id, event_id):
+        """
+        This method removes a task engine queue (queue_id) as an event source to a lambda function.
+
+        Parameters
+        ----------
+        queue_id : str, required
+            A queue UUID.
+
+        event_id : str, required
+            The event UUID.
+
+        Returns
+        --------
+        response : dict
+            The response json object with an event_id
+            {
+                'metadata': {
+                    'events': []
+                },
+                'updatedOn': '2025-01-02T23:25:48.950Z'
+            }
+
+        Raises
+        -------
+        requests.exceptions.HTTPError:
+            400 Client Error if the request fails.
+
+        """
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.task_engine_url}/queue/{queue_id}/event/{event_id}"
+        response = self.api.request("DELETE", url, headers=headers)
         return response.json()

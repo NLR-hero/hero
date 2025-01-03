@@ -4,7 +4,12 @@ from requests import Session
 from jwt.exceptions import DecodeError
 
 from .url_map import URL_MAP
-from .lib import get_conf_from_collection, get_env, get_client_credentials
+from .lib import (
+    get_conf_from_collection,
+    get_env,
+    get_client_credentials,
+    set_hero_env_from_credentials,
+)
 from .services import AuthService, DataRepoService, TaskEngineService, MLModelRegistry
 from .services import SearchService
 
@@ -21,6 +26,8 @@ class HeroClient:
         Creates the Hero client.
         """
         self._scopes = []
+
+        set_hero_env_from_credentials()  # try to load credentials from home directory
         self.env = get_env()
         self.api = Session()
         client_id, client_secret = get_client_credentials()
@@ -108,7 +115,7 @@ class HeroClient:
         Returns a MLModelRegistry instance.
         """
         return MLModelRegistry(self, m3s_name)
-    
+
     def Search(self):
         """
         Returns a SearchService instance.

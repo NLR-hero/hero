@@ -2,7 +2,7 @@ import os
 import logging
 from functools import wraps
 from tenacity import stop_after_attempt, wait_fixed, wait_exponential
-
+import boto3
 from .errors import HeroRetryError
 
 log = logging.getLogger("hero:service")
@@ -27,8 +27,9 @@ def log_errors(func):
             # print('Function complete, woop woop')
             return res
         except:
-            log.error('Hero Service Error: \n', exc_info=True)
+            log.error("Hero Service Error: \n", exc_info=True)
             raise
+
     return wrapper
 
 
@@ -78,5 +79,47 @@ def retry_method(func, errFunc):
                 local_instance.retry.statistics.get("attempt_number"),
                 local_instance.retry.statistics.get("idle_for"),
             )
+
+    return wrapper
+
+
+def delete_sqs_messages(func):
+    """Deletes all task engine messages when they are used as an event source to lambda."""
+
+    @wraps(func)
+    def wrapper(event, context):
+        # Initialize the SQS client
+
+        sqs = boto3.client("sqs")
+
+        for record in event.get("Records", []):
+            try:
+                # Extract the queue ARN and receipt handle
+                queue_arn = record["eventSourceARN"]
+                receipt_handle = record["receiptHandle"]
+            except Exception as e:
+                print(f"Key error in record: {str(e)}")
+                continue
+
+            # Convert ARN to Queue URL
+            try:
+                queue_url = sqs.get_queue_url(QueueName=queue_arn.split(":")[-1])[
+                    "QueueUrl"
+                ]
+            except Exception as e:
+                print(f"Error resolving Queue URL from ARN: {str(e)}")
+                continue
+
+            # Delete the message
+            try:
+                response = sqs.delete_message(
+                    QueueUrl=queue_url, ReceiptHandle=receipt_handle
+                )
+                print(f"Message deleted successfully: {response}")
+            except Exception as e:
+                print(f"Error deleting message: {str(e)}")
+
+        # Pass the remaining logic to the original Lambda handler
+        return func(event, context)
 
     return wrapper
