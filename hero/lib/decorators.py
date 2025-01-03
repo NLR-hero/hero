@@ -9,6 +9,7 @@ log = logging.getLogger("hero:service")
 
 
 def decorate_all(decorator):
+
     def decorate(cls):
         for attr in cls.__dict__:
             if callable(getattr(cls, attr)) and not attr.startswith("__"):
@@ -19,6 +20,8 @@ def decorate_all(decorator):
 
 
 def log_errors(func):
+    log_all_errors = bool(os.environ.get("HERO_LOG_ALL_ERRORS", "True"))
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
@@ -27,7 +30,8 @@ def log_errors(func):
             # print('Function complete, woop woop')
             return res
         except:
-            log.error("Hero Service Error: \n", exc_info=True)
+            if log_all_errors:
+                log.error("Hero Service Error: \n", exc_info=True)
             raise
 
     return wrapper
