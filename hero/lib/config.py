@@ -42,8 +42,8 @@ def set_hero_env_from_credentials():
             "aeroportal-app": {
                 "dev": {
                     "HERO_CLIENT_ID": "1c5ngb6o6lvtdfkus0sflstdq4",
-                    "HERO_CLIENT_SECRET": "******".
-                    "[ANOTHER_KEY]": "***",
+                    "HERO_CLIENT_SECRET": "******",
+                    "[ANOTHER_KEY]": "***"
                 }
             }
         }
@@ -65,20 +65,21 @@ def set_hero_env_from_credentials():
         }
 
     """
-
-    filepath = pathlib.Path(os.environ["HOME"]) / ".hero/credentials.json"
-    os.environ["HERO_ENV"] = os.environ.get("HERO_ENV", "dev")
-    hero_env = os.environ.get("HERO_ENV")
-    hero_project = os.environ.get("HERO_PROJECT", "")
-
     try:
+        filepath = pathlib.Path(os.environ.get("HOME")) / ".hero/credentials.json"
+        os.environ["HERO_ENV"] = os.environ.get("HERO_ENV", "dev")
+        hero_env = os.environ.get("HERO_ENV")
+        hero_project = os.environ.get("HERO_PROJECT", "")
+
         credentials = json.loads(open(filepath, "r").read())
         these_credentials = credentials[hero_project][hero_env]
+
         for key, value in these_credentials.items():
             os.environ[key] = value
     except FileNotFoundError as e:
-        log.error(f"Unable to load {filepath}")
+        log.error(f"Unable to load ~/.hero/credentials.json")
     except KeyError as e:
         log.error(f"Unable to read key {e}")
-    except Exception:
-        log.error(f"Unable to set credentials from {filepath}")
+    except Exception as e:
+        log.error(str(e))
+        log.error(f"Unable to set credentials from ~/.hero/credentials.json")

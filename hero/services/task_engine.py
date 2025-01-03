@@ -542,6 +542,10 @@ class TaskEngineService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.task_engine_url}/queue/{queue_id}/event"
         payload = json.dumps({"worker": {"name": lambda_name}})
+        print(url)
+        print(payload)
+        print(headers)
+
         response = self.api.request("POST", url, headers=headers, data=payload)
         return response.json()
 
