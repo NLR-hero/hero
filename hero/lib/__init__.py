@@ -12,7 +12,6 @@ from .decorators import (
     log_errors,
     track_calls,
     retry_method,
-    delete_sqs_messages,
 )
 from .errors import HeroRetryError
 from .helpers import set_log_level_from_env
