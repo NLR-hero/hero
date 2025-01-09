@@ -549,7 +549,7 @@ class TaskEngineService(ServiceBase):
         response = self.api.request("POST", url, headers=headers, data=payload)
         return response.json()
 
-    def delete_event(self, queue_id, event_id):
+    def delete_event_source(self, queue_id, event_id):
         """
         This method removes a task engine queue (queue_id) as an event source to a lambda function.
 
