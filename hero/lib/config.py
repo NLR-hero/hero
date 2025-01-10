@@ -65,21 +65,22 @@ def set_hero_env_from_credentials():
         }
 
     """
-    try:
-        filepath = pathlib.Path(os.environ.get("HOME")) / ".hero/credentials.json"
-        os.environ["HERO_ENV"] = os.environ.get("HERO_ENV", "dev")
-        hero_env = os.environ.get("HERO_ENV")
-        hero_project = os.environ.get("HERO_PROJECT", "")
+    if os.environ.get("HERO_CREDENTIALS", "False") == "True":
+        try:
+            filepath = pathlib.Path(os.environ.get("HOME")) / ".hero/credentials.json"
+            os.environ["HERO_ENV"] = os.environ.get("HERO_ENV", "dev")
+            hero_env = os.environ.get("HERO_ENV")
+            hero_project = os.environ.get("HERO_PROJECT", "")
 
-        credentials = json.loads(open(filepath, "r").read())
-        these_credentials = credentials[hero_project][hero_env]
+            credentials = json.loads(open(filepath, "r").read())
+            these_credentials = credentials[hero_project][hero_env]
 
-        for key, value in these_credentials.items():
-            os.environ[key] = value
-    except FileNotFoundError as e:
-        log.error(f"Unable to load ~/.hero/credentials.json")
-    except KeyError as e:
-        log.error(f"Unable to read key {e}")
-    except Exception as e:
-        log.error(str(e))
-        log.error(f"Unable to set credentials from ~/.hero/credentials.json")
+            for key, value in these_credentials.items():
+                os.environ[key] = value
+        except FileNotFoundError as e:
+            log.error(f"Unable to load ~/.hero/credentials.json")
+        except KeyError as e:
+            log.error(f"Unable to read key {e}")
+        except Exception as e:
+            log.error(str(e))
+            log.error(f"Unable to set credentials from ~/.hero/credentials.json")
