@@ -246,11 +246,10 @@ class TaskEngineService(ServiceBase):
             If a required attribute is missing
 
         """
+        attributes = {"name": name, "metadata": metadata, "queue_id": queue_id}
 
         if "queue_id" not in attributes.keys():
             raise MissingRequiredAttribute('Missing required attribute: "queue_id"')
-
-        attributes = {"name": name, "metadata": metadata}
 
         if "name" not in attributes.keys():
             raise MissingRequiredAttribute('Missing required attribute: "name"')
