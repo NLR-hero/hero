@@ -5,6 +5,7 @@ from .config import (
     get_service_id,
     get_conf_from_collection,
     get_env,
+    set_environment,
 )
 from .decorators import (
     decorate_all,
