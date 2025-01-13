@@ -5,7 +5,6 @@ from .config import (
     get_service_id,
     get_conf_from_collection,
     get_env,
-    set_hero_env_from_credentials,
 )
 from .decorators import (
     decorate_all,

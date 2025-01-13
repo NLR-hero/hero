@@ -2,6 +2,7 @@ import os
 import pathlib
 import json
 import logging
+import pathlib
 
 log = logging.getLogger("hero:config")
 
@@ -32,19 +33,17 @@ def get_client_credentials():
     return client_credentials
 
 
-def set_hero_env_from_credentials():
+def set_environment(env):
     """
     This function will set the HERO environment variables from a file stored in ~/.hero/.credentials.json
 
     Ensure you have your hero credentials saved in `~/.hero/credentials.json` format.
 
         {
-            "aeroportal-app": {
-                "dev": {
-                    "HERO_CLIENT_ID": "1c5ngb6o6lvtdfkus0sflstdq4",
-                    "HERO_CLIENT_SECRET": "******",
-                    "[ANOTHER_KEY]": "***"
-                }
+            "dev-aeroportal": {
+                "HERO_CLIENT_ID": "1c5ngb6o6lvtdfkus0sflstdq4",
+                "HERO_CLIENT_SECRET": "******",
+                "[ANOTHER_KEY]": "***"
             }
         }
 
@@ -65,22 +64,18 @@ def set_hero_env_from_credentials():
         }
 
     """
-    if os.environ.get("HERO_CREDENTIALS", "False") == "True":
-        try:
-            filepath = pathlib.Path(os.environ.get("HOME")) / ".hero/credentials.json"
-            os.environ["HERO_ENV"] = os.environ.get("HERO_ENV", "dev")
-            hero_env = os.environ.get("HERO_ENV")
-            hero_project = os.environ.get("HERO_PROJECT", "")
 
-            credentials = json.loads(open(filepath, "r").read())
-            these_credentials = credentials[hero_project][hero_env]
+    try:
+        filepath = pathlib.Path(os.environ.get("HOME")) / ".hero/credentials.json"
+        credentials = json.loads(open(filepath, "r").read())
+        these_credentials = credentials[env]
+        for key, value in these_credentials.items():
+            os.environ[key] = value
 
-            for key, value in these_credentials.items():
-                os.environ[key] = value
-        except FileNotFoundError as e:
-            log.error(f"Unable to load ~/.hero/credentials.json")
-        except KeyError as e:
-            log.error(f"Unable to read key {e}")
-        except Exception as e:
-            log.error(str(e))
-            log.error(f"Unable to set credentials from ~/.hero/credentials.json")
+    except FileNotFoundError as e:
+        log.error(f"Unable to load ~/.hero/credentials.json")
+    except KeyError as e:
+        log.error(f"Unable to read key {e}")
+    except Exception as e:
+        log.error(str(e))
+        log.error(f"Unable to set credentials from ~/.hero/credentials.json")

@@ -8,13 +8,9 @@ from .lib import (
     get_conf_from_collection,
     get_env,
     get_client_credentials,
-    set_hero_env_from_credentials,
 )
 from .services import AuthService, DataRepoService, TaskEngineService, MLModelRegistry
 from .services import SearchService
-
-COGNITO_AUTH_URL = get_conf_from_collection(URL_MAP, "HERO_COGNITO_API_URL")
-
 
 class HeroClient:
     """
@@ -27,7 +23,6 @@ class HeroClient:
         """
         self._scopes = []
 
-        set_hero_env_from_credentials()  # try to load credentials from home directory
         self.env = get_env()
         self.api = Session()
         client_id, client_secret = get_client_credentials()
@@ -45,6 +40,8 @@ class HeroClient:
         )
         # Request access_token following client credentials grant flow
         basic_auth = f"Basic {base64.urlsafe_b64encode(app_client_id_secret).decode()}"
+
+        COGNITO_AUTH_URL = get_conf_from_collection(URL_MAP, "HERO_COGNITO_API_URL")
 
         response = self.api.post(
             COGNITO_AUTH_URL,
