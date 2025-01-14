@@ -54,7 +54,7 @@ def set_environment(application_id, path=None):
 
     """
     if path is None:
-        path = pathlib.Path(os.environ.get("HOME") / ".hero" / "credentials.json")
+        path = str(pathlib.Path(os.environ.get("HOME")) / ".hero" / "credentials.json")
 
     try:
         credentials = json.loads(open(path, "r").read())
