@@ -20,7 +20,7 @@ def decorate_all(decorator):
 
 
 def log_errors(func):
-    log_all_errors = os.environ.get("HERO_LOG_ALL_ERRORS", "True") == "True"
+    log_all_errors = os.environ.get("HERO_LOG_ALL_ERRORS", "False") == "True"
 
     @wraps(func)
     def wrapper(*args, **kwargs):

@@ -33,7 +33,7 @@ def get_client_credentials():
     return client_credentials
 
 
-def set_environment(env):
+def set_environment(application_id, path=None):
     """
     This function will set the HERO environment variables from a file stored in ~/.hero/.credentials.json
 
@@ -50,32 +50,22 @@ def set_environment(env):
 
     Parameters
     ----------
-    None
-
-    Returns
-    --------
-    response : dict
-        The response json object with an event_id
-        {
-            'metadata': {
-                'events': []
-            },
-            'updatedOn': '2025-01-02T23:25:48.950Z'
-        }
+    application_id: name in the credentials.json file (e.g. dev-aeroportal)
 
     """
+    if path is None:
+        path = pathlib.Path(os.environ.get("HOME") / ".hero" / "credentials.json")
 
     try:
-        filepath = pathlib.Path(os.environ.get("HOME")) / ".hero/credentials.json"
-        credentials = json.loads(open(filepath, "r").read())
-        these_credentials = credentials[env]
+        credentials = json.loads(open(path, "r").read())
+        these_credentials = credentials[application_id]
         for key, value in these_credentials.items():
             os.environ[key] = value
 
     except FileNotFoundError as e:
-        log.error(f"Unable to load ~/.hero/credentials.json")
+        log.error(f"Unable to load {path}")
     except KeyError as e:
         log.error(f"Unable to read key {e}")
     except Exception as e:
         log.error(str(e))
-        log.error(f"Unable to set credentials from ~/.hero/credentials.json")
+        log.error(f"Unable to set credentials from {path}")

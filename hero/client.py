@@ -12,6 +12,7 @@ from .lib import (
 from .services import AuthService, DataRepoService, TaskEngineService, MLModelRegistry
 from .services import SearchService
 
+
 class HeroClient:
     """
     Primary client for interfacing with the HERO API. Provides access to all services.
@@ -41,10 +42,10 @@ class HeroClient:
         # Request access_token following client credentials grant flow
         basic_auth = f"Basic {base64.urlsafe_b64encode(app_client_id_secret).decode()}"
 
-        COGNITO_AUTH_URL = get_conf_from_collection(URL_MAP, "HERO_COGNITO_API_URL")
+        cognito_auth_url = get_conf_from_collection(URL_MAP, "HERO_COGNITO_API_URL")
 
         response = self.api.post(
-            COGNITO_AUTH_URL,
+            cognito_auth_url,
             data=f'grant_type=client_credentials&scope={" ".join(self._scopes)}&client_id={self._client_id}',
             headers={
                 "Authorization": basic_auth,
