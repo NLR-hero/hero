@@ -4,11 +4,13 @@ from requests import Session
 from jwt.exceptions import DecodeError
 
 from .url_map import URL_MAP
-from .lib import get_conf_from_collection, get_env, get_client_credentials
+from .lib import (
+    get_conf_from_collection,
+    get_env,
+    get_client_credentials,
+)
 from .services import AuthService, DataRepoService, TaskEngineService, MLModelRegistry
 from .services import SearchService
-
-COGNITO_AUTH_URL = get_conf_from_collection(URL_MAP, "HERO_COGNITO_API_URL")
 
 
 class HeroClient:
@@ -21,6 +23,7 @@ class HeroClient:
         Creates the Hero client.
         """
         self._scopes = []
+
         self.env = get_env()
         self.api = Session()
         client_id, client_secret = get_client_credentials()
@@ -39,8 +42,10 @@ class HeroClient:
         # Request access_token following client credentials grant flow
         basic_auth = f"Basic {base64.urlsafe_b64encode(app_client_id_secret).decode()}"
 
+        cognito_auth_url = get_conf_from_collection(URL_MAP, "HERO_COGNITO_API_URL")
+
         response = self.api.post(
-            COGNITO_AUTH_URL,
+            cognito_auth_url,
             data=f'grant_type=client_credentials&scope={" ".join(self._scopes)}&client_id={self._client_id}',
             headers={
                 "Authorization": basic_auth,
@@ -108,7 +113,7 @@ class HeroClient:
         Returns a MLModelRegistry instance.
         """
         return MLModelRegistry(self, m3s_name)
-    
+
     def Search(self):
         """
         Returns a SearchService instance.

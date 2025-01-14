@@ -3,12 +3,12 @@ name = "hero"
 version = "0.6.1"
 authors = [
     "Monte Lunacek <monte.lunacek@nrel.gov>",
-    "Nick Wunder <nick.wunder@nrel.gov>"
+    "Nick Wunder <nick.wunder@nrel.gov>",
 ]
 maintainers = [
     "Monte Lunacek <monte.lunacek@nrel.gov>",
     "Nick Wunder <nick.wunder@nrel.gov>",
-    "Joseph Smith <joseph.smith@nrel.gov>"
+    "Joseph Smith <joseph.smith@nrel.gov>",
 ]
 description = "Python client for HERO"
 readme = "README.md"

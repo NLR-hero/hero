@@ -1,6 +1,7 @@
 import os
 
-from .lib import errors
+from . lib import errors
+from . lib.config import set_environment
 
 from .client import HeroClient
 
