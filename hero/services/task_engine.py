@@ -286,6 +286,30 @@ class TaskEngineService(ServiceBase):
         params = {"metatype": metatype, "state": state}
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
+    
+    def pull_tasks(self, queue_id, receive):
+        """
+        Pull tasks from the queue. This is distinct from read_tasks which simply returns Task items. Pulling a task will mutate the state of the Task by performing an upsert to make sure that the task is only consumed once.
+
+        Parameters
+        ----------
+        queue_id : str, required
+            A queue UUID.
+
+        receive : int, required
+            The number of tasks to pull from the queue (Max 20).
+
+        Returns
+        -------
+        tasks : list[dict]
+            A list of tasks where each dict is task attributes.
+
+        """
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.task_engine_url}/tasks"
+        params = { "queueId": queue_id, "receive": receive }
+        response = self.api.request("GET", url, headers=headers, params=params)
+        return response.json()
 
     def read_task(self, task_id):
         """
