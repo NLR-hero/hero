@@ -260,9 +260,42 @@ class TaskEngineService(ServiceBase):
         response = self.api.request("POST", url, headers=headers, data=data)
         return response.json()
 
-    def read_tasks(self, queue_id, metatype="Task", state="ready"):
+    def read_tasks(self, queue_id, metatype="Task", state="ready", exists=0):
         """
         List tasks.
+
+        Parameters
+        ----------
+        queue_id : str, required
+            A queue UUID.
+
+        metatype : str, optional
+            The metatype of the task. Defaults to "Task".
+
+        state : str, optional
+            The state of tasks to list. Defaults to "ready".
+
+        exists : int, optional
+            Check if tasts exists without returning the full set.
+
+        Returns
+        -------
+        tasks : list[dict]
+            A list of tasks where each dict is task attributes.
+
+        response : boolean
+            When exists=1. 
+
+        """
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.task_engine_url}/queue/{queue_id}/tasks"
+        params = {"metatype": metatype, "state": state, "exists": exists}
+        response = self.api.request("GET", url, headers=headers, params=params)
+        return response.json()
+    
+    def count_tasks(self, queue_id, metatype="Task", state="ready"):
+        """
+        Count tasks.
 
         Parameters
         ----------
@@ -278,11 +311,11 @@ class TaskEngineService(ServiceBase):
         Returns
         -------
         tasks : list[dict]
-            A list of tasks where each dict is task attributes.
+            A count of tasks by state and metatype in a queue.
 
         """
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.task_engine_url}/queue/{queue_id}/tasks"
+        url = f"{self.task_engine_url}/queue/{queue_id}/tasks/count"
         params = {"metatype": metatype, "state": state}
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
