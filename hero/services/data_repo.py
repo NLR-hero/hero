@@ -1081,7 +1081,7 @@ class DataRepoService(ServiceBase):
         return None
 
     def add_file(
-        self, dataset_id=None, name=None, metatype="File", metadata={}, private=True
+        self, dataset_id=None, name=None, path=None, metatype="File", metadata={}, private=True
     ):
         """
         Create a new file.
@@ -1131,6 +1131,7 @@ class DataRepoService(ServiceBase):
             "metatype": metatype,
             "metadata": metadata,
             "private": private,
+            "path": path
         }
 
         if "datasetId" not in attributes.keys():
@@ -1221,7 +1222,7 @@ class DataRepoService(ServiceBase):
             raise e
 
     def get_or_create_file(
-        self, dataset_id=None, name=None, metatype="File", metadata={}, private=True
+        self, dataset_id=None, name=None, path=None, metatype="File", metadata={}, private=True
     ):
         """
         Attempt to read a file or create it if it does not exist.
@@ -1261,6 +1262,7 @@ class DataRepoService(ServiceBase):
             file = self.add_file(
                 dataset_id=dataset_id,
                 name=name,
+                path=path,
                 private=private,
                 metadata=metadata,
                 metatype=metatype,
@@ -1350,6 +1352,7 @@ class DataRepoService(ServiceBase):
         dataset_id=None,
         local_filepath=None,
         name=None,
+        path=None,
         metatype="File",
         metadata={},
         private=True,
@@ -1415,7 +1418,7 @@ class DataRepoService(ServiceBase):
             return file_resource
         except HERODataRepoFileNotFound as e:
             file_resource = self.add_file(
-                dataset_id, name, metatype, metadata, private=private
+                dataset_id, name, path, metatype, metadata, private=private
             )
             try:
                 url = self.read_file_upload_url(file_resource["id"])
@@ -1429,6 +1432,7 @@ class DataRepoService(ServiceBase):
         self,
         dataset_id=None,
         local_filepath=None,
+        path=None,
         name=None,
         metatype="File",
         metadata={},
@@ -1494,6 +1498,7 @@ class DataRepoService(ServiceBase):
             file_resource = self.add_file(
                 dataset_id,
                 name=name,
+                path=path,
                 metatype=metatype,
                 metadata=metadata,
                 private=private,
