@@ -1094,6 +1094,9 @@ class DataRepoService(ServiceBase):
         name : str, required
             The name of the file.
 
+        path: str, optional
+            path of file on Vast, if not using Vast should be None
+
         metatype : str, optional
             The file metatype. Defaults to "File".
 
@@ -1235,6 +1238,9 @@ class DataRepoService(ServiceBase):
         name : str, required
             The file name.
 
+        path: str, optional
+            path of file on Vast, if not using Vast should be None
+
         metatype : str, optional
             The file metatype. Defaults to "File".
 
@@ -1373,6 +1379,9 @@ class DataRepoService(ServiceBase):
         name : str, required
             The name to give the file resource. Defaults to the name of the file to upload.
 
+        path: str, optional
+            path of file on Vast, if not using Vast should be None
+
         metatype : str, optional
             The file metatype. Defaults to "File".
 
@@ -1448,6 +1457,9 @@ class DataRepoService(ServiceBase):
 
         local_filepath : str, required
             The path to a file to upload.
+
+        path: str, optional
+            path of file on Vast, if not using Vast should be None
 
         name : str, required
             The name to give the file resource. Defaults to the name of the file to upload.
