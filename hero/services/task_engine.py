@@ -260,7 +260,7 @@ class TaskEngineService(ServiceBase):
         response = self.api.request("POST", url, headers=headers, data=data)
         return response.json()
 
-    def read_tasks(self, queue_id, metatype="Task", state="ready", exists=0):
+    def read_tasks(self, queue_id, metatype="Task", state="ready", exists=None):
         """
         List tasks.
 
@@ -290,6 +290,7 @@ class TaskEngineService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.task_engine_url}/queue/{queue_id}/tasks"
         params = {"metatype": metatype, "state": state, "exists": exists}
+        params = {key: value for key, value in params.items() if value is not None}
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
     
