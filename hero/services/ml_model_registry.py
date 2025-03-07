@@ -221,6 +221,74 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
+    def update_run(self, run_id, attributes):
+        """
+        Updates a run in the model registry
+
+        Parameters
+        ----------
+        run_id : str
+            The ID of the run to update
+        attributes : dict
+            The attributes to update Note: Only `name` and `description` can be updated
+
+        Returns
+        -------
+        run : dict
+            The updated run
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if run_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
+        if attributes is None:
+            raise MissingRequiredAttribute('Missing required attribute: "attributes"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}"
+        data = json.dumps(attributes)
+        response = self.api.request("PUT", url, headers=headers, json=data)
+        return response.json()
+
+    def read_metric_history(self, run_id, metric, count=None, next_token=None):
+        """
+        Reads the history of a metric for a given run ID in the model registry
+
+        Parameters
+        ----------
+        run_id : str
+            The ID of the run to read metric history for
+        metric : str
+            The name of the metric to read history for
+        count : int, optional
+            The number of metrics to return, by default None
+        next_token : str, optional
+            The token for the next page of metrics, by default None
+
+        Returns
+        -------
+        metric_history : dict
+            The history of the metric for the given run ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if run_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
+        if metric is None:
+            raise MissingRequiredAttribute('Missing required attribute: "metric"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}/history"
+        params = {"count": count, "nextToken": next_token, "metric": metric}
+        response = self.api.request("GET", url, headers=headers, params=params)
+        return response.json()
+
     def delete_run(self, run_id):
         """
         Deletes the run with the given ID
