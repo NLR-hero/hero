@@ -2,8 +2,8 @@ URL_MAP = {
     "dev": {
         # "HERO_TASK_ENGINE_API_URL": "http://localhost:8003/task-engine/api/v1",
         "HERO_TASK_ENGINE_API_URL": "https://dev-hero.nrel.gov/task-engine/api/v1",
-        "HERO_DATA_REPO_API_URL": "http://localhost:8002/data-repo/api/v1",
-        # "HERO_DATA_REPO_API_URL": "https://dev-hero.nrel.gov/data-repo/api/v1",
+        # "HERO_DATA_REPO_API_URL": "http://localhost:8002/data-repo/api/v1",
+        "HERO_DATA_REPO_API_URL": "https://dev-hero.nrel.gov/data-repo/api/v1",
         # "HERO_SEARCH_API_URL": "http://localhost:8005/search/api/v1",
         "HERO_SEARCH_API_URL": "https://dev-hero.nrel.gov/search/api/v1",
         # "HERO_AUTH_API_URL": "http://localhost:8001/auth/api/v1",
