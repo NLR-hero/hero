@@ -112,3 +112,31 @@ def test_files():
     os.remove("tmp")
     os.remove("tmp_download")
     data_repo.delete_project(id=project["id"], cascade=True)
+
+def test_create_entity_by_id():
+    hero_client = hero.HeroClient()
+    data_repo = hero_client.DataRepo()
+    # add scope for special permissions
+    data_repo.client.add_scope("data-repo/admin")
+    hero_client.authenticate()
+    project_name = "testing-project-uuid-name"
+    project_id = "testing-project-uuid"
+    dataset_name = "testing-dataset-uuid-name"
+    dataset_id = "testing-dataset-uuid"
+    file_name = "testing-file-uuid-name"
+    file_id = "testing-file-uuid"
+
+    project = data_repo.add_project(id=project_id, name=project_name)
+    assert project["name"] == project_name
+    assert project["id"] == project_id
+
+    dataset = data_repo.add_dataset(id=dataset_id, project_id=project_id, name=dataset_name)
+    assert dataset["name"] == dataset_name
+    assert dataset["id"] == dataset_id
+
+    file_obj = data_repo.add_file(id=file_id, dataset_id=dataset_id, name=file_name)
+    assert file_obj["name"] == file_name
+    assert file_obj["id"] == file_id
+    
+    data_repo.delete_project(id=project["id"], cascade=True)
+    
