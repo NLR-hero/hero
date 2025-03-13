@@ -72,6 +72,7 @@ def test_datasets():
         )
 
     # This endpoint does not exists: Not Found for url: https://dev-hero.nrel.gov/data-repo/api/v1/PROJECT-NAME/datasets
+    # This endpoint is now added to the data-repo-api to list all datasets across projects
     datasets = data_repo.read_datasets()
     for dataset in datasets:
         print(dataset)
@@ -108,6 +109,10 @@ def test_files():
     data_repo.download_file_by_name(
         dataset_id=dataset["id"], name=file_name, local_filepath="tmp_download"
     )
+
+    files = data_repo.read_dataset_files(dataset_id=dataset["id"])
+    for file in files:
+        print(file)
 
     os.remove("tmp")
     os.remove("tmp_download")
