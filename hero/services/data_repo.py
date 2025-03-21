@@ -15,6 +15,7 @@ from ..lib.errors import (
 )
 from ..lib.helpers import kwargs_to_json_for_request
 
+
 @decorate_all(log_errors)
 class DataRepoService(ServiceBase):
     def _configure(self):
@@ -967,8 +968,8 @@ class DataRepoService(ServiceBase):
         """
         headers = self.get_headers(self.client.get_token())
         if dataset_id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "dataset_id"')
-        url = '/'.join([self.data_repo_url,'dataset',dataset_id, 'files'])
+            raise MissingRequiredAttribute(f"Missing required attribute: {dataset_id}")
+        url = "/".join([self.data_repo_url, "dataset", dataset_id, "files"])
         try:
             response = self.api.request("GET", url, headers=headers)
         except HTTPError as e:
@@ -1110,7 +1111,13 @@ class DataRepoService(ServiceBase):
         return None
 
     def add_file(
-        self, dataset_id=None, name=None, path=None, metatype="File", metadata={}, private=True
+        self,
+        dataset_id=None,
+        name=None,
+        path=None,
+        metatype="File",
+        metadata={},
+        private=True,
     ):
         """
         Create a new file.
@@ -1163,7 +1170,7 @@ class DataRepoService(ServiceBase):
             "metatype": metatype,
             "metadata": metadata,
             "private": private,
-            "path": path
+            "path": path,
         }
 
         if "datasetId" not in attributes.keys():
@@ -1254,7 +1261,13 @@ class DataRepoService(ServiceBase):
             raise e
 
     def get_or_create_file(
-        self, dataset_id=None, name=None, path=None, metatype="File", metadata={}, private=True
+        self,
+        dataset_id=None,
+        name=None,
+        path=None,
+        metatype="File",
+        metadata={},
+        private=True,
     ):
         """
         Attempt to read a file or create it if it does not exist.
