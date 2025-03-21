@@ -54,6 +54,11 @@ class HeroClient:
             verify=False,
         )
 
+        if response.status_code != 200:
+            raise Exception(
+                f"Failed to fetch access token: {response.status_code} - {response.text}, {self._scopes}"
+            )
+
         self._access_token = response.json()["access_token"]
 
     def _decode_token(self, token):
@@ -108,11 +113,12 @@ class HeroClient:
         """
         return TaskEngineService(self, application_id)
 
-    def MLModelRegistry(self, m3s_name):
+    def MLModelRegistry(self, application_id=None):
         """
         Returns a MLModelRegistry instance.
         """
-        return MLModelRegistry(self, m3s_name)
+        self.authInstance = self.Auth()
+        return MLModelRegistry(self, application_id)
 
     def Search(self):
         """

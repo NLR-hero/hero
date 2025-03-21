@@ -11,18 +11,24 @@ from ..lib.errors import MissingRequiredAttribute
 @decorate_all(log_errors)
 class MLModelRegistry(ServiceBase):
 
-    def __init__(self, clientInstance, registry_name):
-        if not registry_name:
-            raise ValueError("registry_name must be provided")
-        self.base_url = get_conf_from_collection(URL_MAP, "HERO_ML_MODEL_REGISTRY_URL")
-        self.registry_name = registry_name
-        super().__init__(clientInstance)
-
     def _configure(self):
         """
         Sets the API and adds the user scope
         """
-        self.client.add_scope("m3s/user")
+        self.registry_name = self.application_id
+        self.client.add_scope("ml-model-registry/user")
+        self.base_url = get_conf_from_collection(URL_MAP, "HERO_ML_MODEL_REGISTRY_URL")
+
+    def get_client_credentials(self):
+        """
+        Retrieves the client credentials for the ML Model Registry and sets them in the environment variables.
+        """
+        client_credentials = self.client.authInstance.get_client_credentials(
+            self.registry_name, f"hero-service-role-ops-{self.registry_name}"
+        )
+        os.environ["AWS_ACCESS_KEY_ID"] = client_credentials["AccessKeyId"]
+        os.environ["AWS_SECRET_ACCESS_KEY"] = client_credentials["SecretAccessKey"]
+        os.environ["AWS_SESSION_TOKEN"] = client_credentials["SessionToken"]
 
     def get_tracking_uri(self):
         """
