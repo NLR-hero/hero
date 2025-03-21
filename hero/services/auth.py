@@ -6,6 +6,7 @@ from requests.exceptions import HTTPError, JSONDecodeError
 from ..lib.errors import MissingRequiredAttribute, HEROAPIResponseException
 from ..lib.helpers import kwargs_to_json_for_request
 
+
 @decorate_all(log_errors)
 class AuthService(ServiceBase):
 
@@ -1104,6 +1105,49 @@ class AuthService(ServiceBase):
 
         try:
             response = self.api.request("DELETE", url, headers=headers)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def get_client_credentials(self, application_id, role_id):
+        """
+        Returns the client credentials for a given application and role.
+
+        Parameters
+        ----------
+        application_id : str, required
+            The ID of the application
+        role_id : str, required
+            The ID of the role
+        Returns
+        -------
+        credentials : dict
+            The client credentials containing the access token and other information
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        HEROAPIResponseException
+            If the API response is not parsable JSON
+        Notes
+        -----
+        New in version 0.9.0
+        """
+
+        if application_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "application_id"'
+            )
+        if role_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "role_id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/tvm/{application_id}/token/{role_id}"
+
+        try:
+            response = self.api.request("GET", url, headers=headers)
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
