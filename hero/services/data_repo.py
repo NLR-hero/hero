@@ -293,6 +293,7 @@ class DataRepoService(ServiceBase):
         metatype="Project",
         metadata={},
         private=False,
+        id=None,
     ):
         """
         Create a new project.
@@ -314,6 +315,9 @@ class DataRepoService(ServiceBase):
 
         private : bool, optional
             The visibility of the project. Defaults to False.
+
+        id: str, optional
+            User assigned Id of the project, require admin role
 
         Returns
         --------
@@ -348,6 +352,10 @@ class DataRepoService(ServiceBase):
             "metadata": metadata,
         }
 
+        # add user assigned id if provided
+        if id:
+            attributes["id"] = id
+
         if "name" not in attributes.keys():
             raise MissingRequiredAttribute('Missing required attribute: "name"')
 
@@ -355,6 +363,19 @@ class DataRepoService(ServiceBase):
         url = f"{self.base_url}/{self.data_repo_id}/project"
         data = json.dumps(attributes)
         try:
+            # test if the project already exists
+            if id:
+                # Try to see if the project exists by id
+                # Catch error of project not found and continue
+                try:
+                    self.read_project(id=id)
+                    raise HERODataRepoProjectAlreadyExists(
+                        f"Project with id {id} already exists"
+                    )
+                except HERODataRepoProjectNotFound:
+                    pass
+
+            print('add_project', url, headers, data)
             response = self.api.request("POST", url, headers=headers, data=data)
             return response.json()
         except HTTPError as e:
@@ -743,7 +764,7 @@ class DataRepoService(ServiceBase):
         self.delete_dataset(id=dataset["id"], cascade=cascade)
 
     def add_dataset(
-        self, project_id=None, name=None, metatype="Dataset", metadata={}, private=True
+        self, project_id=None, name=None, metatype="Dataset", metadata={}, private=True, id=None
     ):
         """
         Create a new dataset.
@@ -764,6 +785,9 @@ class DataRepoService(ServiceBase):
 
         private : bool, optional
             The visibility of the dataset. Defaults to True.
+
+        id: str, optional
+            User assigned Id of the dataset, require admin role
 
         Returns
         --------
@@ -794,6 +818,8 @@ class DataRepoService(ServiceBase):
             "metadata": metadata,
             "private": private,
         }
+        if id:
+            attributes["id"] = id
 
         if "projectId" not in attributes.keys():
             raise MissingRequiredAttribute('Missing required attribute: "project_id"')
@@ -804,6 +830,14 @@ class DataRepoService(ServiceBase):
         url = f"{self.data_repo_url}/dataset"
         data = json.dumps(attributes)
         try:
+            if id:
+                try:
+                    self.read_project(id=id)
+                    raise HERODataRepoProjectAlreadyExists(
+                        f"Project with id {id} already exists"
+                    )
+                except HERODataRepoProjectNotFound:
+                    pass
             response = self.api.request("POST", url, headers=headers, data=data)
             return response.json()
         except HTTPError as e:
@@ -1111,13 +1145,14 @@ class DataRepoService(ServiceBase):
         return None
 
     def add_file(
-        self,
+        self, 
         dataset_id=None,
         name=None,
         path=None,
         metatype="File",
         metadata={},
         private=True,
+        id=None
     ):
         """
         Create a new file.
@@ -1141,6 +1176,9 @@ class DataRepoService(ServiceBase):
 
         private : bool, optional
             The visibility of the file. Defaults to True.
+
+        id: str, optional
+            User assigned Id of the file, require admin role
 
         Returns
         -------
@@ -1173,6 +1211,10 @@ class DataRepoService(ServiceBase):
             "path": path,
         }
 
+        # add user assigned id if provided
+        if id:
+            attributes["id"] = id
+
         if "datasetId" not in attributes.keys():
             raise MissingRequiredAttribute('Missing required attribute: "datasetId"')
         if "name" not in attributes.keys():
@@ -1182,6 +1224,14 @@ class DataRepoService(ServiceBase):
         url = f"{self.base_url}/{self.data_repo_id}/file"
         data = json.dumps(attributes)
         try:
+            if id:
+                try:
+                    self.read_project(id=id)
+                    raise HERODataRepoProjectAlreadyExists(
+                        f"Project with id {id} already exists"
+                    )
+                except HERODataRepoProjectNotFound:
+                    pass
             response = self.api.request("POST", url, headers=headers, data=data)
             return response.json()
         except HTTPError as e:
