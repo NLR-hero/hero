@@ -9,7 +9,6 @@ def test_project():
 
     hero_client = hero.HeroClient()
     data_repo = hero_client.DataRepo()
-    hero_client.authenticate()
 
     project_name = "Test Project"
 
@@ -43,7 +42,6 @@ def test_datasets():
 
     hero_client = hero.HeroClient()
     data_repo = hero_client.DataRepo()
-    hero_client.authenticate()
     project_name = "Test Project"
     dataset_name = "Test Dataset"
 
@@ -81,7 +79,6 @@ def test_files():
 
     hero_client = hero.HeroClient()
     data_repo = hero_client.DataRepo()
-    hero_client.authenticate()
     project_name = "Test Project"
     dataset_name = "Test Dataset"
     file_name = "Test File"

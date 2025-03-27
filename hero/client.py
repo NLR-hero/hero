@@ -29,6 +29,7 @@ class HeroClient:
         client_id, client_secret = get_client_credentials()
         self._client_id = client_id
         self._client_secret = client_secret
+        self._access_token = None
 
     def _fetch_token(self):
         """
@@ -70,7 +71,9 @@ class HeroClient:
                 token, algorithms=["RS256"], options={"verify_signature": False}
             )
         except DecodeError as e:
-            print("Token is not valid")
+            # not valid token, not a problem, we just need to refresh it,
+            # so we can safely ignore this error
+            pass
 
     def add_scope(self, scope):
         """
@@ -93,6 +96,9 @@ class HeroClient:
         """
         access_token_decoded = self._decode_token(self._access_token)
         if access_token_decoded:
+            return self._access_token
+        else:
+            self._fetch_token()
             return self._access_token
 
     def Auth(self):

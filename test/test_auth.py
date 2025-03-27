@@ -5,7 +5,6 @@ import hero
 def test_create_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     app_type = "data-hub"
     app_id = "dev-hero-test-framework"
@@ -31,7 +30,6 @@ def test_create_permission():
 def test_read_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     app_type = "data-hub"
     app_id = "dev-hero-test-framework"
@@ -61,7 +59,6 @@ def test_read_permission():
 def test_read_permissions():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     app_type = "data-hub"
     app_id = "dev-hero-test-framework"
@@ -73,7 +70,6 @@ def test_read_permissions():
 def test_update_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     app_type = "data-hub"
     app_id = "dev-hero-test-framework"
@@ -106,7 +102,6 @@ def test_update_permission():
 def test_delete_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     app_type = "data-hub"
     app_id = "dev-hero-test-framework"
@@ -136,7 +131,6 @@ def test_user_create():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     username = "test-auth-user"
     name = "Test Auth User"
@@ -156,7 +150,6 @@ def test_read_user():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     username = "test-auth-user"
 
@@ -169,7 +162,6 @@ def test_update_user():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     username = "test-auth-user"
     roles = ["data-repo/user", "task-engine/user"]
@@ -184,7 +176,6 @@ def test_delete_user():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     username = "test-auth-user"
 
@@ -197,7 +188,6 @@ def test_list_users():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     res = auth.list_users()
     assert type(res) is dict
@@ -208,7 +198,6 @@ def test_machine_crud():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     machine_name = "test-auth-machine"
     roles = ["data-repo/user"]
@@ -241,7 +230,6 @@ def test_list_machines():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     res = auth.list_machines()
     assert type(res) is dict
@@ -252,7 +240,6 @@ def test_create_role():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     resource = "test-auth-resource"
     scope = "test-auth-scope"
@@ -268,7 +255,6 @@ def test_read_role():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     resource = "test-auth-resource"
     scope = "test-auth-scope"
@@ -282,7 +268,6 @@ def test_update_role():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     resource = "test-auth-resource"
     scope = "test-auth-scope"
@@ -298,7 +283,6 @@ def test_delete_role():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
     auth = hero_client.Auth()
-    hero_client.authenticate()
 
     resource = "test-auth-resource"
     scope = "test-auth-scope"

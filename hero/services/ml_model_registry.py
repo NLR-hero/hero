@@ -1,11 +1,13 @@
 import json
 import os
-from tqdm import tqdm
-import requests
+import time
+from datetime import datetime
 
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
 from ..lib.errors import MissingRequiredAttribute
+
+from ..lib.patched_mlflow import enable_preflight_patching, get_patched_mlflow
 
 
 @decorate_all(log_errors)
@@ -18,17 +20,51 @@ class MLModelRegistry(ServiceBase):
         self.registry_name = self.application_id
         self.client.add_scope("ml-model-registry/user")
         self.base_url = get_conf_from_collection(URL_MAP, "HERO_ML_MODEL_REGISTRY_URL")
+        self.mlflow_client = enable_preflight_patching(
+            preflight_hook=self.mlflow_preflight
+        )
+        self.mlflow = get_patched_mlflow()
+        self.client_credentials = None
+
+    def mlflow_preflight(self, method_name, *args, **kwargs):
+        """
+        Preflight hook for MLFlow
+        """
+        print(f"✨ Overridden Preflight before: {method_name}")
+        token = self.client.get_token()
+        if token is None:
+            self.client.authenticate()
+
+        if self.client_credentials is None:
+            self.get_client_credentials()
+
+        # if client_credentials['Expiration'] is within 5 minutes, refresh the credentials
+        expiration_time = int(
+            time.mktime(
+                datetime.strptime(
+                    self.client_credentials["Expiration"], "%Y-%m-%dT%H:%M:%S.%fZ"
+                ).timetuple()
+            )
+        )
+        if (expiration_time - 300) < time.time():
+            self.get_client_credentials()
+
+    def get_patched_mlflow(self):
+        return self.mlflow
+
+    def get_patched_mlflow_client(self):
+        return self.mlflow_client
 
     def get_client_credentials(self):
         """
         Retrieves the client credentials for the ML Model Registry and sets them in the environment variables.
         """
-        client_credentials = self.client.authInstance.get_client_credentials(
+        self.client_credentials = self.client.authInstance.get_client_credentials(
             self.registry_name, f"hero-service-role-ops-{self.registry_name}"
         )
-        os.environ["AWS_ACCESS_KEY_ID"] = client_credentials["AccessKeyId"]
-        os.environ["AWS_SECRET_ACCESS_KEY"] = client_credentials["SecretAccessKey"]
-        os.environ["AWS_SESSION_TOKEN"] = client_credentials["SessionToken"]
+        os.environ["AWS_ACCESS_KEY_ID"] = self.client_credentials["AccessKeyId"]
+        os.environ["AWS_SECRET_ACCESS_KEY"] = self.client_credentials["SecretAccessKey"]
+        os.environ["AWS_SESSION_TOKEN"] = self.client_credentials["SessionToken"]
 
     def get_tracking_uri(self):
         """
