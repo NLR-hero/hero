@@ -15,6 +15,7 @@ from ..lib.errors import (
 )
 from ..lib.helpers import kwargs_to_json_for_request
 
+
 @decorate_all(log_errors)
 class DataRepoService(ServiceBase):
     def _configure(self):
@@ -977,9 +978,38 @@ class DataRepoService(ServiceBase):
 
         """
         # TODO: this is broken for some reason, API is returning 404 on this endpoint.
+        # This is because list all files across datasets and projects is not yet implemented in the data-repo-api
+        # Listing all files in a datset is available, now added fn as read_dataset_files
         headers = self.get_headers(self.client.get_token())
         url = f"{self.data_repo_url}/files"
         response = self.api.request("GET", url, headers=headers)
+        return response.json()
+
+    def read_dataset_files(self, dataset_id=None):
+        """
+        List files of a given dataset.
+
+        Parameters
+        -----------
+        dataset_id : str, required
+            The dataset UUID
+
+        Returns
+        --------
+        files : list of dict
+            A list of files where each dict is file attributes.
+
+        """
+        headers = self.get_headers(self.client.get_token())
+        if dataset_id is None:
+            raise MissingRequiredAttribute(f"Missing required attribute: {dataset_id}")
+        url = "/".join([self.data_repo_url, "dataset", dataset_id, "files"])
+        try:
+            response = self.api.request("GET", url, headers=headers)
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HERODataRepoFileNotFound()
+            raise e
         return response.json()
 
     def read_file(self, id=None):
@@ -1115,7 +1145,14 @@ class DataRepoService(ServiceBase):
         return None
 
     def add_file(
-        self, dataset_id=None, name=None, path=None, metatype="File", metadata={}, private=True, id=None
+        self, 
+        dataset_id=None,
+        name=None,
+        path=None,
+        metatype="File",
+        metadata={},
+        private=True,
+        id=None
     ):
         """
         Create a new file.
@@ -1171,7 +1208,7 @@ class DataRepoService(ServiceBase):
             "metatype": metatype,
             "metadata": metadata,
             "private": private,
-            "path": path
+            "path": path,
         }
 
         # add user assigned id if provided
@@ -1274,7 +1311,13 @@ class DataRepoService(ServiceBase):
             raise e
 
     def get_or_create_file(
-        self, dataset_id=None, name=None, path=None, metatype="File", metadata={}, private=True
+        self,
+        dataset_id=None,
+        name=None,
+        path=None,
+        metatype="File",
+        metadata={},
+        private=True,
     ):
         """
         Attempt to read a file or create it if it does not exist.
