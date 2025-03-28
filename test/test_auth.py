@@ -6,7 +6,7 @@ def test_create_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
 
-    app_type = "data-hub"
+    app_type = "data-repo"
     app_id = "dev-hero-test-framework"
     principal_type = "user"
     principal_id = "python-app-test-user"
@@ -31,7 +31,7 @@ def test_read_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
 
-    app_type = "data-hub"
+    app_type = "data-repo"
     app_id = "dev-hero-test-framework"
     principal_type = "user"
     principal_id = "python-app-test-user"
@@ -60,7 +60,7 @@ def test_read_permissions():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
 
-    app_type = "data-hub"
+    app_type = "data-repo"
     app_id = "dev-hero-test-framework"
 
     permissions = auth.read_permissions(app_type=app_type, app_id=app_id)
@@ -71,7 +71,7 @@ def test_update_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
 
-    app_type = "data-hub"
+    app_type = "data-repo"
     app_id = "dev-hero-test-framework"
     principal_type = "user"
     principal_id = "python-app-test-user"
@@ -103,7 +103,7 @@ def test_delete_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
 
-    app_type = "data-hub"
+    app_type = "data-repo"
     app_id = "dev-hero-test-framework"
     principal_type = "user"
     principal_id = "python-app-test-user"
