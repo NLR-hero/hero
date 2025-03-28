@@ -25,9 +25,7 @@ def log_errors(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
-            # print('Hi, im about to do the function, woop woop')
             res = func(*args, **kwargs)
-            # print('Function complete, woop woop')
             return res
         except:
             if log_all_errors:

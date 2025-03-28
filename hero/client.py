@@ -29,6 +29,7 @@ class HeroClient:
         client_id, client_secret = get_client_credentials()
         self._client_id = client_id
         self._client_secret = client_secret
+        self._access_token = None
 
     def _fetch_token(self):
         """
@@ -54,6 +55,11 @@ class HeroClient:
             verify=False,
         )
 
+        if response.status_code != 200:
+            raise Exception(
+                f"Failed to fetch access token: {response.status_code} - {response.text}, {self._scopes}"
+            )
+
         self._access_token = response.json()["access_token"]
 
     def _decode_token(self, token):
@@ -65,7 +71,9 @@ class HeroClient:
                 token, algorithms=["RS256"], options={"verify_signature": False}
             )
         except DecodeError as e:
-            print("Token is not valid")
+            # not valid token, not a problem, we just need to refresh it,
+            # so we can safely ignore this error
+            pass
 
     def add_scope(self, scope):
         """
@@ -89,6 +97,9 @@ class HeroClient:
         access_token_decoded = self._decode_token(self._access_token)
         if access_token_decoded:
             return self._access_token
+        else:
+            self._fetch_token()
+            return self._access_token
 
     def Auth(self):
         """
@@ -108,11 +119,12 @@ class HeroClient:
         """
         return TaskEngineService(self, application_id)
 
-    def MLModelRegistry(self, m3s_name):
+    def MLModelRegistry(self, application_id=None):
         """
         Returns a MLModelRegistry instance.
         """
-        return MLModelRegistry(self, m3s_name)
+        self.authInstance = self.Auth()
+        return MLModelRegistry(self, application_id)
 
     def Search(self):
         """
