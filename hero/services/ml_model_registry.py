@@ -30,7 +30,6 @@ class MLModelRegistry(ServiceBase):
         """
         Preflight hook for MLFlow
         """
-        print(f"✨ Overridden Preflight before: {method_name}")
         token = self.client.get_token()
         if token is None:
             self.client.authenticate()
