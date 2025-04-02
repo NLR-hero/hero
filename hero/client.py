@@ -1,7 +1,12 @@
 import jwt
 import base64
 from requests import Session
-from jwt.exceptions import DecodeError
+from jwt import (
+    ExpiredSignatureError,
+    InvalidTokenError,
+    InvalidSignatureError,
+    DecodeError,
+)
 
 from .url_map import URL_MAP
 from .lib import (
@@ -11,6 +16,13 @@ from .lib import (
 )
 from .services import AuthService, DataRepoService, TaskEngineService, MLModelRegistry
 from .services import SearchService
+
+from .lib.errors import (
+    TokenDecodeError,
+    TokenInvalidSignatureError,
+    TokenInvalidError,
+    TokenGeneralError,
+)
 
 
 class HeroClient:
@@ -64,16 +76,37 @@ class HeroClient:
 
     def _decode_token(self, token):
         """
-        Decodes a JWT token and returns the payload, returns None otherwise.
+        Decodes a JWT token and returns the payload, verifying its signature and expiration.
+
+        Raises TokenInvalidSignatureError if the signature is invalid.
+        Raises TokenDecodeError if the token is malformed.
+        Raises TokenInvalidError if the token is invalid.
+        Raises TokenGeneralError for any other unexpected errors.
         """
         try:
+            # Token is valid and not expired
             return jwt.decode(
                 token, algorithms=["RS256"], options={"verify_signature": False}
             )
-        except DecodeError as e:
-            # not valid token, not a problem, we just need to refresh it,
-            # so we can safely ignore this error
-            pass
+        except ExpiredSignatureError:
+            # token expired, we need to refresh it
+            self._fetch_token()
+            # try to decode again
+            return jwt.decode(
+                token, algorithms=["RS256"], options={"verify_signature": False}
+            )
+        except InvalidSignatureError:
+            # The signature doesn't match — token could be tampered with
+            raise TokenInvalidSignatureError("Invalid token signature")
+        except DecodeError:
+            # Token is malformed (e.g., bad base64, wrong structure)
+            raise TokenDecodeError("Malformed token")
+        except InvalidTokenError as e:
+            # Catch-all for other invalid cases
+            raise TokenInvalidError(f"Invalid token: {str(e)}")
+        except Exception as e:
+            # Log unexpected exceptions — could be useful for debugging
+            raise TokenGeneralError("Unexpected error")
 
     def add_scope(self, scope):
         """

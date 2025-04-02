@@ -9,12 +9,12 @@ from .session_hooks import log_request, check_for_errors
 class ServiceBase:
     def __init__(self, clientInstance, application_id=None, resilient_session=False):
         self.client = clientInstance
-
         self.application_id = (
             application_id
             if application_id is not None
             else f"{os.environ.get('HERO_ENV')}-{os.environ.get('HERO_PROJECT')}"
         )
+        self.client.authenticate()
         self._configure()
         is_resilient = resilient_session or get_resilient_session()
         self.api = self.get_request_session(is_resilient)
