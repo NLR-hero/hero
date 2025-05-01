@@ -67,6 +67,26 @@ class HEROTaskEngineTaskNotFound(Exception):
         super().__init__(message)
 
 
+class TokenInvalidSignatureError(Exception):
+    def __init__(self, message="Invalid token signature"):
+        super().__init__(message)
+
+
+class TokenDecodeError(Exception):
+    def __init__(self, message="Token decode error"):
+        super().__init__(message)
+
+
+class TokenInvalidError(Exception):
+    def __init__(self, message="Invalid token"):
+        super().__init__(message)
+
+
+class TokenGeneralError(Exception):
+    def __init__(self, message="Token error"):
+        super().__init__(message)
+
+
 class ClientPullTasksEmpty(Exception):
     pass
 
