@@ -4,6 +4,9 @@ import threading
 import time
 from datetime import datetime, timezone
 
+import boto3
+import botocore
+
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
 from ..lib.errors import MissingRequiredAttribute
@@ -50,20 +53,25 @@ class MLModelRegistry(ServiceBase):
         Concurrent callers will block on the same lock instead of stomping on
         each other.
         """
+        print(f"MLflow preflight: {method_name} {args} {kwargs}")
+
         token = self.client.get_token()
         if token is None:
             self.client.authenticate()
 
         # Check once without locking (fast path)
         if not self._needs_refresh():
+            print("No refresh needed")
             return
 
         # Only one thread at a time enters this block
         with self._creds_lock:
             # Check again inside the lock (double-check)
             if not self._needs_refresh():
+                print("No refresh needed after lock")
                 return
             # refresh if needed
+            print("Refreshing credentials")
             self.get_client_credentials()
 
     def _needs_refresh(self):
@@ -91,9 +99,14 @@ class MLModelRegistry(ServiceBase):
         )
         # only once everything is successful do we overwrite the shared state
         self.client_credentials = creds
+        print(f"Got creds: {creds}")
         os.environ["AWS_ACCESS_KEY_ID"] = creds["AccessKeyId"]
         os.environ["AWS_SECRET_ACCESS_KEY"] = creds["SecretAccessKey"]
         os.environ["AWS_SESSION_TOKEN"] = creds["SessionToken"]
+
+        # Invalidate boto3 session so MLflow picks up new env vars
+        boto3.DEFAULT_SESSION = None
+        botocore.session.Session().set_credentials(None, None, None)
 
     def get_patched_mlflow(self):
         return self.mlflow
