@@ -11,25 +11,28 @@ log = logging.getLogger("hero:service")
 def decorate_all(decorator):
 
     def decorate(cls):
-        for attr in cls.__dict__:
-            if callable(getattr(cls, attr)) and not attr.startswith("__"):
-                setattr(cls, attr, decorator(getattr(cls, attr)))
+        for name, attr in cls.__dict__.items():
+            if name.startswith("__"):
+                continue
+            if isinstance(attr, staticmethod):
+                setattr(cls, name, staticmethod(decorator(attr.__func__)))
+            elif isinstance(attr, classmethod):
+                setattr(cls, name, classmethod(decorator(attr.__func__)))
+            elif callable(attr):
+                setattr(cls, name, decorator(attr))
         return cls
 
     return decorate
 
 
 def log_errors(func):
-    log_all_errors = os.environ.get("HERO_LOG_ALL_ERRORS", "False") == "True"
-
     @wraps(func)
     def wrapper(*args, **kwargs):
         try:
-            res = func(*args, **kwargs)
-            return res
-        except:
-            if log_all_errors:
-                log.error("Hero Service Error: \n", exc_info=True)
+            return func(*args, **kwargs)
+        except Exception:
+            if os.getenv("HERO_LOG_ALL_ERRORS") == "True":
+                log.error(f"Hero Service Error in {func.__name__}", exc_info=True)
             raise
 
     return wrapper

@@ -4,8 +4,10 @@ from requests import Session
 from .config import get_resilient_session
 from .resilient_session import ResilientSession
 from .session_hooks import log_request, check_for_errors
+from .decorators import decorate_all, log_errors
 
 
+@decorate_all(log_errors)
 class ServiceBase:
     def __init__(self, clientInstance, application_id=None, resilient_session=False):
         self.client = clientInstance
