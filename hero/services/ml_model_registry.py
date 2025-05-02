@@ -13,6 +13,8 @@ from ..lib.errors import MissingRequiredAttribute
 
 from ..lib.patched_mlflow import enable_preflight_patching, get_patched_mlflow
 
+REFRESH_THRESHOLD = 300  # seconds
+
 
 @decorate_all(log_errors)
 class MLModelRegistry(ServiceBase):
@@ -88,7 +90,7 @@ class MLModelRegistry(ServiceBase):
         exp_ts = dt.timestamp()
 
         # if within 5 minutes of expiry, refresh
-        return (exp_ts - 300) < time.time()
+        return (exp_ts - REFRESH_THRESHOLD) < time.time()
 
     def get_client_credentials(self):
         """
