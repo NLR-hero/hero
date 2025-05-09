@@ -2,6 +2,7 @@ import jwt
 import base64
 from requests import Session
 from jwt import (
+    PyJWKClient,
     ExpiredSignatureError,
     InvalidTokenError,
     InvalidSignatureError,
@@ -38,9 +39,18 @@ class HeroClient:
 
         self.env = get_env()
         self.api = Session()
+        region = "us-west-2"
         client_id, client_secret = get_client_credentials()
+
         self._client_id = client_id
         self._client_secret = client_secret
+        self._cognito_api_url = get_conf_from_collection(
+            URL_MAP, "HERO_COGNITO_API_URL"
+        )
+        self._cognito_user_pool_id = get_conf_from_collection(URL_MAP, "USER_POOL_ID")
+        self._cognito_auth_url = f"https://cognito-idp.{region}.amazonaws.com/{region}_{self._cognito_user_pool_id}"
+        self._jwks_url = f"{self._cognito_auth_url}/.well-known/jwks.json"
+        self._jwk_client = PyJWKClient(self._jwks_url)
         self._access_token = None
 
     def _fetch_token(self):
@@ -55,10 +65,8 @@ class HeroClient:
         # Request access_token following client credentials grant flow
         basic_auth = f"Basic {base64.urlsafe_b64encode(app_client_id_secret).decode()}"
 
-        cognito_auth_url = get_conf_from_collection(URL_MAP, "HERO_COGNITO_API_URL")
-
         response = self.api.post(
-            cognito_auth_url,
+            self._cognito_api_url,
             data=f'grant_type=client_credentials&scope={" ".join(self._scopes)}&client_id={self._client_id}',
             headers={
                 "Authorization": basic_auth,
@@ -84,9 +92,13 @@ class HeroClient:
         Raises TokenGeneralError for any other unexpected errors.
         """
         try:
+            signing_key = self._jwk_client.get_signing_key_from_jwt(token).key
             # Token is valid and not expired
             return jwt.decode(
-                token, algorithms=["RS256"], options={"verify_signature": False}
+                token,
+                key=signing_key,
+                algorithms=["RS256"],
+                options={"verify_exp": True},
             )
         except ExpiredSignatureError:
             # token expired, we need to refresh it
@@ -102,10 +114,10 @@ class HeroClient:
             # Token is malformed (e.g., bad base64, wrong structure)
             raise TokenDecodeError("Malformed token")
         except InvalidTokenError as e:
-            # Catch-all for other invalid cases
+            # Other invalid token cases
             raise TokenInvalidError(f"Invalid token: {str(e)}")
         except Exception as e:
-            # Log unexpected exceptions — could be useful for debugging
+            # Any other unexpected errors
             raise TokenGeneralError("Unexpected error")
 
     def add_scope(self, scope):
