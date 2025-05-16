@@ -375,7 +375,6 @@ class DataRepoService(ServiceBase):
                 except HERODataRepoProjectNotFound:
                     pass
 
-            print('add_project', url, headers, data)
             response = self.api.request("POST", url, headers=headers, data=data)
             return response.json()
         except HTTPError as e:
@@ -764,7 +763,13 @@ class DataRepoService(ServiceBase):
         self.delete_dataset(id=dataset["id"], cascade=cascade)
 
     def add_dataset(
-        self, project_id=None, name=None, metatype="Dataset", metadata={}, private=True, id=None
+        self,
+        project_id=None,
+        name=None,
+        metatype="Dataset",
+        metadata={},
+        private=True,
+        id=None,
     ):
         """
         Create a new dataset.
@@ -1145,14 +1150,14 @@ class DataRepoService(ServiceBase):
         return None
 
     def add_file(
-        self, 
+        self,
         dataset_id=None,
         name=None,
         path=None,
         metatype="File",
         metadata={},
         private=True,
-        id=None
+        id=None,
     ):
         """
         Create a new file.
