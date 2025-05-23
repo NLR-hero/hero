@@ -34,6 +34,29 @@ def test_list_runs():
     assert len(res) > 0
 
 
+def test_list_runs_with_filter():
+    hero_client = hero.HeroClient()
+    model_registry = hero_client.MLModelRegistry()
+
+    filter_expr = "metrics.`r2` > 0.5"
+    res = model_registry.list_runs(TESTABLE_EXPERIMENT_ID, filter=filter_expr)
+
+    assert isinstance(res, list)
+    assert all("metrics" in run or "params" in run for run in res)
+
+
+def test_list_runs_missing_experiment_id():
+    hero_client = hero.HeroClient()
+    model_registry = hero_client.MLModelRegistry()
+
+    try:
+        model_registry.list_runs(None)
+    except Exception as e:
+        assert str(e) == 'Missing required attribute: "experiment_id"'
+    else:
+        assert False, "Expected MissingRequiredAttribute exception"
+
+
 def test_read_run():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()

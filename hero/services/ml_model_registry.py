@@ -3,6 +3,7 @@ import os
 import threading
 import time
 from datetime import datetime, timezone
+import urllib.parse
 
 import boto3
 import botocore
@@ -244,6 +245,8 @@ class MLModelRegistry(ServiceBase):
         next_token=None,
         search_key=None,
         sort_order=None,
+        filter=None,
+        run_view_type=None,
     ):
         """
         Lists the runs for the given experiment ID
@@ -260,6 +263,10 @@ class MLModelRegistry(ServiceBase):
             The key to search for, by default None (API default is 'attributes.start_time')
         sort_order : str, optional
             The order to sort the runs, by default None (API default is 'DESC')
+        filter : str, optional
+            The filter to apply to the runs, by default None
+        run_view_type : str, optional
+            The view type to apply to the runs, by default None (API default is 'ACTIVE_ONLY')
 
         Returns
         -------
@@ -284,6 +291,10 @@ class MLModelRegistry(ServiceBase):
             "searchKey": search_key,
             "sortOrder": sort_order,
         }
+        if filter is not None:
+            params["filter"] = urllib.parse.quote(filter, safe="")
+        if run_view_type is not None:
+            params["runViewType"] = run_view_type
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
