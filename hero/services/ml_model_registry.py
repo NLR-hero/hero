@@ -1,6 +1,7 @@
 import json
 import os
 import threading
+import urllib.parse
 
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
