@@ -1,19 +1,11 @@
 import json
 import os
 import threading
-import time
-from datetime import datetime, timezone
-
-import boto3
-import botocore
+import urllib.parse
 
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
 from ..lib.errors import MissingRequiredAttribute
-
-from ..lib.patched_mlflow import enable_preflight_patching, get_patched_mlflow
-
-REFRESH_THRESHOLD = 300  # seconds
 
 
 @decorate_all(log_errors)
@@ -31,7 +23,6 @@ class MLModelRegistry(ServiceBase):
             The application ID for the ML Model Registry
         """
         super().__init__(client, application_id)
-        # guard for serializing refresh
         self._creds_lock = threading.Lock()
         self.client_credentials = None
 
@@ -42,79 +33,39 @@ class MLModelRegistry(ServiceBase):
         self.registry_name = self.application_id
         self.client.add_scope("ml-model-registry/user")
         self.base_url = get_conf_from_collection(URL_MAP, "HERO_ML_MODEL_REGISTRY_URL")
-        self.mlflow_client = enable_preflight_patching(
-            preflight_hook=self.mlflow_preflight
-        )
-        self.mlflow = get_patched_mlflow()
         self.client_credentials = None
 
-    def mlflow_preflight(self, method_name, *args, **kwargs):
+    def get_tracking_uri(self):
         """
-        Preflight hook for MLflow that only refreshes credentials
-        when (a) they've never been fetched, or (b) they're about to expire.
-        Concurrent callers will block on the same lock instead of stomping on
-        each other.
+        Returns the MLflow tracking URI.
         """
-        print(f"MLflow preflight: {method_name} {args} {kwargs}")
+        return self.base_url
 
-        token = self.client.get_token()
-        if token is None:
-            self.client.authenticate()
-
-        # Check once without locking (fast path)
-        if not self._needs_refresh():
-            print("No refresh needed")
-            return
-
-        # Only one thread at a time enters this block
-        with self._creds_lock:
-            # Check again inside the lock (double-check)
-            if not self._needs_refresh():
-                print("No refresh needed after lock")
-                return
-            # refresh if needed
-            print("Refreshing credentials")
-            self.get_client_credentials()
-
-    def _needs_refresh(self):
-        """Return True if we've never fetched creds or they're expiring soon."""
-        if self.client_credentials is None:
-            return True
-        exp_str = self.client_credentials["Expiration"]
-
-        # Parse the ISO string into a datetime object
-        dt = datetime.strptime(exp_str, "%Y-%m-%dT%H:%M:%S.%fZ")
-        # Set it as UTC (Z = Zulu = UTC)
-        dt = dt.replace(tzinfo=timezone.utc)
-        # Convert to UNIX timestamp
-        exp_ts = dt.timestamp()
-
-        # if within 5 minutes of expiry, refresh
-        return (exp_ts - REFRESH_THRESHOLD) < time.time()
-
-    def get_client_credentials(self):
-        """
-        Atomically fetch & set client_credentials and export them into env vars.
-        """
-        creds = self.client.authInstance.get_client_credentials(
-            self.registry_name, f"hero-service-role-ops-{self.registry_name}"
-        )
-        # only once everything is successful do we overwrite the shared state
-        self.client_credentials = creds
-        print(f"Got creds: {creds}")
-        os.environ["AWS_ACCESS_KEY_ID"] = creds["AccessKeyId"]
-        os.environ["AWS_SECRET_ACCESS_KEY"] = creds["SecretAccessKey"]
-        os.environ["AWS_SESSION_TOKEN"] = creds["SessionToken"]
-
-        # Invalidate boto3 session so MLflow picks up new env vars
-        boto3.DEFAULT_SESSION = None
-        botocore.session.Session().set_credentials(None, None, None)
-
+    # hero-core MLModelRegistry
     def get_patched_mlflow(self):
-        return self.mlflow
+        try:
+            from hero_mlflow.mlflow_support import get_patched_mlflow
+        except ImportError as e:
+            raise RuntimeError(
+                "hero-mlflow is not installed. To use MLflow support, install it via:\n"
+                "pip install git+https://github.nrel.gov/Hero/hero-mlflow.git"
+            ) from e
+
+        return get_patched_mlflow(self.client, self.application_id)
 
     def get_patched_mlflow_client(self):
-        return self.mlflow_client
+        """
+        Lazily loads and returns the patched MLflow client (tracking + preflight).
+        """
+        try:
+            from hero_mlflow.mlflow_support import get_patched_mlflow_client
+        except ImportError as e:
+            raise RuntimeError(
+                "hero-mlflow is not installed. To use MLflow support, install it via:\n"
+                "pip install git+https://github.nrel.gov/Hero/hero-mlflow.git"
+            ) from e
+
+        return get_patched_mlflow_client(self.client, self.application_id)
 
     def get_tracking_uri(self):
         """
@@ -244,6 +195,8 @@ class MLModelRegistry(ServiceBase):
         next_token=None,
         search_key=None,
         sort_order=None,
+        filter=None,
+        run_view_type=None,
     ):
         """
         Lists the runs for the given experiment ID
@@ -260,6 +213,10 @@ class MLModelRegistry(ServiceBase):
             The key to search for, by default None (API default is 'attributes.start_time')
         sort_order : str, optional
             The order to sort the runs, by default None (API default is 'DESC')
+        filter : str, optional
+            The filter to apply to the runs, by default None
+        run_view_type : str, optional
+            The view type to apply to the runs, by default None (API default is 'ACTIVE_ONLY')
 
         Returns
         -------
@@ -284,6 +241,10 @@ class MLModelRegistry(ServiceBase):
             "searchKey": search_key,
             "sortOrder": sort_order,
         }
+        if filter is not None:
+            params["filter"] = urllib.parse.quote(filter, safe="")
+        if run_view_type is not None:
+            params["runViewType"] = run_view_type
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 

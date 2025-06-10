@@ -17,14 +17,14 @@ class ServiceBase:
 
 
 @decorate_all(log_errors)
-class MyService(ServiceBase):
+class TestService(ServiceBase):
     def my_method(self):
         raise ValueError("My method failed")
 
 
 @pytest.fixture
 def service():
-    return MyService()
+    return TestService()
 
 
 @pytest.mark.parametrize(
