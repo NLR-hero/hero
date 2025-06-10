@@ -317,7 +317,7 @@ class DataRepoService(ServiceBase):
             The visibility of the project. Defaults to False.
 
         id: str, optional
-            User assigned Id of the project, require admin role
+            DANGER! Set an ID of the project. This will override the id if the resource exists. Requires `hero-auth/admin` role.
 
         Returns
         --------
@@ -363,19 +363,6 @@ class DataRepoService(ServiceBase):
         url = f"{self.base_url}/{self.data_repo_id}/project"
         data = json.dumps(attributes)
         try:
-            # test if the project already exists
-            if id:
-                # Try to see if the project exists by id
-                # Catch error of project not found and continue
-                try:
-                    self.read_project(id=id)
-                    raise HERODataRepoProjectAlreadyExists(
-                        f"Project with id {id} already exists"
-                    )
-                except HERODataRepoProjectNotFound:
-                    pass
-
-            print('add_project', url, headers, data)
             response = self.api.request("POST", url, headers=headers, data=data)
             return response.json()
         except HTTPError as e:
@@ -764,7 +751,7 @@ class DataRepoService(ServiceBase):
         self.delete_dataset(id=dataset["id"], cascade=cascade)
 
     def add_dataset(
-        self, project_id=None, name=None, metatype="Dataset", metadata={}, private=True, id=None
+        self, project_id=None, name=None, metatype="Dataset", metadata={}, private=True, id=None, 
     ):
         """
         Create a new dataset.
@@ -787,7 +774,7 @@ class DataRepoService(ServiceBase):
             The visibility of the dataset. Defaults to True.
 
         id: str, optional
-            User assigned Id of the dataset, require admin role
+            DANGER! Set an ID of the dataset. This will override the id if the resource exists. Requires `hero-auth/admin` role.
 
         Returns
         --------
@@ -830,14 +817,6 @@ class DataRepoService(ServiceBase):
         url = f"{self.data_repo_url}/dataset"
         data = json.dumps(attributes)
         try:
-            if id:
-                try:
-                    self.read_project(id=id)
-                    raise HERODataRepoProjectAlreadyExists(
-                        f"Project with id {id} already exists"
-                    )
-                except HERODataRepoProjectNotFound:
-                    pass
             response = self.api.request("POST", url, headers=headers, data=data)
             return response.json()
         except HTTPError as e:
@@ -1178,7 +1157,7 @@ class DataRepoService(ServiceBase):
             The visibility of the file. Defaults to True.
 
         id: str, optional
-            User assigned Id of the file, require admin role
+            DANGER! Set an ID of the file. This will override the id if the resource exists. Requires `hero-auth/admin` role.
 
         Returns
         -------
@@ -1224,14 +1203,6 @@ class DataRepoService(ServiceBase):
         url = f"{self.base_url}/{self.data_repo_id}/file"
         data = json.dumps(attributes)
         try:
-            if id:
-                try:
-                    self.read_project(id=id)
-                    raise HERODataRepoProjectAlreadyExists(
-                        f"Project with id {id} already exists"
-                    )
-                except HERODataRepoProjectNotFound:
-                    pass
             response = self.api.request("POST", url, headers=headers, data=data)
             return response.json()
         except HTTPError as e:
