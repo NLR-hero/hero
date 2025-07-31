@@ -1,7 +1,7 @@
 import hero
 
 TESTABLE_EXPERIMENT_ID = "1"
-TESTABLE_RUN_ID = "ee4f9e5c4d104f24a44f39d1c138293f"
+TESTABLE_RUN_ID = "e75faf1690894b3897eb9dbbc71fc106"
 
 # def test_tracking_uri():
 #     hero_client = hero.HeroClient()
@@ -60,7 +60,7 @@ def test_list_runs_missing_experiment_id():
 def test_read_run():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()
-    res = model_registry.read_run(TESTABLE_RUN_ID)
+    res = model_registry.read_run(TESTABLE_EXPERIMENT_ID, TESTABLE_RUN_ID)
     assert isinstance(res, dict)
     assert res["id"] == TESTABLE_RUN_ID
 
@@ -68,6 +68,6 @@ def test_read_run():
 def test_list_artifacts():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()
-    res = model_registry.list_artifacts(TESTABLE_RUN_ID)
+    res = model_registry.list_artifacts(TESTABLE_EXPERIMENT_ID, TESTABLE_RUN_ID)
     assert isinstance(res, list)
     assert len(res) > 0
