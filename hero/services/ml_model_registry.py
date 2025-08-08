@@ -100,13 +100,13 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
-    def read_experiment(self, experiment_id):
+    def read_experiment(self, id):
         """
         Reads the experiment with the given ID
 
         Parameters
         ----------
-        experiment_id : str
+        id : str
             The ID of the experiment to read
 
         Returns
@@ -119,23 +119,21 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}"
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def update_experiment(self, experiment_id, attributes):
+    def update_experiment(self, id, attributes):
         """
         Updates the experiment with the given ID
 
         Parameters
         ----------
-        experiment_id : str
+        id : str
             The ID of the experiment to update
         attributes : dict
             The attributes to update Note: Only `name` can be updated
@@ -150,26 +148,24 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
         if attributes is None:
             raise MissingRequiredAttribute('Missing required attribute: "attributes"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}"
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
         data = json.dumps(attributes)
         response = self.api.request("PUT", url, headers=headers, json=data)
         return response.json()
 
-    def delete_experiment(self, experiment_id):
+    def delete_experiment(self, id):
         """
         Deletes the experiment with the given ID
 
         Parameters
         ----------
-        experiment_id : str
+        id : str
             The ID of the experiment to delete
 
         Returns
@@ -182,13 +178,11 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}"
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
         response = self.api.request("DELETE", url, headers=headers)
         return response.json()
 
@@ -252,7 +246,7 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
-    def read_run(self, experiment_id, run_id):
+    def read_run(self, experiment_id, id):
         """
         Reads the run with the given ID
 
@@ -260,7 +254,7 @@ class MLModelRegistry(ServiceBase):
         ----------
         experiment_id : str
             The ID of the experiment to which the run belongs
-        run_id : str
+        id : str
             The ID of the run to read
 
         Returns
@@ -277,14 +271,14 @@ class MLModelRegistry(ServiceBase):
             raise MissingRequiredAttribute(
                 'Missing required attribute: "experiment_id"'
             )
-        if run_id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}"
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{id}"
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def update_run(self, experiment_id, run_id, attributes):
+    def update_run(self, experiment_id, id, attributes):
         """
         Updates a run in the model registry
 
@@ -292,7 +286,7 @@ class MLModelRegistry(ServiceBase):
         ----------
         experiment_id : str
             The ID of the experiment to which the run belongs
-        run_id : str
+        id : str
             The ID of the run to update
         attributes : dict
             The attributes to update Note: Only `name` and `description` can be updated
@@ -311,13 +305,13 @@ class MLModelRegistry(ServiceBase):
             raise MissingRequiredAttribute(
                 'Missing required attribute: "experiment_id"'
             )
-        if run_id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
         if attributes is None:
             raise MissingRequiredAttribute('Missing required attribute: "attributes"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}"
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{id}"
         data = json.dumps(attributes)
         response = self.api.request("PUT", url, headers=headers, json=data)
         return response.json()
@@ -477,4 +471,290 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/artifacts"
         response = self.api.request("GET", url, headers=headers)
+        return response.json()
+
+    def list_models(
+        self, count=None, next_token=None, search_key=None, sort_order=None, filter=None
+    ):
+        """
+        Lists the models in the model registry
+
+        Parameters
+        ----------
+        count : int, optional
+            Number of models to return, by default None
+        next_token : str, optional
+            Token for the next page of models, by default None
+        search_key : str, optional
+            Key to search for in the models (API defaults to 'name'), by default None
+        sort_order : str, optional
+            Order to sort the models by (API defaults to 'ASC'), by default None
+        filter : str, optional
+            Filter to apply to the models, by default None
+
+        Returns
+        -------
+        dict
+            The collection of models in the registry
+
+        """
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/models"
+        params = {
+            "count": count,
+            "nextToken": next_token,
+            "searchKey": search_key,
+            "sortOrder": sort_order,
+            "filter": filter,
+        }
+        response = self.api.request("GET", url, headers=headers, params=params)
+        return response.json()
+
+    def read_model(self, id):
+        """
+        Reads a model in the model registry
+
+        Parameters
+        ----------
+        id : str
+            The ID of the model to read
+
+        Returns
+        -------
+        dict
+            The model with the given ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
+        response = self.api.request("GET", url, headers=headers)
+        return response.json()
+
+    def rename_model(self, id, new_name):
+        """
+        Renames a model in the model registry
+
+        Parameters
+        ----------
+        id : str
+            The ID of the model to rename
+        new_name : str
+            The new name for the model
+
+        Returns
+        -------
+        dict
+            The updated model
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+        if not new_name:
+            raise MissingRequiredAttribute('Missing required attribute: "new_name"')
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
+        data = json.dumps({"newName": new_name})
+        response = self.api.request("PUT", url, headers=headers, json=data)
+        return response.json()
+
+    def update_model(self, id, name=None, description=None, deployment_job_id=None):
+        """
+        Updates a model in the model registry
+
+        Parameters
+        ----------
+        id : str
+            The ID of the model to update
+        name : str, optional
+            The new name for the model, by default None
+        description : str, optional
+            The new description for the model, by default None
+        deployment_job_id : str, optional
+            The ID of the deployment job associated with the model, by default None
+
+        Returns
+        -------
+        dict
+            The updated model
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
+        data = json.dumps(
+            {
+                "name": name,
+                "description": description,
+                "deploymentJobId": deployment_job_id,
+            }
+        )
+        response = self.api.request("PUT", url, headers=headers, json=data)
+        return response.json()
+
+    def delete_model(self, id):
+        """
+        Deletes a model in the model registry
+
+        Parameters
+        ----------
+        id : str
+            The ID of the model to delete
+
+        Returns
+        -------
+        dict
+            The deleted model
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
+        response = self.api.request("DELETE", url, headers=headers)
+        return response.json()
+
+    def list_model_versions(self, model_id):
+        """
+        Lists the versions of a model in the model registry
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the model to list versions for
+
+        Returns
+        -------
+        dict
+            The collection of model versions
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not model_id:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/versions"
+        response = self.api.request("GET", url, headers=headers)
+        return response.json()
+
+    def read_model_version(self, model_id, id):
+        """
+        Reads a model version in the model registry
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the model to read the version for
+        id : str
+            The ID of the model version to read
+
+        Returns
+        -------
+        dict
+            The model version with the given ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not model_id:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
+        response = self.api.request("GET", url, headers=headers)
+        return response.json()
+
+    def update_model_version(self, model_id, id, description=None):
+        """
+        Updates a model version in the model registry
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the model to update the version for
+        id : str
+            The ID of the model version to update
+        description : str, optional
+            The new description for the model version, by default None
+
+        Returns
+        -------
+        dict
+            The updated model version
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not model_id:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
+        data = json.dumps({"description": description})
+        response = self.api.request("PUT", url, headers=headers, json=data)
+        return response.json()
+
+    def delete_model_version(self, model_id, id):
+        """
+        Deletes a model version in the model registry
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the model to delete the version for
+        id : str
+            The ID of the model version to delete
+
+        Returns
+        -------
+        dict
+            The deleted model version
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not model_id:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
+        response = self.api.request("DELETE", url, headers=headers)
         return response.json()
