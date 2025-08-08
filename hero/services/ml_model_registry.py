@@ -127,7 +127,7 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def update_experiment(self, id, attributes):
+    def update_experiment(self, id, name=None):
         """
         Updates the experiment with the given ID
 
@@ -135,8 +135,8 @@ class MLModelRegistry(ServiceBase):
         ----------
         id : str
             The ID of the experiment to update
-        attributes : dict
-            The attributes to update Note: Only `name` can be updated
+        name : str, optional
+            The new name for the experiment, by default None
 
         Returns
         -------
@@ -150,13 +150,12 @@ class MLModelRegistry(ServiceBase):
         """
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
-        if attributes is None:
-            raise MissingRequiredAttribute('Missing required attribute: "attributes"')
-
+        attributes = {}
+        if name is not None:
+            attributes["name"] = name
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
-        data = json.dumps(attributes)
-        response = self.api.request("PUT", url, headers=headers, json=data)
+        response = self.api.request("PUT", url, headers=headers, json=attributes)
         return response.json()
 
     def delete_experiment(self, id):
@@ -278,7 +277,7 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def update_run(self, experiment_id, id, attributes):
+    def update_run(self, experiment_id, id, name=None, description=None):
         """
         Updates a run in the model registry
 
@@ -288,8 +287,10 @@ class MLModelRegistry(ServiceBase):
             The ID of the experiment to which the run belongs
         id : str
             The ID of the run to update
-        attributes : dict
-            The attributes to update Note: Only `name` and `description` can be updated
+        name : str, optional
+            The new name for the run, by default None
+        description : str, optional
+            The new description for the run, by default None
 
         Returns
         -------
@@ -307,13 +308,16 @@ class MLModelRegistry(ServiceBase):
             )
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
-        if attributes is None:
-            raise MissingRequiredAttribute('Missing required attribute: "attributes"')
+
+        attributes = {}
+        if name is not None:
+            attributes["name"] = name
+        if description is not None:
+            attributes["description"] = description
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{id}"
-        data = json.dumps(attributes)
-        response = self.api.request("PUT", url, headers=headers, json=data)
+        response = self.api.request("PUT", url, headers=headers, json=attributes)
         return response.json()
 
     def read_bulk_metric_history(
@@ -565,11 +569,11 @@ class MLModelRegistry(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "new_name"')
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
-        data = json.dumps({"newName": new_name})
-        response = self.api.request("PUT", url, headers=headers, json=data)
+        attributes = {"newName": new_name}
+        response = self.api.request("PUT", url, headers=headers, json=attributes)
         return response.json()
 
-    def update_model(self, id, name=None, description=None, deployment_job_id=None):
+    def update_model(self, id, description=None, deployment_job_id=None):
         """
         Updates a model in the model registry
 
@@ -577,8 +581,6 @@ class MLModelRegistry(ServiceBase):
         ----------
         id : str
             The ID of the model to update
-        name : str, optional
-            The new name for the model, by default None
         description : str, optional
             The new description for the model, by default None
         deployment_job_id : str, optional
@@ -599,14 +601,12 @@ class MLModelRegistry(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
-        data = json.dumps(
-            {
-                "name": name,
-                "description": description,
-                "deploymentJobId": deployment_job_id,
-            }
-        )
-        response = self.api.request("PUT", url, headers=headers, json=data)
+        attributes = {}
+        if description is not None:
+            attributes["description"] = description
+        if deployment_job_id is not None:
+            attributes["deploymentJobId"] = deployment_job_id
+        response = self.api.request("PUT", url, headers=headers, json=attributes)
         return response.json()
 
     def delete_model(self, id):
@@ -724,8 +724,8 @@ class MLModelRegistry(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
-        data = json.dumps({"description": description})
-        response = self.api.request("PUT", url, headers=headers, json=data)
+        attributes = {"description": description}
+        response = self.api.request("PUT", url, headers=headers, json=attributes)
         return response.json()
 
     def delete_model_version(self, model_id, id):

@@ -71,6 +71,40 @@ def test_read_run():
     assert res["id"] == TESTABLE_RUN_ID
 
 
+def test_update_run():
+    hero_client = hero.HeroClient()
+    model_registry = hero_client.MLModelRegistry()
+
+    # get original run
+    original_run = model_registry.read_run(TESTABLE_EXPERIMENT_ID, TESTABLE_RUN_ID)
+    original_name = original_run["name"]
+    updated_name = "Updated Run Name"
+    original_description = original_run["description"]
+    updated_description = "Updated Description"
+
+    # update run with new values
+    updated_run = model_registry.update_run(
+        TESTABLE_EXPERIMENT_ID,
+        TESTABLE_RUN_ID,
+        name=updated_name,
+        description=updated_description,
+    )
+    assert isinstance(updated_run, dict)
+    assert updated_run["name"] == updated_name
+    assert updated_run["description"] == updated_description
+
+    # reset run to original values
+    reset_run = model_registry.update_run(
+        TESTABLE_EXPERIMENT_ID,
+        TESTABLE_RUN_ID,
+        name=original_name,
+        description=original_description,
+    )
+    assert isinstance(reset_run, dict)
+    assert reset_run["name"] == original_name
+    assert reset_run["description"] == original_description
+
+
 def test_list_artifacts():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()
