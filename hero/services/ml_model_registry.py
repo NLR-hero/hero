@@ -137,6 +137,8 @@ class MLModelRegistry(ServiceBase):
             The ID of the experiment to update
         name : str, optional
             The new name for the experiment, by default None
+        description : str, optional
+            The new description for the experiment, by default None
 
         Returns
         -------
