@@ -30,6 +30,38 @@ def test_read_experiment():
     assert res["id"] == TESTABLE_EXPERIMENT_ID
 
 
+def test_update_experiment():
+    hero_client = hero.HeroClient()
+    model_registry = hero_client.MLModelRegistry()
+
+    # get original experiment
+    original_experiment = model_registry.read_experiment(TESTABLE_EXPERIMENT_ID)
+    original_name = original_experiment["name"]
+    updated_name = "Updated Experiment Name"
+    original_description = original_experiment.get("description", "")
+    updated_description = "Updated Description"
+
+    # update experiment with new values
+    updated_experiment = model_registry.update_experiment(
+        TESTABLE_EXPERIMENT_ID,
+        name=updated_name,
+        description=updated_description,
+    )
+    assert isinstance(updated_experiment, dict)
+    assert updated_experiment["name"] == updated_name
+    assert updated_experiment["description"] == updated_description
+
+    # reset experiment to original values
+    reset_experiment = model_registry.update_experiment(
+        TESTABLE_EXPERIMENT_ID,
+        name=original_name,
+        description=original_description,
+    )
+    assert isinstance(reset_experiment, dict)
+    assert reset_experiment["name"] == original_name
+    assert reset_experiment["description"] == original_description
+
+
 def test_list_runs():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()

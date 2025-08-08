@@ -127,7 +127,7 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def update_experiment(self, id, name=None):
+    def update_experiment(self, id, name=None, description=None):
         """
         Updates the experiment with the given ID
 
@@ -153,6 +153,8 @@ class MLModelRegistry(ServiceBase):
         attributes = {}
         if name is not None:
             attributes["name"] = name
+        if description is not None:
+            attributes["description"] = description
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
         response = self.api.request("PUT", url, headers=headers, json=attributes)
