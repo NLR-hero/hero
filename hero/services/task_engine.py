@@ -459,7 +459,7 @@ class TaskEngineService(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return response.json()
 
-    def add_task(self, queue_id, name, metatype="Task", metadata={}):
+    def add_task(self, queue_id, name, metatype="Task", metadata={}, state='ready'):
         """
         Create a new task.
 
@@ -494,6 +494,7 @@ class TaskEngineService(ServiceBase):
             "name": name,
             "metatype": metatype,
             "metadata": metadata,
+            "state": state
         }
 
         # drop attributes that are None
