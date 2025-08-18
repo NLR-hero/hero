@@ -459,7 +459,7 @@ class TaskEngineService(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return response.json()
 
-    def add_task(self, queue_id, name, metatype="Task", metadata={}):
+    def add_task(self, queue_id, name, metatype="Task", metadata={}, state='ready'):
         """
         Create a new task.
 
@@ -494,6 +494,7 @@ class TaskEngineService(ServiceBase):
             "name": name,
             "metatype": metatype,
             "metadata": metadata,
+            "state": state
         }
 
         # drop attributes that are None
@@ -561,6 +562,42 @@ class TaskEngineService(ServiceBase):
         data = json.dumps(attributes)
         response = self.api.request("POST", url, headers=headers, data=data)
         return response.json()
+
+    def restart_task(self, task_id):
+        """
+        Restart a task.
+
+        Parameters
+        -----------
+        task_id : str, required
+            The task UUID to restart.
+
+        Returns
+        --------
+        task : dict
+            The task attributes.
+
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROTaskEngineTaskNotFound
+            If the task does not exist
+        """
+        if task_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "task_id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.task_engine_url}/task/restart/{task_id}"
+        
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HEROTaskEngineTaskNotFound()
+            raise e
 
     def create_event_source(self, queue_id, lambda_name):
         """
