@@ -175,7 +175,7 @@ class TaskEngineService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.task_engine_url}/queue/{queue_id}"
         response = self.api.request("DELETE", url, headers=headers)
-        return None
+        return response.json()
 
     def add_queue(self, name, metatype="Queue", metadata={}):
         """
@@ -284,7 +284,7 @@ class TaskEngineService(ServiceBase):
             A list of tasks where each dict is task attributes.
 
         response : boolean
-            When exists=1. 
+            When exists=1.
 
         """
         headers = self.get_headers(self.client.get_token())
@@ -293,7 +293,7 @@ class TaskEngineService(ServiceBase):
         params = {key: value for key, value in params.items() if value is not None}
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
-    
+
     def count_tasks(self, queue_id, metatype="Task", state="ready"):
         """
         Count tasks.
@@ -320,7 +320,7 @@ class TaskEngineService(ServiceBase):
         params = {"metatype": metatype, "state": state}
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
-    
+
     def pull_tasks(self, queue_id, receive):
         """
         Pull tasks from the queue. This is distinct from read_tasks which simply returns Task items. Pulling a task will mutate the state of the Task by performing an upsert to make sure that the task is only consumed once.
@@ -341,7 +341,7 @@ class TaskEngineService(ServiceBase):
         """
         headers = self.get_headers(self.client.get_token())
         url = f"{self.task_engine_url}/tasks"
-        params = { "queueId": queue_id, "receive": receive }
+        params = {"queueId": queue_id, "receive": receive}
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
@@ -459,7 +459,7 @@ class TaskEngineService(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return response.json()
 
-    def add_task(self, queue_id, name, metatype="Task", metadata={}, state='ready'):
+    def add_task(self, queue_id, name, metatype="Task", metadata={}, state="ready"):
         """
         Create a new task.
 
@@ -494,7 +494,7 @@ class TaskEngineService(ServiceBase):
             "name": name,
             "metatype": metatype,
             "metadata": metadata,
-            "state": state
+            "state": state,
         }
 
         # drop attributes that are None
@@ -590,7 +590,7 @@ class TaskEngineService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.task_engine_url}/task/restart/{task_id}"
-        
+
         try:
             response = self.api.request("GET", url, headers=headers)
             return response.json()
