@@ -52,7 +52,10 @@ class MLModelRegistry(ServiceBase):
             ) from e
 
         return get_patched_mlflow(
-            self.get_tracking_uri(), self.client, self.application_id
+            self.get_tracking_uri(),
+            self.client,
+            self.application_id,
+            self.client.get_token,
         )
 
     def get_patched_mlflow_client(self):
@@ -68,7 +71,10 @@ class MLModelRegistry(ServiceBase):
             ) from e
 
         return get_patched_mlflow_client(
-            self.get_tracking_uri(), self.client, self.application_id
+            self.get_tracking_uri(),
+            self.client,
+            self.application_id,
+            self.client.get_token,
         )
 
     def get_tracking_uri(self):

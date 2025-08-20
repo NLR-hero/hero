@@ -59,6 +59,7 @@ class HeroClient:
 
         Returns a JWT access token.
         """
+        print("HERO _fetch_token")
         app_client_id_secret = f"{self._client_id}:{self._client_secret}".encode(
             "utf-8"
         )
@@ -80,6 +81,7 @@ class HeroClient:
                 f"Failed to fetch access token: {response.status_code} - {response.text}, {self._scopes}"
             )
 
+        print("HERO _fetch_token - success", response.json())
         self._access_token = response.json()["access_token"]
 
     def _decode_token(self, token):
@@ -139,10 +141,14 @@ class HeroClient:
         Note: we could add re-auth capabilities here Or manage elsewhere
         (i.e. resilient sessions, etc)
         """
+        print("HERO get_token")
         access_token_decoded = self._decode_token(self._access_token)
+        print("access_token_decoded", access_token_decoded)
         if access_token_decoded:
+            print("HERO get_token - valid token")
             return self._access_token
         else:
+            print("HERO get_token - invalid token")
             self._fetch_token()
             return self._access_token
 
