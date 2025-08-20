@@ -952,23 +952,45 @@ class DataRepoService(ServiceBase):
             )
             return dataset
 
-    def read_files(self):
+    def read_files(self, dataset_id=None):
         """
-        List files.
+        List files in a dataset.
+
+        LISTING ALL FILES IN A DATA REPO IS NOT SUPPORTED BY DATA-REPO-API
+        THIS FUNCTION EXISTS AS A PLACEHOLDER AND AN ALTERNATIVE WAY TO LIST FILES IN A DATASET
+        IN ADDITION TO read_dataset_files()
+
+        Parameters
+        -----------
+        dataset_id : str, required
+            The dataset UUID to filter files by
 
         Returns
         --------
         files : list of dict
             A list of files where each dict is file attributes.
 
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        Notes
+        -----
+        New in version 0.2.0.
         """
-        # TODO: this is broken for some reason, API is returning 404 on this endpoint.
-        # This is because list all files across datasets and projects is not yet implemented in the data-repo-api
-        # Listing all files in a datset is available, now added fn as read_dataset_files
+        if dataset_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "dataset_id"')
+
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.data_repo_url}/files"
-        response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        url = f"{self.data_repo_url}/dataset/{dataset_id}/files"
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HERODataRepoDatasetNotFound()
+            raise e
 
     def read_dataset_files(self, dataset_id=None):
         """
