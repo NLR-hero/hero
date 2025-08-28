@@ -1440,7 +1440,7 @@ class DataRepoService(ServiceBase):
 
         Notes
         -----
-        New in version 0.2.0.
+        New in version 0.10.0.
         """
         if not all([datarepo_id, dataset_id, name]):
             raise MissingRequiredAttribute("Missing required attribute")
@@ -1452,6 +1452,84 @@ class DataRepoService(ServiceBase):
             url = self.read_file_download_url(file_id=file["id"])
         except HERODataRepoFileNotFound:
             raise HERODataRepoFileNotFound(f"File not found: {name}")
+
+        return url
+
+    def read_file_download_url_from_hierarchy(
+        self,
+        datarepo_id,
+        project_name,
+        dataset_name,
+        file_name,
+        project_metatype="Project",
+        dataset_metatype="Dataset",
+        file_metatype="File",
+    ):
+        """
+        Get a signed S3 URL from where to download the file with a GET request.
+
+        Parameters
+        -----------
+        datarepo_id : str, required
+            The UUID of the data repository.
+
+        project_name : str, required
+            The name of the project.
+
+        dataset_name : str, required
+            The name of the dataset.
+
+        file_name : str, required
+            The name of the file.
+
+        project_metatype : str, optional
+            The project metatype. Defaults to "Project".
+
+        dataset_metatype : str, optional
+            The dataset metatype. Defaults to "Dataset".
+
+        file_metatype : str, optional
+            The file metatype. Defaults to "File".
+
+        Returns
+        --------
+        url : string
+            The signed S3 URL
+
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROAPIResponseException
+            When there is a problem trying to parse the response as json
+
+        Notes
+        -----
+        New in version 0.10.0.
+        """
+        if not all([datarepo_id, project_name, dataset_name, file_name]):
+            raise MissingRequiredAttribute("Missing required attribute")
+
+        try:
+            params = {
+                "datarepoId": datarepo_id,
+                "projectName": project_name,
+                "datasetName": dataset_name,
+                "fileName": file_name,
+                "projectMetatype": project_metatype,
+                "datasetMetatype": dataset_metatype,
+                "fileMetatype": file_metatype,
+            }
+            response = self.api.request(
+                "GET",
+                f"{self.base_url}/{datarepo_id}/files/download",
+                headers=self.get_headers(self.client.get_token()),
+                params=params,
+            )
+            url = response.json()["url"]
+        except HERODataRepoFileNotFound:
+            raise HERODataRepoFileNotFound(f"File not found: {file_name}")
 
         return url
 
