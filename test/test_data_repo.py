@@ -2,9 +2,7 @@ import pytest
 import hero
 import os
 import datetime
-import json
 import time
-import tempfile
 
 
 class TestDataRepo:
