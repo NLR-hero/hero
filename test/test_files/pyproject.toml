@@ -1,0 +1,3 @@
+[tool.poetry]
+name = "test-file"
+version = "0.1.0"

@@ -1405,6 +1405,56 @@ class DataRepoService(ServiceBase):
         except JSONDecodeError:
             raise HEROAPIResponseException()
 
+    def read_file_download_url_by_name(
+        self, datarepo_id, dataset_id, name, metatype="File"
+    ):
+        """
+        Get a signed S3 URL from where to download the file with a GET request.
+
+        Parameters
+        -----------
+        datarepo_id : str, required
+            The UUID of the data repository.
+
+        dataset_id : str, required
+            The UUID of the dataset.
+
+        name : str, required
+            The name of the file.
+
+        metatype : str, optional
+            The file metatype. Defaults to "File".
+
+        Returns
+        --------
+        url : string
+            The signed S3 URL
+
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROAPIResponseException
+            When there is a problem trying to parse the response as json
+
+        Notes
+        -----
+        New in version 0.2.0.
+        """
+        if not all([datarepo_id, dataset_id, name]):
+            raise MissingRequiredAttribute("Missing required attribute")
+
+        try:
+            file = self.read_file_by_name(
+                dataset_id=dataset_id, name=name, metatype=metatype
+            )
+            url = self.read_file_download_url(file_id=file["id"])
+        except HERODataRepoFileNotFound:
+            raise HERODataRepoFileNotFound(f"File not found: {name}")
+
+        return url
+
     def read_file_upload_url(self, file_id=None):
         """
         Get a signed S3 URL from where to upload the file with a PUT request.
