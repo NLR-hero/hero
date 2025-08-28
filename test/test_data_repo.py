@@ -780,28 +780,47 @@ class TestDataRepo:
             if os.path.exists(filepath):
                 os.unlink(filepath)
 
+    def test_file_download_url_from_hierarchy(self):
+        """Test getting file download URL from project/dataset/file hierarchy."""
+        project_name = f"testing-hierarchy-{int(time.time())}"
+        self.register_project_for_cleanup(project_name)
 
-# Legacy standalone test functions for backward compatibility
-# def test_project():
-#     """Legacy test function for backward compatibility."""
-#     test_instance = TestDataRepo()
-#     test_instance.setup_and_cleanup()
-#     test_instance.test_create_project_dataset_file()
+        # Create project
+        project = self.data_repo.get_or_create_project(name=project_name)
+        assert project is not None
+        assert project["name"] == project_name
 
-# def test_datasets():
-#     """Legacy test function for backward compatibility."""
-#     test_instance = TestDataRepo()
-#     test_instance.setup_and_cleanup()
-#     test_instance.test_read_project_datasets()
+        # Create dataset
+        dataset = self.data_repo.get_or_create_dataset(
+            project_id=project["id"], name="testing_hierarchy_dataset"
+        )
+        assert dataset is not None
+        assert dataset["name"] == "testing_hierarchy_dataset"
 
-# def test_files():
-#     """Legacy test function for backward compatibility."""
-#     test_instance = TestDataRepo()
-#     test_instance.setup_and_cleanup()
-#     test_instance.test_read_dataset_files()
+        # Use local pyproject.toml file for upload
+        test_file_path = os.path.join(
+            os.path.dirname(__file__), "test_files", "pyproject.toml"
+        )
+        assert os.path.exists(test_file_path)
 
-# def test_create_entity_by_id():
-#     """Legacy test function for backward compatibility."""
-#     test_instance = TestDataRepo()
-#     test_instance.setup_and_cleanup()
-#     test_instance.test_create_entity_by_id()
+        # Add file
+        file_obj = self.data_repo.add_or_replace_file(
+            dataset_id=dataset["id"],
+            name="hierarchy_test_file.toml",
+            local_filepath=test_file_path,
+        )
+        assert file_obj is not None
+        assert file_obj["name"] == "hierarchy_test_file.toml"
+
+        # Get download URL from hierarchy
+        download_url = self.data_repo.read_file_download_url_from_hierarchy(
+            datarepo_id=self.data_repo.data_repo_id,
+            project_name=project_name,
+            dataset_name=dataset["name"],
+            project_metatype="Project",
+            dataset_metatype="Dataset",
+            file_metatype="File",
+            file_name="hierarchy_test_file.toml",
+        )
+        assert download_url is not None
+        assert "s3.us-west-2.amazonaws.com" in download_url
