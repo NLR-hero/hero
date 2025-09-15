@@ -98,7 +98,7 @@ class HeroClient:
                 token,
                 key=signing_key,
                 algorithms=["RS256"],
-                options={"verify_exp": True},
+                options={"verify_exp": True, "verify_iat": False},
             )
         except ExpiredSignatureError:
             # token expired, we need to refresh it
@@ -124,6 +124,8 @@ class HeroClient:
         """
         Adds a scope to the client.
         """
+        if scope in self._scopes:
+            return
         self._scopes.append(scope)
 
     def authenticate(self):
