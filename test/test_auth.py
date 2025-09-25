@@ -305,7 +305,6 @@ def test_get_client_credentials():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/user")
     auth = hero_client.Auth()
-    auth.base_url = "http://localhost:8001/auth/api/v1/"
 
     # First, let's create a permission for the TVM functionality
     app_type = "auth"  # Using auth app type for TVM
@@ -321,10 +320,9 @@ def test_get_client_credentials():
     admin_client = hero.HeroClient()
     admin_client.add_scope("hero-auth/admin")
     admin_auth = admin_client.Auth()
-    admin_auth.base_url = "http://localhost:8001/auth/api/v1/"
 
     resource_type = "token"
-    resource_id = "aws-hero-dev-us-west-2-opensearch-readonly"  # Need to find a role that is able to be assumed by any user
+    resource_id = "hero-service-role-ops-dev-hero-test-framework"
     permission_set = ["GET_TOKEN"]
 
     # Create permission for TVM access using admin client
