@@ -3,7 +3,7 @@ import hero
 TESTABLE_PROJECT_ID = "dev-hero-test-framework"
 TESTABLE_EXPERIMENT_ID = "2"
 TESTABLE_RUN_ID = "18c463a886dd46bd8b4b2bf19408b36c"
-TESTABLE_MODEL_ID = "30JRWKZ4gEYZRIGY3OGMg7oQWH5"
+TESTABLE_MODEL_ID = "Test Experiment 1"
 TESTABLE_MODEL_VERSION_ID = "1"
 
 # def test_tracking_uri():
@@ -148,7 +148,7 @@ def test_list_artifacts():
 def test_list_models():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()
-    res = model_registry.list_models(TESTABLE_PROJECT_ID)
+    res = model_registry.list_registered_models(TESTABLE_PROJECT_ID)
     assert isinstance(res, dict)
     assert isinstance(res.get("registered_models"), list)
 
@@ -156,7 +156,7 @@ def test_list_models():
 def test_read_model():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()
-    res = model_registry.read_model(TESTABLE_MODEL_ID)
+    res = model_registry.read_registered_model(TESTABLE_MODEL_ID)
     assert isinstance(res, dict)
     assert res["name"] == TESTABLE_MODEL_ID
 
@@ -166,19 +166,19 @@ def test_update_model():
     model_registry = hero_client.MLModelRegistry()
 
     # get original model
-    original_model = model_registry.read_model(TESTABLE_MODEL_ID)
+    original_model = model_registry.read_registered_model(TESTABLE_MODEL_ID)
     original_description = original_model["description"]
     updated_description = "Updated Description"
 
     # update model with new values
-    updated_model = model_registry.update_model(
+    updated_model = model_registry.update_registered_model(
         TESTABLE_MODEL_ID, description=updated_description
     )
     assert isinstance(updated_model, dict)
     assert updated_model["description"] == updated_description
 
     # reset model to original values
-    reset_model = model_registry.update_model(
+    reset_model = model_registry.update_registered_model(
         TESTABLE_MODEL_ID, description=original_description
     )
     assert isinstance(reset_model, dict)
