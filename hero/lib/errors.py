@@ -129,3 +129,13 @@ class ClientCreateDataset(Exception):
 
 class ClientCreateFileObject(Exception):
     pass
+
+
+class HEROMLModelRegistryResourceAlreadyExists(Exception):
+    def __init__(self, message="HERO ML Model Registry resource already exists"):
+        super().__init__(message)
+
+
+class HEROMLModelRegistryResourceNotFound(Exception):
+    def __init__(self, message="HERO ML Model Registry resource not found"):
+        super().__init__(message)

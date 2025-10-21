@@ -5,7 +5,12 @@ import urllib.parse
 
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
-from ..lib.errors import MissingRequiredAttribute
+from ..lib.errors import (
+    MissingRequiredAttribute,
+    HEROMLModelRegistryResourceAlreadyExists,
+    HEROMLModelRegistryResourceNotFound,
+)
+from requests.exceptions import HTTPError
 
 
 @decorate_all(log_errors)
@@ -35,13 +40,6 @@ class MLModelRegistry(ServiceBase):
         self.base_url = get_conf_from_collection(URL_MAP, "HERO_ML_MODEL_REGISTRY_URL")
         self.client_credentials = None
 
-    # def get_tracking_uri(self):
-    #     """
-    #     Returns the MLflow tracking URI.
-    #     """
-    #     return self.base_url
-
-    # hero-core MLModelRegistry
     def get_patched_mlflow(self):
         try:
             from hero_mlflow.mlflow_support import get_patched_mlflow
@@ -106,6 +104,40 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
+    def create_experiment(self, name):
+        """
+        Creates an experiment in the registry
+
+        Parameters
+        ----------
+        name : str
+            The name of the experiment to create
+
+        Returns
+        -------
+        experiment : dict
+            The created experiment
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "name"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment"
+        attributes = {"name": name}
+        try:
+            response = self.api.request("POST", url, headers=headers, json=attributes)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 409:
+                raise HEROMLModelRegistryResourceAlreadyExists()
+            else:
+                raise e
+
     def read_experiment(self, id):
         """
         Reads the experiment with the given ID
@@ -130,8 +162,77 @@ class MLModelRegistry(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
-        response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HEROMLModelRegistryResourceNotFound()
+            else:
+                raise e
+
+    def read_experiment_by_name(self, name):
+        """
+        Reads the experiment with the given name
+
+        Parameters
+        ----------
+        name : str
+            The name of the experiment to read
+
+        Returns
+        -------
+        experiment : dict
+            The experiment with the given name
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "name"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/by-name/{urllib.parse.quote(name, safe='')}"
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HEROMLModelRegistryResourceNotFound()
+            else:
+                raise e
+
+    def read_or_create_experiment(self, name):
+        """
+        Reads the experiment with the given name, or creates it if it does not exist
+
+        Parameters
+        ----------
+        name : str
+            The name of the experiment to read or create
+
+        Returns
+        -------
+        experiment : dict
+            The experiment with the given name
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        try:
+            return self.read_experiment_by_name(name)
+        except HTTPError as read_error:
+            if read_error.response.status_code == 404:
+                try:
+                    return self.create_experiment(name)
+                except HTTPError as create_error:
+                    raise create_error
+            else:
+                raise read_error
 
     def update_experiment(self, id, name=None, description=None):
         """
@@ -455,6 +556,178 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return response.json()
 
+    def list_logged_models(self, experiment_id):
+        """
+        Lists the logged models for a given experiment ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to list logged models for
+
+        Returns
+        -------
+        logged_model_collection : dict
+            The collection of logged models for the given experiment ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-models"
+        response = self.api.request("GET", url, headers=headers)
+        return response.json()
+
+    def read_logged_model(self, experiment_id, id):
+        """
+        Reads a logged model for a given experiment ID and logged model ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to which the logged model belongs
+        id : str
+            The ID of the logged model to read
+
+        Returns
+        -------
+        logged_model : dict
+            The logged model with the given ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-model/{id}"
+        response = self.api.request("GET", url, headers=headers)
+        return response.json()
+
+    def list_logged_model_artifacts(self, experiment_id, model_id):
+        """
+        Lists the artifacts for a given logged model ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to which the logged model belongs
+        model_id : str
+            The ID of the logged model to list artifacts for
+
+        Returns
+        -------
+        artifact_collection : dict
+            The collection of artifacts for the given logged model ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if model_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-model/{model_id}/artifacts"
+        response = self.api.request("GET", url, headers=headers)
+        return response.json()
+
+    def update_run_tag(self, experiment_id, run_id, key, value):
+        """
+        Updates a tag for a given run ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to which the run belongs
+        run_id : str
+            The ID of the run to update the tag for
+        key : str
+            The key of the tag to update
+        value : str
+            The new value for the tag
+
+        Returns
+        -------
+        tag : dict
+            The updated tag
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if run_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
+        if key is None:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+        if value is None:
+            raise MissingRequiredAttribute('Missing required attribute: "value"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/tag"
+        attributes = {"key": key, "value": value}
+        response = self.api.request("POST", url, headers=headers, json=attributes)
+        return response.json()
+
+    def delete_run_tag(self, experiment_id, run_id, key):
+        """
+        Deletes a tag for a given run ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to which the run belongs
+        run_id : str
+            The ID of the run to delete the tag for
+        key : str
+            The key of the tag to delete
+
+        Returns
+        -------
+        tag : dict
+            The deleted tag
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if run_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
+        if key is None:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/tag"
+        attributes = {"key": key}
+        response = self.api.request("DELETE", url, headers=headers, json=attributes)
+        return response.json()
+
     def list_artifacts(self, experiment_id, run_id):
         """
         Lists the artifacts for a given run ID
@@ -487,11 +760,47 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def list_models(
+    def create_registered_model(self, id):
+        """
+        Creates a registered model in the model registry
+
+        Parameters
+        ----------
+        id : str
+            Name/ID of the model
+
+        Returns
+        -------
+        dict
+            The created registered model
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROMLModelRegistryResourceAlreadyExists
+            If the model with the given ID already exists
+        """
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
+        try:
+            response = self.api.request("POST", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 409:
+                raise HEROMLModelRegistryResourceAlreadyExists()
+            else:
+                raise e
+
+    def list_registered_models(
         self, count=None, next_token=None, search_key=None, sort_order=None, filter=None
     ):
         """
-        Lists the models in the model registry
+        Lists the registered models in the model registry
 
         Parameters
         ----------
@@ -525,9 +834,9 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
-    def read_model(self, id):
+    def read_registered_model(self, id):
         """
-        Reads a model in the model registry
+        Reads a registered model in the model registry
 
         Parameters
         ----------
@@ -543,16 +852,55 @@ class MLModelRegistry(ServiceBase):
         ------
         MissingRequiredAttribute
             If a required attribute is missing
+
+        HEROMLModelRegistryResourceNotFound
+            If the model with the given ID is not found
         """
         if not id:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
-        response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HEROMLModelRegistryResourceNotFound()
+            else:
+                raise e
 
-    def rename_model(self, id, new_name):
+    def read_or_create_registered_model(self, id):
+        """
+        Reads a registered model in the model registry, or creates it if it does not exist
+
+        Parameters
+        ----------
+        id : str
+            The ID of the model to read or create
+
+        Returns
+        -------
+        dict
+            The model with the given ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        try:
+            return self.read_registered_model(id)
+        except HTTPError as read_error:
+            if read_error.response.status_code == 404:
+                try:
+                    return self.create_registered_model(id)
+                except HTTPError as create_error:
+                    raise create_error
+            else:
+                raise read_error
+
+    def rename_registered_model(self, id, new_name):
         """
         Renames a model in the model registry
 
@@ -583,9 +931,9 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("PUT", url, headers=headers, json=attributes)
         return response.json()
 
-    def update_model(self, id, description=None, deployment_job_id=None):
+    def update_registered_model(self, id, description=None, deployment_job_id=None):
         """
-        Updates a model in the model registry
+        Updates a registered model in the model registry
 
         Parameters
         ----------
@@ -619,9 +967,9 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("PUT", url, headers=headers, json=attributes)
         return response.json()
 
-    def delete_model(self, id):
+    def delete_registered_model(self, id):
         """
-        Deletes a model in the model registry
+        Deletes a registered model in the model registry
 
         Parameters
         ----------
@@ -646,9 +994,113 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers)
         return response.json()
 
-    def list_model_versions(self, model_id):
+    def update_registered_model_tag(self, model_id, key, value):
         """
-        Lists the versions of a model in the model registry
+        Updates a tag for a registered model in the model registry
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the model to update the tag for
+        key : str
+            The key of the tag to update
+        value : str
+            The new value for the tag
+
+        Returns
+        -------
+        dict
+            The updated tag
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not model_id:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        if not key:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+        if not value:
+            raise MissingRequiredAttribute('Missing required attribute: "value"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/tag"
+        attributes = {"key": key, "value": value}
+        response = self.api.request("POST", url, headers=headers, json=attributes)
+        return response.json()
+
+    def delete_registered_model_tag(self, model_id, key):
+        """
+        Deletes a tag for a registered model in the model registry
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the model to delete the tag for
+        key : str
+            The key of the tag to delete
+
+        Returns
+        -------
+        dict
+            The deleted tag
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not model_id:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        if not key:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/tag"
+        attributes = {"key": key}
+        response = self.api.request("DELETE", url, headers=headers, json=attributes)
+        return response.json()
+
+    def create_registered_model_version(self, model_id, run_id, source):
+        """
+        Creates a registered model version in the model registry
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the model to create the version for
+        run_id : str
+            The ID of the run associated with the model version
+        source : str
+            The source location of the model version
+
+        Returns
+        -------
+        dict
+            The created model version
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if not model_id:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        if not run_id:
+            raise MissingRequiredAttribute('Missing required attribute: "run_id"')
+        if not source:
+            raise MissingRequiredAttribute('Missing required attribute: "source"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version"
+        attributes = {"runId": run_id, "source": source}
+        response = self.api.request("POST", url, headers=headers, json=attributes)
+        return response.json()
+
+    def list_registered_model_versions(self, model_id):
+        """
+        Lists the versions of a registered model in the model registry
 
         Parameters
         ----------
@@ -673,9 +1125,9 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def read_model_version(self, model_id, id):
+    def read_registered_model_version(self, model_id, id):
         """
-        Reads a model version in the model registry
+        Reads a registered model version in the model registry
 
         Parameters
         ----------
@@ -704,9 +1156,9 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def update_model_version(self, model_id, id, description=None):
+    def update_registered_model_version(self, model_id, id, description=None):
         """
-        Updates a model version in the model registry
+        Updates a registered model version in the model registry
 
         Parameters
         ----------
@@ -738,9 +1190,9 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("PUT", url, headers=headers, json=attributes)
         return response.json()
 
-    def delete_model_version(self, model_id, id):
+    def delete_registered_model_version(self, model_id, id):
         """
-        Deletes a model version in the model registry
+        Deletes a registered model version in the model registry
 
         Parameters
         ----------
@@ -767,4 +1219,70 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
         response = self.api.request("DELETE", url, headers=headers)
+        return response.json()
+
+    def update_registered_model_version_tag(self, model_id, id, key, value):
+        """
+        Updates a tag for a registered model version in the model registry
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the model to update the version for
+        id : str
+            The ID of the model version to update the tag for
+        key : str
+            The key of the tag to update
+        value : str
+            The new value for the tag
+
+        Returns
+        -------
+        dict
+            The updated model version tag
+        """
+        if not model_id:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+        if not key:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+        if not value:
+            raise MissingRequiredAttribute('Missing required attribute: "value"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}/tag"
+        response = self.api.request(
+            "POST", url, headers=headers, json={"key": key, "value": value}
+        )
+        return response.json()
+
+    def delete_registered_model_version_tag(self, model_id, id, key):
+        """
+        Deletes a tag for a registered model version in the model registry
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the model to delete the version tag for
+        id : str
+            The ID of the model version to delete the tag for
+        key : str
+            The key of the tag to delete
+
+        Returns
+        -------
+        dict
+            The deleted model version tag
+        """
+        if not model_id:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+        if not key:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}/tag"
+        response = self.api.request("DELETE", url, headers=headers, json={"key": key})
         return response.json()
