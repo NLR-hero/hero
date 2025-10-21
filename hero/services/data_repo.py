@@ -952,23 +952,45 @@ class DataRepoService(ServiceBase):
             )
             return dataset
 
-    def read_files(self):
+    def read_files(self, dataset_id=None):
         """
-        List files.
+        List files in a dataset.
+
+        LISTING ALL FILES IN A DATA REPO IS NOT SUPPORTED BY DATA-REPO-API
+        THIS FUNCTION EXISTS AS A PLACEHOLDER AND AN ALTERNATIVE WAY TO LIST FILES IN A DATASET
+        IN ADDITION TO read_dataset_files()
+
+        Parameters
+        -----------
+        dataset_id : str, required
+            The dataset UUID to filter files by
 
         Returns
         --------
         files : list of dict
             A list of files where each dict is file attributes.
 
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        Notes
+        -----
+        New in version 0.2.0.
         """
-        # TODO: this is broken for some reason, API is returning 404 on this endpoint.
-        # This is because list all files across datasets and projects is not yet implemented in the data-repo-api
-        # Listing all files in a datset is available, now added fn as read_dataset_files
+        if dataset_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "dataset_id"')
+
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.data_repo_url}/files"
-        response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        url = f"{self.data_repo_url}/dataset/{dataset_id}/files"
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HERODataRepoDatasetNotFound()
+            raise e
 
     def read_dataset_files(self, dataset_id=None):
         """
@@ -1382,6 +1404,134 @@ class DataRepoService(ServiceBase):
             return response.json()["url"]
         except JSONDecodeError:
             raise HEROAPIResponseException()
+
+    def read_file_download_url_by_name(
+        self, datarepo_id, dataset_id, name, metatype="File"
+    ):
+        """
+        Get a signed S3 URL from where to download the file with a GET request.
+
+        Parameters
+        -----------
+        datarepo_id : str, required
+            The UUID of the data repository.
+
+        dataset_id : str, required
+            The UUID of the dataset.
+
+        name : str, required
+            The name of the file.
+
+        metatype : str, optional
+            The file metatype. Defaults to "File".
+
+        Returns
+        --------
+        url : string
+            The signed S3 URL
+
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROAPIResponseException
+            When there is a problem trying to parse the response as json
+
+        Notes
+        -----
+        New in version 0.10.0.
+        """
+        if not all([datarepo_id, dataset_id, name]):
+            raise MissingRequiredAttribute("Missing required attribute")
+
+        try:
+            file = self.read_file_by_name(
+                dataset_id=dataset_id, name=name, metatype=metatype
+            )
+            url = self.read_file_download_url(file_id=file["id"])
+        except HERODataRepoFileNotFound:
+            raise HERODataRepoFileNotFound(f"File not found: {name}")
+
+        return url
+
+    def read_file_download_url_from_hierarchy(
+        self,
+        datarepo_id,
+        project_name,
+        dataset_name,
+        file_name,
+        project_metatype="Project",
+        dataset_metatype="Dataset",
+        file_metatype="File",
+    ):
+        """
+        Get a signed S3 URL from where to download the file with a GET request.
+
+        Parameters
+        -----------
+        datarepo_id : str, required
+            The UUID of the data repository.
+
+        project_name : str, required
+            The name of the project.
+
+        dataset_name : str, required
+            The name of the dataset.
+
+        file_name : str, required
+            The name of the file.
+
+        project_metatype : str, optional
+            The project metatype. Defaults to "Project".
+
+        dataset_metatype : str, optional
+            The dataset metatype. Defaults to "Dataset".
+
+        file_metatype : str, optional
+            The file metatype. Defaults to "File".
+
+        Returns
+        --------
+        url : string
+            The signed S3 URL
+
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROAPIResponseException
+            When there is a problem trying to parse the response as json
+
+        Notes
+        -----
+        New in version 0.10.0.
+        """
+        if not all([datarepo_id, project_name, dataset_name, file_name]):
+            raise MissingRequiredAttribute("Missing required attribute")
+
+        try:
+            params = {
+                "datarepoId": datarepo_id,
+                "projectName": project_name,
+                "datasetName": dataset_name,
+                "fileName": file_name,
+                "projectMetatype": project_metatype,
+                "datasetMetatype": dataset_metatype,
+                "fileMetatype": file_metatype,
+            }
+            response = self.api.request(
+                "GET",
+                f"{self.base_url}/{datarepo_id}/files/download",
+                headers=self.get_headers(self.client.get_token()),
+                params=params,
+            )
+            url = response.json()["url"]
+        except HERODataRepoFileNotFound:
+            raise HERODataRepoFileNotFound(f"File not found: {file_name}")
+
+        return url
 
     def read_file_upload_url(self, file_id=None):
         """
