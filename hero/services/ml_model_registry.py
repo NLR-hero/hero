@@ -5,7 +5,12 @@ import urllib.parse
 
 from ..url_map import URL_MAP
 from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
-from ..lib.errors import MissingRequiredAttribute
+from ..lib.errors import (
+    MissingRequiredAttribute,
+    HEROMLModelRegistryResourceAlreadyExists,
+    HEROMLModelRegistryResourceNotFound,
+)
+from requests.exceptions import HTTPError
 
 
 @decorate_all(log_errors)
@@ -99,6 +104,40 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
+    def create_experiment(self, name):
+        """
+        Creates an experiment in the registry
+
+        Parameters
+        ----------
+        name : str
+            The name of the experiment to create
+
+        Returns
+        -------
+        experiment : dict
+            The created experiment
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "name"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment"
+        attributes = {"name": name}
+        try:
+            response = self.api.request("POST", url, headers=headers, json=attributes)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 409:
+                raise HEROMLModelRegistryResourceAlreadyExists()
+            else:
+                raise e
+
     def read_experiment(self, id):
         """
         Reads the experiment with the given ID
@@ -123,8 +162,77 @@ class MLModelRegistry(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
-        response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HEROMLModelRegistryResourceNotFound()
+            else:
+                raise e
+
+    def read_experiment_by_name(self, name):
+        """
+        Reads the experiment with the given name
+
+        Parameters
+        ----------
+        name : str
+            The name of the experiment to read
+
+        Returns
+        -------
+        experiment : dict
+            The experiment with the given name
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "name"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/by-name/{urllib.parse.quote(name, safe='')}"
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HEROMLModelRegistryResourceNotFound()
+            else:
+                raise e
+
+    def read_or_create_experiment(self, name):
+        """
+        Reads the experiment with the given name, or creates it if it does not exist
+
+        Parameters
+        ----------
+        name : str
+            The name of the experiment to read or create
+
+        Returns
+        -------
+        experiment : dict
+            The experiment with the given name
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        try:
+            return self.read_experiment_by_name(name)
+        except HTTPError as read_error:
+            if read_error.response.status_code == 404:
+                try:
+                    return self.create_experiment(name)
+                except HTTPError as create_error:
+                    raise create_error
+            else:
+                raise read_error
 
     def update_experiment(self, id, name=None, description=None):
         """
@@ -652,13 +760,13 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("GET", url, headers=headers)
         return response.json()
 
-    def create_registered_model(self, model_id):
+    def create_registered_model(self, id):
         """
         Creates a registered model in the model registry
 
         Parameters
         ----------
-        model_id : str
+        id : str
             Name/ID of the model
 
         Returns
@@ -670,14 +778,23 @@ class MLModelRegistry(ServiceBase):
         ------
         MissingRequiredAttribute
             If a required attribute is missing
+
+        HEROMLModelRegistryResourceAlreadyExists
+            If the model with the given ID already exists
         """
-        if not model_id:
-            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        if not id:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}"
-        response = self.api.request("POST", url, headers=headers)
-        return response.json()
+        url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
+        try:
+            response = self.api.request("POST", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 409:
+                raise HEROMLModelRegistryResourceAlreadyExists()
+            else:
+                raise e
 
     def list_registered_models(
         self, count=None, next_token=None, search_key=None, sort_order=None, filter=None
@@ -735,14 +852,53 @@ class MLModelRegistry(ServiceBase):
         ------
         MissingRequiredAttribute
             If a required attribute is missing
+
+        HEROMLModelRegistryResourceNotFound
+            If the model with the given ID is not found
         """
         if not id:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
-        response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                raise HEROMLModelRegistryResourceNotFound()
+            else:
+                raise e
+
+    def read_or_create_registered_model(self, id):
+        """
+        Reads a registered model in the model registry, or creates it if it does not exist
+
+        Parameters
+        ----------
+        id : str
+            The ID of the model to read or create
+
+        Returns
+        -------
+        dict
+            The model with the given ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        try:
+            return self.read_registered_model(id)
+        except HTTPError as read_error:
+            if read_error.response.status_code == 404:
+                try:
+                    return self.create_registered_model(id)
+                except HTTPError as create_error:
+                    raise create_error
+            else:
+                raise read_error
 
     def rename_registered_model(self, id, new_name):
         """
