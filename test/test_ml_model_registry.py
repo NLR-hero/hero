@@ -6,6 +6,15 @@ TESTABLE_RUN_ID = "18c463a886dd46bd8b4b2bf19408b36c"
 TESTABLE_MODEL_ID = "Test Experiment 1"
 TESTABLE_MODEL_VERSION_ID = "1"
 
+
+def get_tag_map(ob):
+    tags = ob.get("tags", [])
+    tags_map = {}
+    for tag in tags:
+        tags_map[tag["key"]] = tag["value"]
+    return tags_map
+
+
 # def test_tracking_uri():
 #     hero_client = hero.HeroClient()
 #     model_registry = hero_client.MLModelRegistry()
@@ -145,7 +154,7 @@ def test_list_artifacts():
     assert len(res) > 0
 
 
-def test_list_models():
+def test_list_registered_models():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()
     res = model_registry.list_registered_models(TESTABLE_PROJECT_ID)
@@ -153,7 +162,7 @@ def test_list_models():
     assert isinstance(res.get("registered_models"), list)
 
 
-def test_read_model():
+def test_read_registered_model():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()
     res = model_registry.read_registered_model(TESTABLE_MODEL_ID)
@@ -161,7 +170,7 @@ def test_read_model():
     assert res["name"] == TESTABLE_MODEL_ID
 
 
-def test_update_model():
+def test_update_registered_model():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()
 
@@ -183,3 +192,43 @@ def test_update_model():
     )
     assert isinstance(reset_model, dict)
     assert reset_model["description"] == original_description
+
+
+def test_update_registered_model_tag():
+    hero_client = hero.HeroClient()
+    model_registry = hero_client.MLModelRegistry()
+    key = "test-key"
+    value = "test-value"
+
+    model_registry.update_registered_model_tag(TESTABLE_MODEL_ID, key, value)
+    model = model_registry.read_registered_model(TESTABLE_MODEL_ID)
+    tags_map = get_tag_map(model)
+    assert tags_map.get(key) == value
+    model_registry.delete_registered_model_tag(TESTABLE_MODEL_ID, key)
+    model = model_registry.read_registered_model(TESTABLE_MODEL_ID)
+    tags_map = get_tag_map(model)
+    assert key not in tags_map
+
+
+def test_update_registered_model_version_tag():
+    hero_client = hero.HeroClient()
+    model_registry = hero_client.MLModelRegistry()
+    key = "test-key"
+    value = "test-value"
+
+    model_registry.update_registered_model_version_tag(
+        TESTABLE_MODEL_ID, TESTABLE_MODEL_VERSION_ID, key, value
+    )
+    version = model_registry.read_registered_model_version(
+        TESTABLE_MODEL_ID, TESTABLE_MODEL_VERSION_ID
+    )
+    tags_map = get_tag_map(version)
+    assert tags_map.get(key) == value
+    model_registry.delete_registered_model_version_tag(
+        TESTABLE_MODEL_ID, TESTABLE_MODEL_VERSION_ID, key
+    )
+    version = model_registry.read_registered_model_version(
+        TESTABLE_MODEL_ID, TESTABLE_MODEL_VERSION_ID
+    )
+    tags_map = get_tag_map(version)
+    assert key not in tags_map
