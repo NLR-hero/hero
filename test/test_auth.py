@@ -1,5 +1,6 @@
 import pytest
 import hero
+import os
 
 
 def test_create_permission():
@@ -251,6 +252,16 @@ def test_create_role():
     assert res["description"] == description
 
 
+def test_list_roles():
+    hero_client = hero.HeroClient()
+    hero_client.add_scope("hero-auth/admin")
+    auth = hero_client.Auth()
+
+    res = auth.list_roles()
+    assert type(res) is dict
+    assert type(res["roles"]) is list
+
+
 def test_read_role():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
@@ -288,3 +299,66 @@ def test_delete_role():
     scope = "test-auth-scope"
     res = auth.delete_role(resource=resource, scope=scope)
     assert type(res) is dict
+
+
+def test_get_client_credentials():
+    hero_client = hero.HeroClient()
+    hero_client.add_scope("hero-auth/user")
+    auth = hero_client.Auth()
+
+    # First, let's create a permission for the TVM functionality
+    app_type = "auth"  # Using auth app type for TVM
+    app_id = "dev-hero-test-framework"
+    principal_type = "user"
+
+    # Get the actual user ID from environment variable
+    principal_id = os.getenv("HERO_CLIENT_ID")
+    if not principal_id:
+        pytest.skip("HERO_CLIENT_ID environment variable not set")
+
+    # Try with the hero-auth/admin scope to create permissions
+    admin_client = hero.HeroClient()
+    admin_client.add_scope("hero-auth/admin")
+    admin_auth = admin_client.Auth()
+
+    resource_type = "token"
+    resource_id = "hero-service-role-ops-dev-hero-test-framework"
+    permission_set = ["GET_TOKEN"]
+
+    # Create permission for TVM access using admin client
+    try:
+        admin_auth.create_permission(
+            app_type=app_type,
+            app_id=app_id,
+            principal_type=principal_type,
+            principal_id=principal_id,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            permission_set=permission_set,
+        )
+        print(f"Permission created successfully for {principal_id}")
+    except Exception as e:
+        print(f"Permission creation failed (might already exist): {e}")
+
+    # Now test the TVM functionality with regular user
+    res = auth.get_client_credentials(
+        application_id=app_id,
+        role_id=resource_id,  # Use the same role we gave permission for
+    )
+
+    print("tvm response", res)
+    assert type(res) is dict
+
+    # Clean up the permission using admin client
+    try:
+        admin_auth.delete_permission(
+            app_type=app_type,
+            app_id=app_id,
+            principal_type=principal_type,
+            principal_id=principal_id,
+            resource_type=resource_type,
+            resource_id=resource_id,
+        )
+        print("Permission cleaned up successfully")
+    except Exception as e:
+        print(f"Permission cleanup failed: {e}")
