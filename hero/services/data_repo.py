@@ -1571,6 +1571,77 @@ class DataRepoService(ServiceBase):
             return response.json()["url"]
         except JSONDecodeError:
             raise HEROAPIResponseException()
+        
+    def read_file_download_url_from_hierarchy(self, project_name=None, dataset_name=None, file_name=None, project_metatype='Project', dataset_metatype='Dataset', file_metatype='File'):
+        """
+        Get a signed S3 URL from where to download the file with a GET request using the full hierarchy of the File resource.
+
+        Parameters
+        -----------
+        project_name : str, required
+            The project name
+
+        dataset_name : str, required
+            The dataset name
+
+        file_name : str, required
+            The file name
+
+        project_metatype : str, required
+            The project metatype
+
+        dataset_metatype : str, required
+            The dataset metatype
+
+        file_metatype : str, required
+            The file metatype
+
+        Returns
+        --------
+        url : string
+            The signed S3 URL
+
+        Raises
+        -------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROAPIResponseException
+            When there is a problem with the request
+
+        Notes
+        -----
+        New in version 0.2.0.
+        """
+
+        if project_name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "project_name"')
+        if dataset_name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "dataset_name"')
+        if file_name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "file_name"')
+        if project_metatype is None:
+            raise MissingRequiredAttribute('Missing required attribute: "project_metatype"')
+        if dataset_metatype is None:
+            raise MissingRequiredAttribute('Missing required attribute: "dataset_metatype"')
+        if file_metatype is None:
+            raise MissingRequiredAttribute('Missing required attribute: "file_metatype"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/{self.data_repo_id}/files/download"
+
+        params = kwargs_to_json_for_request(projectName=project_name, datasetName=dataset_name, fileName=file_name, projectMetatype=project_metatype, datasetMetatype=dataset_metatype, fileMetatype=file_metatype)
+
+        try:
+            response = self.api.request("GET", url, headers=headers, params=params)
+            try:
+                return response.json()["url"]
+            except JSONDecodeError:
+                raise HEROAPIResponseException('Unable to parse the response as json')
+        except HTTPError as e:
+            result = e.response.json()
+            message = f"{result['error']['name']}: {result['error']['message']} Request ID: {result['requestId']}"
+            raise HEROAPIResponseException(message=message)
 
     def add_file_if_not_exists(
         self,
