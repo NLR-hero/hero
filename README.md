@@ -103,6 +103,6 @@ export HERO_CLIENT_SECRET="*******************************"
 
 ### Examples
 
-~~Please check out the [HERO examples](https://github.nrel.gov/Hero/hero-examples).~~
+Please check out the [HERO examples](https://github.nrel.gov/Hero/hero-examples).
 
-_Note: the above examples are stale and need to be updated. Please refer to the tests in the `test` directory for basic usage examples._
+Additionally, the tests in the `test` directory of this repo may also prove useful for basic usage examples.
