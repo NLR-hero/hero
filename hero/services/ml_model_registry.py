@@ -82,6 +82,13 @@ class MLModelRegistry(ServiceBase):
         os.environ["MLFLOW_TRACKING_TOKEN"] = self.client.get_token()
         return f"{self.base_url}/proxy/{self.registry_name}"
 
+    def get_description_from_tags(self, tags):
+        description = ""
+        for tag in tags:
+            if tag["key"] == "mlflow.note.content":
+                description = tag["value"]
+        return description
+
     def list_experiments(self, count=None, next_token=None):
         """
         Lists the experiments in the registry
@@ -294,6 +301,78 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
         response = self.api.request("DELETE", url, headers=headers)
+        return response.json()
+
+    def update_experiment_tag(self, experiment_id, key, value):
+        """
+        Updates a tag for the given experiment ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to update the tag for
+        key : str
+            The key of the tag to update
+        value : str
+            The new value for the tag
+
+        Returns
+        -------
+        tag : dict
+            The updated tag
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if key is None:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+        if value is None:
+            raise MissingRequiredAttribute('Missing required attribute: "value"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/tag"
+        attributes = {"key": key, "value": value}
+        response = self.api.request("POST", url, headers=headers, json=attributes)
+        return response.json()
+
+    def delete_experiment_tag(self, experiment_id, key):
+        """
+        Deletes a tag for the given experiment ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to delete the tag for
+        key : str
+            The key of the tag to delete
+
+        Returns
+        -------
+        tag : dict
+            The deleted tag
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if key is None:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/tag"
+        attributes = {"key": key}
+        response = self.api.request("DELETE", url, headers=headers, json=attributes)
         return response.json()
 
     def list_runs(
