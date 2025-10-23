@@ -1,10 +1,17 @@
 import json
 import os
 import threading
+from urllib import response
 import urllib.parse
 
 from ..url_map import URL_MAP
-from ..lib import ServiceBase, decorate_all, log_errors, get_conf_from_collection
+from ..lib import (
+    ServiceBase,
+    decorate_all,
+    log_errors,
+    get_conf_from_collection,
+    HeroObject,
+)
 from ..lib.errors import (
     MissingRequiredAttribute,
     HEROMLModelRegistryResourceAlreadyExists,
@@ -82,6 +89,13 @@ class MLModelRegistry(ServiceBase):
         os.environ["MLFLOW_TRACKING_TOKEN"] = self.client.get_token()
         return f"{self.base_url}/proxy/{self.registry_name}"
 
+    def get_description_from_tags(self, tags):
+        description = ""
+        for tag in tags:
+            if tag["key"] == "mlflow.note.content":
+                description = tag["value"]
+        return description
+
     def list_experiments(self, count=None, next_token=None):
         """
         Lists the experiments in the registry
@@ -102,7 +116,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/experiments"
         params = {"count": count, "nextToken": next_token}
         response = self.api.request("GET", url, headers=headers, params=params)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).experiments
 
     def create_experiment(self, name):
         """
@@ -131,7 +146,8 @@ class MLModelRegistry(ServiceBase):
         attributes = {"name": name}
         try:
             response = self.api.request("POST", url, headers=headers, json=attributes)
-            return response.json()
+            data = response.json()
+            return HeroObject(data)
         except HTTPError as e:
             if e.response.status_code == 409:
                 raise HEROMLModelRegistryResourceAlreadyExists()
@@ -164,7 +180,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
         try:
             response = self.api.request("GET", url, headers=headers)
-            return response.json()
+            data = response.json()
+            return HeroObject(data).experiment
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise HEROMLModelRegistryResourceNotFound()
@@ -197,7 +214,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/experiment/by-name/{urllib.parse.quote(name, safe='')}"
         try:
             response = self.api.request("GET", url, headers=headers)
-            return response.json()
+            data = response.json()
+            return HeroObject(data).experiment
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise HEROMLModelRegistryResourceNotFound()
@@ -267,7 +285,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
         response = self.api.request("PUT", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).experiment
 
     def delete_experiment(self, id):
         """
@@ -294,7 +313,82 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
         response = self.api.request("DELETE", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return HeroObject(data)
+
+    def update_experiment_tag(self, experiment_id, key, value):
+        """
+        Updates a tag for the given experiment ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to update the tag for
+        key : str
+            The key of the tag to update
+        value : str
+            The new value for the tag
+
+        Returns
+        -------
+        tag : dict
+            The updated tag
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if key is None:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+        if value is None:
+            raise MissingRequiredAttribute('Missing required attribute: "value"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/tag"
+        attributes = {"key": key, "value": value}
+        response = self.api.request("POST", url, headers=headers, json=attributes)
+        data = response.json()
+        return HeroObject(data)
+
+    def delete_experiment_tag(self, experiment_id, key):
+        """
+        Deletes a tag for the given experiment ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to delete the tag for
+        key : str
+            The key of the tag to delete
+
+        Returns
+        -------
+        tag : dict
+            The deleted tag
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if key is None:
+            raise MissingRequiredAttribute('Missing required attribute: "key"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/tag"
+        attributes = {"key": key}
+        response = self.api.request("DELETE", url, headers=headers, json=attributes)
+        data = response.json()
+        return HeroObject(data)
 
     def list_runs(
         self,
@@ -354,7 +448,8 @@ class MLModelRegistry(ServiceBase):
         if run_view_type is not None:
             params["runViewType"] = run_view_type
         response = self.api.request("GET", url, headers=headers, params=params)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).runs
 
     def read_run(self, experiment_id, id):
         """
@@ -386,7 +481,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{id}"
         response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).run
 
     def update_run(self, experiment_id, id, name=None, description=None):
         """
@@ -429,7 +525,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{id}"
         response = self.api.request("PUT", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).run
 
     def read_bulk_metric_history(
         self, experiment_id, run_ids, metric, count=None, next_token=None
@@ -478,7 +575,8 @@ class MLModelRegistry(ServiceBase):
             "runIds": run_ids,
         }
         response = self.api.request("GET", url, headers=headers, params=params)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).metrics
 
     def read_metric_history(
         self, experiment_id, run_id, metric, count=None, next_token=None
@@ -522,7 +620,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/history"
         params = {"count": count, "nextToken": next_token, "metric": metric}
         response = self.api.request("GET", url, headers=headers, params=params)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).metrics
 
     def delete_run(self, experiment_id, run_id):
         """
@@ -554,7 +653,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}"
         response = self.api.request("DELETE", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return HeroObject(data)
 
     def list_logged_models(self, experiment_id):
         """
@@ -582,7 +682,18 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-models"
         response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        data = response.json()
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            if "logged_models" in data:
+                return HeroObject(data).logged_models
+            if "items" in data:
+                return HeroObject(data).items
+            # empty dict or unknown shape -> empty list
+            return []
+        # Fallback: unknown type -> empty list
+        return []
 
     def read_logged_model(self, experiment_id, id):
         """
@@ -614,7 +725,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-model/{id}"
         response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).model
 
     def list_logged_model_artifacts(self, experiment_id, model_id):
         """
@@ -646,7 +758,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-model/{model_id}/artifacts"
         response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return data if isinstance(data, list) else HeroObject(data)
 
     def update_run_tag(self, experiment_id, run_id, key, value):
         """
@@ -688,7 +801,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/tag"
         attributes = {"key": key, "value": value}
         response = self.api.request("POST", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data)
 
     def delete_run_tag(self, experiment_id, run_id, key):
         """
@@ -726,7 +840,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/tag"
         attributes = {"key": key}
         response = self.api.request("DELETE", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data)
 
     def list_artifacts(self, experiment_id, run_id):
         """
@@ -758,7 +873,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/artifacts"
         response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return data if isinstance(data, list) else HeroObject(data)
 
     def create_registered_model(self, id):
         """
@@ -789,7 +905,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
         try:
             response = self.api.request("POST", url, headers=headers)
-            return response.json()
+            data = response.json()
+            return HeroObject(data).registered_model
         except HTTPError as e:
             if e.response.status_code == 409:
                 raise HEROMLModelRegistryResourceAlreadyExists()
@@ -832,7 +949,8 @@ class MLModelRegistry(ServiceBase):
             "filter": filter,
         }
         response = self.api.request("GET", url, headers=headers, params=params)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).registered_models
 
     def read_registered_model(self, id):
         """
@@ -863,7 +981,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
         try:
             response = self.api.request("GET", url, headers=headers)
-            return response.json()
+            data = response.json()
+            return HeroObject(data).registered_model
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise HEROMLModelRegistryResourceNotFound()
@@ -929,7 +1048,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
         attributes = {"newName": new_name}
         response = self.api.request("PUT", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).registered_model
 
     def update_registered_model(self, id, description=None, deployment_job_id=None):
         """
@@ -965,7 +1085,8 @@ class MLModelRegistry(ServiceBase):
         if deployment_job_id is not None:
             attributes["deploymentJobId"] = deployment_job_id
         response = self.api.request("PUT", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).registered_model
 
     def delete_registered_model(self, id):
         """
@@ -992,7 +1113,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{id}"
         response = self.api.request("DELETE", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return HeroObject(data)
 
     def update_registered_model_tag(self, model_id, key, value):
         """
@@ -1028,7 +1150,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/tag"
         attributes = {"key": key, "value": value}
         response = self.api.request("POST", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data)
 
     def delete_registered_model_tag(self, model_id, key):
         """
@@ -1060,7 +1183,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/tag"
         attributes = {"key": key}
         response = self.api.request("DELETE", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data)
 
     def create_registered_model_version(self, model_id, run_id, source):
         """
@@ -1096,7 +1220,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version"
         attributes = {"runId": run_id, "source": source}
         response = self.api.request("POST", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).model_version
 
     def list_registered_model_versions(self, model_id):
         """
@@ -1121,9 +1246,10 @@ class MLModelRegistry(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "model_id"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/versions"
+        url = f"{self.base_url}/project/{self.registry_name}/versions"
         response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).model_versions
 
     def read_registered_model_version(self, model_id, id):
         """
@@ -1154,7 +1280,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
         response = self.api.request("GET", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).model_version
 
     def update_registered_model_version(self, model_id, id, description=None):
         """
@@ -1188,7 +1315,8 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
         attributes = {"description": description}
         response = self.api.request("PUT", url, headers=headers, json=attributes)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).model_version
 
     def delete_registered_model_version(self, model_id, id):
         """
@@ -1219,7 +1347,8 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
         response = self.api.request("DELETE", url, headers=headers)
-        return response.json()
+        data = response.json()
+        return HeroObject(data).model_version
 
     def update_registered_model_version_tag(self, model_id, id, key, value):
         """
@@ -1255,7 +1384,8 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request(
             "POST", url, headers=headers, json={"key": key, "value": value}
         )
-        return response.json()
+        data = response.json()
+        return HeroObject(data)
 
     def delete_registered_model_version_tag(self, model_id, id, key):
         """
@@ -1285,4 +1415,5 @@ class MLModelRegistry(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}/tag"
         response = self.api.request("DELETE", url, headers=headers, json={"key": key})
-        return response.json()
+        data = response.json()
+        return HeroObject(data)
