@@ -15,3 +15,4 @@ from .decorators import (
 )
 from .errors import HeroRetryError
 from .helpers import set_log_level_from_env
+from .attr_mapper import HeroObject
