@@ -726,7 +726,7 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-model/{id}"
         response = self.api.request("GET", url, headers=headers)
         data = response.json()
-        return HeroObject(data).logged_model
+        return HeroObject(data).model
 
     def list_logged_model_artifacts(self, experiment_id, model_id):
         """
