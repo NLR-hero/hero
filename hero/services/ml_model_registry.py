@@ -117,7 +117,13 @@ class MLModelRegistry(ServiceBase):
         params = {"count": count, "nextToken": next_token}
         response = self.api.request("GET", url, headers=headers, params=params)
         data = response.json()
-        return HeroObject(data).experiments
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            if "experiments" in data:
+                return HeroObject(data).experiments
+            return []
+        return []
 
     def create_experiment(self, name):
         """
@@ -286,7 +292,9 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/experiment/{id}"
         response = self.api.request("PUT", url, headers=headers, json=attributes)
         data = response.json()
-        return HeroObject(data).experiment
+        if isinstance(data, dict) and "experiment" in data:
+            return HeroObject(data).experiment
+        return HeroObject(data)
 
     def delete_experiment(self, id):
         """
@@ -390,6 +398,133 @@ class MLModelRegistry(ServiceBase):
         data = response.json()
         return HeroObject(data)
 
+    def list_logged_models(self, experiment_id):
+        """
+        Lists the logged models for a given experiment ID
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to list logged models for
+
+        Returns
+        -------
+        logged_model_collection : dict
+            The collection of logged models for the given experiment ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-models"
+        response = self.api.request("GET", url, headers=headers)
+        data = response.json()
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            if "logged_models" in data:
+                return HeroObject(data).logged_models
+            if "items" in data:
+                return HeroObject(data).items
+            # empty dict or unknown shape -> empty list
+            return []
+        # Fallback: unknown type -> empty list
+        return []
+
+    def read_logged_model(self, id):
+        """
+        Reads a logged model for a given logged model ID
+
+        Parameters
+        ----------
+        id : str
+            The ID of the logged model to read
+        id : str
+            The ID of the logged model to read
+
+        Returns
+        -------
+        logged_model : dict
+            The logged model with the given ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+
+        if id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "id"')
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/logged-model/{id}"
+        response = self.api.request("GET", url, headers=headers)
+        data = response.json()
+        if isinstance(data, dict) and "model" in data:
+            return HeroObject(data).model
+        return HeroObject(data)
+
+    def read_bulk_metric_history(
+        self, experiment_id, run_ids, metric, count=None, next_token=None
+    ):
+        """
+        Reads the history of a metric for multiple run IDs in the model registry
+
+        Parameters
+        ----------
+        experiment_id : str
+            The ID of the experiment to which the runs belong
+        run_ids : list
+            The list of run IDs to read metric history for
+        metric : str
+            The name of the metric to read history for
+        count : int, optional
+            The number of metrics to return, by default None
+        next_token : str, optional
+            The token for the next page of metrics, by default None
+
+        Returns
+        -------
+        metric_history : dict
+            The history of the metric for the given run IDs
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if experiment_id is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "experiment_id"'
+            )
+        if not run_ids:
+            raise MissingRequiredAttribute('Missing required attribute: "run_ids"')
+        if metric is None:
+            raise MissingRequiredAttribute('Missing required attribute: "metric"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/bulk-history"
+        params = {
+            "count": count,
+            "nextToken": next_token,
+            "metric": metric,
+            "runIds": run_ids,
+        }
+        response = self.api.request("GET", url, headers=headers, params=params)
+        data = response.json()
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            if "metrics" in data:
+                return HeroObject(data).metrics
+            return []
+        return []
+
     def list_runs(
         self,
         experiment_id,
@@ -449,16 +584,20 @@ class MLModelRegistry(ServiceBase):
             params["runViewType"] = run_view_type
         response = self.api.request("GET", url, headers=headers, params=params)
         data = response.json()
-        return HeroObject(data).runs
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            if "runs" in data:
+                return HeroObject(data).runs
+            return []
+        return []
 
-    def read_run(self, experiment_id, id):
+    def read_run(self, id):
         """
         Reads the run with the given ID
 
         Parameters
         ----------
-        experiment_id : str
-            The ID of the experiment to which the run belongs
         id : str
             The ID of the run to read
 
@@ -472,26 +611,22 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{id}"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{id}"
         response = self.api.request("GET", url, headers=headers)
         data = response.json()
-        return HeroObject(data).run
+        if isinstance(data, dict) and "run" in data:
+            return HeroObject(data).run
+        return HeroObject(data)
 
-    def update_run(self, experiment_id, id, name=None, description=None):
+    def update_run(self, id, name=None, description=None):
         """
         Updates a run in the model registry
 
         Parameters
         ----------
-        experiment_id : str
-            The ID of the experiment to which the run belongs
         id : str
             The ID of the run to update
         name : str, optional
@@ -509,10 +644,6 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
         if id is None:
             raise MissingRequiredAttribute('Missing required attribute: "id"')
 
@@ -523,71 +654,19 @@ class MLModelRegistry(ServiceBase):
             attributes["description"] = description
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{id}"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{id}"
         response = self.api.request("PUT", url, headers=headers, json=attributes)
         data = response.json()
-        return HeroObject(data).run
+        if isinstance(data, dict) and "run" in data:
+            return HeroObject(data).run
+        return HeroObject(data)
 
-    def read_bulk_metric_history(
-        self, experiment_id, run_ids, metric, count=None, next_token=None
-    ):
-        """
-        Reads the history of a metric for multiple run IDs in the model registry
-
-        Parameters
-        ----------
-        experiment_id : str
-            The ID of the experiment to which the runs belong
-        run_ids : list
-            The list of run IDs to read metric history for
-        metric : str
-            The name of the metric to read history for
-        count : int, optional
-            The number of metrics to return, by default None
-        next_token : str, optional
-            The token for the next page of metrics, by default None
-
-        Returns
-        -------
-        metric_history : dict
-            The history of the metric for the given run IDs
-
-        Raises
-        ------
-        MissingRequiredAttribute
-            If a required attribute is missing
-        """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
-        if not run_ids:
-            raise MissingRequiredAttribute('Missing required attribute: "run_ids"')
-        if metric is None:
-            raise MissingRequiredAttribute('Missing required attribute: "metric"')
-
-        headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/bulk-history"
-        params = {
-            "count": count,
-            "nextToken": next_token,
-            "metric": metric,
-            "runIds": run_ids,
-        }
-        response = self.api.request("GET", url, headers=headers, params=params)
-        data = response.json()
-        return HeroObject(data).metrics
-
-    def read_metric_history(
-        self, experiment_id, run_id, metric, count=None, next_token=None
-    ):
+    def read_metric_history(self, run_id, metric, count=None, next_token=None):
         """
         Reads the history of a metric for a given run ID in the model registry
 
         Parameters
         ----------
-        experiment_id : str
-            The ID of the experiment to which the run belongs
         run_id : str
             The ID of the run to read metric history for
         metric : str
@@ -607,30 +686,30 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
         if run_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "run_id"')
         if metric is None:
             raise MissingRequiredAttribute('Missing required attribute: "metric"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/history"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}/history"
         params = {"count": count, "nextToken": next_token, "metric": metric}
         response = self.api.request("GET", url, headers=headers, params=params)
         data = response.json()
-        return HeroObject(data).metrics
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            if "metrics" in data:
+                return HeroObject(data).metrics
+            return []
+        return []
 
-    def delete_run(self, experiment_id, run_id):
+    def delete_run(self, run_id):
         """
         Deletes the run with the given ID
 
         Parameters
         ----------
-        experiment_id : str
-            The ID of the experiment to which the run belongs
         run_id : str
             The ID of the run to delete
 
@@ -644,131 +723,20 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
         if run_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "run_id"')
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}"
         response = self.api.request("DELETE", url, headers=headers)
         data = response.json()
         return HeroObject(data)
 
-    def list_logged_models(self, experiment_id):
-        """
-        Lists the logged models for a given experiment ID
-
-        Parameters
-        ----------
-        experiment_id : str
-            The ID of the experiment to list logged models for
-
-        Returns
-        -------
-        logged_model_collection : dict
-            The collection of logged models for the given experiment ID
-
-        Raises
-        ------
-        MissingRequiredAttribute
-            If a required attribute is missing
-        """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
-        headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-models"
-        response = self.api.request("GET", url, headers=headers)
-        data = response.json()
-        if isinstance(data, list):
-            return data
-        if isinstance(data, dict):
-            if "logged_models" in data:
-                return HeroObject(data).logged_models
-            if "items" in data:
-                return HeroObject(data).items
-            # empty dict or unknown shape -> empty list
-            return []
-        # Fallback: unknown type -> empty list
-        return []
-
-    def read_logged_model(self, experiment_id, id):
-        """
-        Reads a logged model for a given experiment ID and logged model ID
-
-        Parameters
-        ----------
-        experiment_id : str
-            The ID of the experiment to which the logged model belongs
-        id : str
-            The ID of the logged model to read
-
-        Returns
-        -------
-        logged_model : dict
-            The logged model with the given ID
-
-        Raises
-        ------
-        MissingRequiredAttribute
-            If a required attribute is missing
-        """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
-        if id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "id"')
-        headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-model/{id}"
-        response = self.api.request("GET", url, headers=headers)
-        data = response.json()
-        return HeroObject(data).model
-
-    def list_logged_model_artifacts(self, experiment_id, model_id):
-        """
-        Lists the artifacts for a given logged model ID
-
-        Parameters
-        ----------
-        experiment_id : str
-            The ID of the experiment to which the logged model belongs
-        model_id : str
-            The ID of the logged model to list artifacts for
-
-        Returns
-        -------
-        artifact_collection : dict
-            The collection of artifacts for the given logged model ID
-
-        Raises
-        ------
-        MissingRequiredAttribute
-            If a required attribute is missing
-        """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
-        if model_id is None:
-            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
-        headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/logged-model/{model_id}/artifacts"
-        response = self.api.request("GET", url, headers=headers)
-        data = response.json()
-        return data if isinstance(data, list) else HeroObject(data)
-
-    def update_run_tag(self, experiment_id, run_id, key, value):
+    def update_run_tag(self, run_id, key, value):
         """
         Updates a tag for a given run ID
 
         Parameters
         ----------
-        experiment_id : str
-            The ID of the experiment to which the run belongs
         run_id : str
             The ID of the run to update the tag for
         key : str
@@ -786,10 +754,6 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
         if run_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "run_id"')
         if key is None:
@@ -798,20 +762,18 @@ class MLModelRegistry(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "value"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/tag"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}/tag"
         attributes = {"key": key, "value": value}
         response = self.api.request("POST", url, headers=headers, json=attributes)
         data = response.json()
         return HeroObject(data)
 
-    def delete_run_tag(self, experiment_id, run_id, key):
+    def delete_run_tag(self, run_id, key):
         """
         Deletes a tag for a given run ID
 
         Parameters
         ----------
-        experiment_id : str
-            The ID of the experiment to which the run belongs
         run_id : str
             The ID of the run to delete the tag for
         key : str
@@ -827,30 +789,24 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
         if run_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "run_id"')
         if key is None:
             raise MissingRequiredAttribute('Missing required attribute: "key"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/tag"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}/tag"
         attributes = {"key": key}
         response = self.api.request("DELETE", url, headers=headers, json=attributes)
         data = response.json()
         return HeroObject(data)
 
-    def list_artifacts(self, experiment_id, run_id):
+    def list_artifacts(self, run_id):
         """
         Lists the artifacts for a given run ID
 
         Parameters
         ----------
-        experiment_id : str
-            The ID of the experiment to which the run belongs
         run_id : str
             The ID of the run to list artifacts for
 
@@ -864,14 +820,37 @@ class MLModelRegistry(ServiceBase):
         MissingRequiredAttribute
             If a required attribute is missing
         """
-        if experiment_id is None:
-            raise MissingRequiredAttribute(
-                'Missing required attribute: "experiment_id"'
-            )
         if run_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "run_id"')
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/project/{self.registry_name}/experiment/{experiment_id}/run/{run_id}/artifacts"
+        url = f"{self.base_url}/project/{self.registry_name}/run/{run_id}/artifacts"
+        response = self.api.request("GET", url, headers=headers)
+        data = response.json()
+        return data if isinstance(data, list) else HeroObject(data)
+
+    def list_logged_model_artifacts(self, model_id):
+        """
+        Lists the artifacts for a given logged model ID
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the logged model to list artifacts for
+
+        Returns
+        -------
+        artifact_collection : dict
+            The collection of artifacts for the given logged model ID
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        if model_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "model_id"')
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/logged-model/{model_id}/artifacts"
         response = self.api.request("GET", url, headers=headers)
         data = response.json()
         return data if isinstance(data, list) else HeroObject(data)
@@ -906,7 +885,9 @@ class MLModelRegistry(ServiceBase):
         try:
             response = self.api.request("POST", url, headers=headers)
             data = response.json()
-            return HeroObject(data).registered_model
+            if isinstance(data, dict) and "registered_model" in data:
+                return HeroObject(data).registered_model
+            return HeroObject(data)
         except HTTPError as e:
             if e.response.status_code == 409:
                 raise HEROMLModelRegistryResourceAlreadyExists()
@@ -950,7 +931,13 @@ class MLModelRegistry(ServiceBase):
         }
         response = self.api.request("GET", url, headers=headers, params=params)
         data = response.json()
-        return HeroObject(data).registered_models
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            if "registered_models" in data:
+                return HeroObject(data).registered_models
+            return []
+        return []
 
     def read_registered_model(self, id):
         """
@@ -1049,7 +1036,9 @@ class MLModelRegistry(ServiceBase):
         attributes = {"newName": new_name}
         response = self.api.request("PUT", url, headers=headers, json=attributes)
         data = response.json()
-        return HeroObject(data).registered_model
+        if isinstance(data, dict) and "registered_model" in data:
+            return HeroObject(data).registered_model
+        return HeroObject(data)
 
     def update_registered_model(self, id, description=None, deployment_job_id=None):
         """
@@ -1086,7 +1075,9 @@ class MLModelRegistry(ServiceBase):
             attributes["deploymentJobId"] = deployment_job_id
         response = self.api.request("PUT", url, headers=headers, json=attributes)
         data = response.json()
-        return HeroObject(data).registered_model
+        if isinstance(data, dict) and "registered_model" in data:
+            return HeroObject(data).registered_model
+        return HeroObject(data)
 
     def delete_registered_model(self, id):
         """
@@ -1221,7 +1212,9 @@ class MLModelRegistry(ServiceBase):
         attributes = {"runId": run_id, "source": source}
         response = self.api.request("POST", url, headers=headers, json=attributes)
         data = response.json()
-        return HeroObject(data).model_version
+        if isinstance(data, dict) and "model_version" in data:
+            return HeroObject(data).model_version
+        return HeroObject(data)
 
     def list_registered_model_versions(self, model_id):
         """
@@ -1249,7 +1242,13 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/versions"
         response = self.api.request("GET", url, headers=headers)
         data = response.json()
-        return HeroObject(data).model_versions
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            if "model_versions" in data:
+                return HeroObject(data).model_versions
+            return []
+        return []
 
     def read_registered_model_version(self, model_id, id):
         """
@@ -1281,7 +1280,9 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
         response = self.api.request("GET", url, headers=headers)
         data = response.json()
-        return HeroObject(data).model_version
+        if isinstance(data, dict) and "model_version" in data:
+            return HeroObject(data).model_version
+        return HeroObject(data)
 
     def update_registered_model_version(self, model_id, id, description=None):
         """
@@ -1316,7 +1317,9 @@ class MLModelRegistry(ServiceBase):
         attributes = {"description": description}
         response = self.api.request("PUT", url, headers=headers, json=attributes)
         data = response.json()
-        return HeroObject(data).model_version
+        if isinstance(data, dict) and "model_version" in data:
+            return HeroObject(data).model_version
+        return HeroObject(data)
 
     def delete_registered_model_version(self, model_id, id):
         """
@@ -1348,7 +1351,9 @@ class MLModelRegistry(ServiceBase):
         url = f"{self.base_url}/project/{self.registry_name}/model/{model_id}/version/{id}"
         response = self.api.request("DELETE", url, headers=headers)
         data = response.json()
-        return HeroObject(data).model_version
+        if isinstance(data, dict) and "model_version" in data:
+            return HeroObject(data).model_version
+        return HeroObject(data)
 
     def update_registered_model_version_tag(self, model_id, id, key, value):
         """

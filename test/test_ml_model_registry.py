@@ -208,7 +208,6 @@ def test_read_run():
     model_registry = hero_client.MLModelRegistry()
 
     run = model_registry.read_run(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
         id=TESTABLE_RUN_ID,
     )
     assert run is not None
@@ -219,9 +218,7 @@ def test_update_run_and_reset():
     hero_client = hero.HeroClient()
     model_registry = hero_client.MLModelRegistry()
 
-    run = model_registry.read_run(
-        experiment_id=TESTABLE_EXPERIMENT_ID, id=TESTABLE_RUN_ID
-    )
+    run = model_registry.read_run(id=TESTABLE_RUN_ID)
     original_name = run.info.run_name
     original_description = model_registry.get_description_from_tags(run.data.tags)
 
@@ -229,7 +226,6 @@ def test_update_run_and_reset():
     updated_description = "Updated Description"
 
     run = model_registry.update_run(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
         id=TESTABLE_RUN_ID,
         name=updated_name,
         description=updated_description,
@@ -242,7 +238,6 @@ def test_update_run_and_reset():
 
     # reset
     run = model_registry.update_run(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
         id=TESTABLE_RUN_ID,
         name=original_name,
         description=original_description,
@@ -262,27 +257,23 @@ def test_update_and_delete_run_tag():
     value = "test-value"
 
     model_registry.update_run_tag(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
         run_id=TESTABLE_RUN_ID,
         key=key,
         value=value,
     )
 
     run = model_registry.read_run(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
         id=TESTABLE_RUN_ID,
     )
     tags_map = get_tag_map(run.data.tags)
     assert tags_map.get(key) == value
 
     model_registry.delete_run_tag(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
         run_id=TESTABLE_RUN_ID,
         key=key,
     )
 
     run = model_registry.read_run(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
         id=TESTABLE_RUN_ID,
     )
     tags_map = get_tag_map(run.data.tags)
@@ -294,17 +285,9 @@ def test_read_metric_history_validation():
     model_registry = hero_client.MLModelRegistry()
 
     with pytest.raises(MissingRequiredAttribute):
-        model_registry.read_metric_history(
-            experiment_id=None, run_id=TESTABLE_RUN_ID, metric="m"
-        )
+        model_registry.read_metric_history(run_id=None, metric="m")
     with pytest.raises(MissingRequiredAttribute):
-        model_registry.read_metric_history(
-            experiment_id=TESTABLE_EXPERIMENT_ID, run_id=None, metric="m"
-        )
-    with pytest.raises(MissingRequiredAttribute):
-        model_registry.read_metric_history(
-            experiment_id=TESTABLE_EXPERIMENT_ID, run_id=TESTABLE_RUN_ID, metric=None
-        )
+        model_registry.read_metric_history(run_id=TESTABLE_RUN_ID, metric=None)
 
 
 def test_read_bulk_metric_history_validation():
@@ -330,7 +313,6 @@ def test_list_artifacts():
     model_registry = hero_client.MLModelRegistry()
 
     artifacts = model_registry.list_artifacts(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
         run_id=TESTABLE_RUN_ID,
     )
 
