@@ -44,7 +44,9 @@ class MLModelRegistry(ServiceBase):
         """
         self.registry_name = self.application_id
         self.client.add_scope("ml-model-registry/user")
-        self.base_url = get_conf_from_collection(URL_MAP, "HERO_ML_MODEL_REGISTRY_URL")
+        self.base_url = get_conf_from_collection(
+            URL_MAP, "HERO_ML_MODEL_REGISTRY_API_URL"
+        )
         self.client_credentials = None
 
     def get_patched_mlflow(self):
