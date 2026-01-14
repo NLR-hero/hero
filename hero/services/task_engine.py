@@ -419,7 +419,7 @@ class TaskEngineService(ServiceBase):
             raise MissingRequiredAttribute('Missing required attribute: "name"')
 
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.task_engine_url}/task/metatype/{metatype}"
+        url = f"{self.task_engine_url}/tasks/metatype/{metatype}"
 
         params = kwargs_to_json_for_request(name=name, queueId=queue_id)
 
