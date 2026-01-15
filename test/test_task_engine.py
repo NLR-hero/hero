@@ -37,22 +37,13 @@ def cleanup(task_engine):
     yield Cleanup()
 
     # Cleanup tasks first (tasks belong to queues)
+    # Note: Task Engine API soft-deletes are idempotent, so re-deleting is safe
     for task_id in task_ids:
-        try:
-            task_engine.delete_task(task_id)
-        except HTTPError as e:
-            # Ignore 404 (already deleted) but re-raise other errors
-            if e.response.status_code != 404:
-                raise
+        task_engine.delete_task(task_id)
 
     # Then cleanup queues
     for queue_id in queue_ids:
-        try:
-            task_engine.delete_queue(queue_id)
-        except HTTPError as e:
-            # Ignore 404 (already deleted) but re-raise other errors
-            if e.response.status_code != 404:
-                raise
+        task_engine.delete_queue(queue_id)
 
 
 class TestQueue:
