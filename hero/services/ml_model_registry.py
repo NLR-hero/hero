@@ -1424,3 +1424,694 @@ class MLModelRegistry(ServiceBase):
         response = self.api.request("DELETE", url, headers=headers, json={"key": key})
         data = response.json()
         return HeroObject(data)
+
+    # ============================================================================
+    # Model State Management Methods
+    # ============================================================================
+
+    def set_model_state(
+        self,
+        model_id,
+        version,
+        state,
+        metadata=None,
+    ):
+        """
+        Sets the state of a model version with optional metadata.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        state : str
+            The state to set. Valid states: 'registered', 'packaging', 'packaged',
+            'validating', 'deploying', 'deployed', 'deprecated', 'archived', 'error'
+        metadata : dict, optional
+            Additional metadata to store with the state, by default None
+
+        Returns
+        -------
+        dict
+            Result of the tag update operation
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        ValueError
+            If an invalid state is provided
+        """
+        valid_states = [
+            "registered",
+            "packaging",
+            "packaged",
+            "validating",
+            "deploying",
+            "deployed",
+            "deprecated",
+            "archived",
+            "error",
+        ]
+
+        if state not in valid_states:
+            raise ValueError(
+                f"Invalid state '{state}'. Must be one of: {', '.join(valid_states)}"
+            )
+
+        # Set the main state tag
+        result = self.update_registered_model_version_tag(
+            model_id, version, "mmr.state", state
+        )
+
+        # Set metadata if provided
+        if metadata:
+            for key, value in metadata.items():
+                self.update_registered_model_version_tag(
+                    model_id, version, f"mmr.state.{key}", str(value)
+                )
+
+        return result
+
+    def get_model_state(self, model_id, version):
+        """
+        Gets the current state and metadata of a model version.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+
+        Returns
+        -------
+        dict
+            Dictionary containing 'state' and 'metadata' keys with state information
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        """
+        model_version = self.read_registered_model_version(model_id, version)
+
+        state = None
+        metadata = {}
+
+        # Extract state and metadata from tags
+        if hasattr(model_version, "tags") and model_version.tags:
+            for tag in model_version.tags:
+                if tag.get("key") == "mmr.state":
+                    state = tag.get("value")
+                elif tag.get("key", "").startswith("mmr.state."):
+                    # Extract metadata key (remove 'mmr.state.' prefix)
+                    meta_key = tag.get("key")[10:]  # len('mmr.state.') = 10
+                    metadata[meta_key] = tag.get("value")
+
+        return {"state": state, "metadata": metadata}
+
+    def set_model_packaging(self, model_id, version):
+        """
+        Sets the model state to 'packaging'.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+
+        Returns
+        -------
+        dict
+            Result of the state update operation
+        """
+        from datetime import datetime
+
+        return self.set_model_state(
+            model_id,
+            version,
+            "packaging",
+            metadata={"timestamp": datetime.utcnow().isoformat()},
+        )
+
+    def set_model_packaged(
+        self, model_id, version, container_uri, container_digest=None, registry=None
+    ):
+        """
+        Sets the model state to 'packaged' with container information.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        container_uri : str
+            The full URI of the container image
+        container_digest : str, optional
+            The SHA256 digest of the container for immutability, by default None
+        registry : str, optional
+            The container registry name (e.g., 'ECR', 'GCR', 'ACR'), by default None
+
+        Returns
+        -------
+        dict
+            Result of the state update operation
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If container_uri is not provided
+        """
+        if not container_uri:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "container_uri"'
+            )
+
+        from datetime import datetime
+
+        metadata = {
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
+        # Set container-specific tags separately for better organization
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.container.uri", container_uri
+        )
+
+        if container_digest:
+            self.update_registered_model_version_tag(
+                model_id, version, "mmr.container.digest", container_digest
+            )
+
+        if registry:
+            self.update_registered_model_version_tag(
+                model_id, version, "mmr.container.registry", registry
+            )
+
+        return self.set_model_state(model_id, version, "packaged", metadata=metadata)
+
+    def set_model_validating(self, model_id, version):
+        """
+        Sets the model state to 'validating'.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+
+        Returns
+        -------
+        dict
+            Result of the state update operation
+        """
+        from datetime import datetime
+
+        return self.set_model_state(
+            model_id,
+            version,
+            "validating",
+            metadata={"timestamp": datetime.utcnow().isoformat()},
+        )
+
+    def set_model_deploying(self, model_id, version, environment=None):
+        """
+        Sets the model state to 'deploying'.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        environment : str, optional
+            The deployment environment (e.g., 'dev', 'staging', 'prod'), by default None
+
+        Returns
+        -------
+        dict
+            Result of the state update operation
+        """
+        from datetime import datetime
+
+        metadata = {"timestamp": datetime.utcnow().isoformat()}
+
+        if environment:
+            self.update_registered_model_version_tag(
+                model_id, version, "mmr.deployment.environment", environment
+            )
+
+        return self.set_model_state(model_id, version, "deploying", metadata=metadata)
+
+    def set_model_deployed(
+        self,
+        model_id,
+        version,
+        deployment_type,
+        endpoint=None,
+        queue=None,
+        environment=None,
+    ):
+        """
+        Sets the model state to 'deployed' with deployment information.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        deployment_type : str
+            The type of deployment ('webservice', 'batch', 'streaming', 'edge')
+        endpoint : str, optional
+            The HTTP endpoint URL for webservice deployments, by default None
+        queue : str, optional
+            The queue name/ARN for event-driven deployments, by default None
+        environment : str, optional
+            The deployment environment (e.g., 'dev', 'staging', 'prod'), by default None
+
+        Returns
+        -------
+        dict
+            Result of the state update operation
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If deployment_type is not provided
+        ValueError
+            If an invalid deployment_type is provided
+        """
+        if not deployment_type:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "deployment_type"'
+            )
+
+        valid_deployment_types = ["webservice", "batch", "streaming", "edge"]
+        if deployment_type not in valid_deployment_types:
+            raise ValueError(
+                f"Invalid deployment_type '{deployment_type}'. Must be one of: {', '.join(valid_deployment_types)}"
+            )
+
+        from datetime import datetime
+
+        metadata = {"timestamp": datetime.utcnow().isoformat()}
+
+        # Set deployment-specific tags
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.deployment.type", deployment_type
+        )
+
+        if endpoint:
+            self.update_registered_model_version_tag(
+                model_id, version, "mmr.deployment.endpoint", endpoint
+            )
+
+        if queue:
+            self.update_registered_model_version_tag(
+                model_id, version, "mmr.deployment.queue", queue
+            )
+
+        if environment:
+            self.update_registered_model_version_tag(
+                model_id, version, "mmr.deployment.environment", environment
+            )
+
+        return self.set_model_state(model_id, version, "deployed", metadata=metadata)
+
+    def set_model_error(self, model_id, version, error_message, error_stage=None):
+        """
+        Sets the model state to 'error' with error information.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        error_message : str
+            The error message describing what went wrong
+        error_stage : str, optional
+            The stage where the error occurred, by default None
+
+        Returns
+        -------
+        dict
+            Result of the state update operation
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If error_message is not provided
+        """
+        if not error_message:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "error_message"'
+            )
+
+        from datetime import datetime
+
+        metadata = {"timestamp": datetime.utcnow().isoformat()}
+
+        # Set error-specific tags
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.error.message", error_message
+        )
+
+        if error_stage:
+            self.update_registered_model_version_tag(
+                model_id, version, "mmr.error.stage", error_stage
+            )
+
+        return self.set_model_state(model_id, version, "error", metadata=metadata)
+
+    def clear_model_error(self, model_id, version):
+        """
+        Clears error state and metadata from a model version.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+
+        Returns
+        -------
+        dict
+            Result of clearing error tags
+        """
+        # Delete error-related tags
+        try:
+            self.delete_registered_model_version_tag(
+                model_id, version, "mmr.error.message"
+            )
+        except Exception:
+            pass  # Tag may not exist
+
+        try:
+            self.delete_registered_model_version_tag(
+                model_id, version, "mmr.error.stage"
+            )
+        except Exception:
+            pass  # Tag may not exist
+
+        try:
+            self.delete_registered_model_version_tag(
+                model_id, version, "mmr.error.timestamp"
+            )
+        except Exception:
+            pass  # Tag may not exist
+
+        # Return the current state
+        return self.get_model_state(model_id, version)
+
+    def set_model_deprecated(self, model_id, version, reason=None):
+        """
+        Sets the model state to 'deprecated'.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        reason : str, optional
+            The reason for deprecation, by default None
+
+        Returns
+        -------
+        dict
+            Result of the state update operation
+        """
+        from datetime import datetime
+
+        metadata = {"timestamp": datetime.utcnow().isoformat()}
+
+        if reason:
+            metadata["reason"] = reason
+
+        return self.set_model_state(model_id, version, "deprecated", metadata=metadata)
+
+    def set_model_archived(self, model_id, version, reason=None):
+        """
+        Sets the model state to 'archived'.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        reason : str, optional
+            The reason for archiving, by default None
+
+        Returns
+        -------
+        dict
+            Result of the state update operation
+        """
+        from datetime import datetime
+
+        metadata = {"timestamp": datetime.utcnow().isoformat()}
+
+        if reason:
+            metadata["reason"] = reason
+
+        return self.set_model_state(model_id, version, "archived", metadata=metadata)
+
+    def set_monitoring_config(
+        self,
+        model_id,
+        version,
+        enabled=True,
+        drift_threshold=None,
+        metrics=None,
+    ):
+        """
+        Configures monitoring settings for a model version.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        enabled : bool, optional
+            Whether monitoring is enabled, by default True
+        drift_threshold : float, optional
+            The threshold for data drift detection, by default None
+        metrics : dict, optional
+            Latest evaluation metrics as a dictionary, by default None
+
+        Returns
+        -------
+        dict
+            Result of the monitoring configuration
+        """
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.monitoring.enabled", str(enabled).lower()
+        )
+
+        if drift_threshold is not None:
+            self.update_registered_model_version_tag(
+                model_id,
+                version,
+                "mmr.monitoring.drift_threshold",
+                str(drift_threshold),
+            )
+
+        if metrics:
+            # Store metrics as JSON string
+            self.update_registered_model_version_tag(
+                model_id, version, "mmr.evaluation.metrics", json.dumps(metrics)
+            )
+
+        from datetime import datetime
+
+        self.update_registered_model_version_tag(
+            model_id,
+            version,
+            "mmr.evaluation.last_run",
+            datetime.utcnow().isoformat(),
+        )
+
+        return {"monitoring_enabled": enabled}
+
+    def get_monitoring_config(self, model_id, version):
+        """
+        Gets the monitoring configuration for a model version.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+
+        Returns
+        -------
+        dict
+            Dictionary containing monitoring configuration
+        """
+        model_version = self.read_registered_model_version(model_id, version)
+
+        config = {
+            "enabled": False,
+            "drift_threshold": None,
+            "metrics": None,
+            "last_evaluation": None,
+        }
+
+        # Extract monitoring config from tags
+        if hasattr(model_version, "tags") and model_version.tags:
+            for tag in model_version.tags:
+                key = tag.get("key", "")
+                value = tag.get("value")
+
+                if key == "mmr.monitoring.enabled":
+                    config["enabled"] = value.lower() == "true"
+                elif key == "mmr.monitoring.drift_threshold":
+                    config["drift_threshold"] = float(value)
+                elif key == "mmr.evaluation.metrics":
+                    try:
+                        config["metrics"] = json.loads(value)
+                    except json.JSONDecodeError:
+                        config["metrics"] = value
+                elif key == "mmr.evaluation.last_run":
+                    config["last_evaluation"] = value
+
+        return config
+
+    def set_approval_status(
+        self, model_id, version, status, required=False, approver=None
+    ):
+        """
+        Sets the approval status for a model version.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        status : str
+            The approval status ('pending', 'approved', 'rejected')
+        required : bool, optional
+            Whether approval is required, by default False
+        approver : str, optional
+            The username/email of the approver, by default None
+
+        Returns
+        -------
+        dict
+            Result of the approval status update
+
+        Raises
+        ------
+        ValueError
+            If an invalid approval status is provided
+        """
+        valid_statuses = ["pending", "approved", "rejected"]
+        if status not in valid_statuses:
+            raise ValueError(
+                f"Invalid approval status '{status}'. Must be one of: {', '.join(valid_statuses)}"
+            )
+
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.approval.status", status
+        )
+
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.approval.required", str(required).lower()
+        )
+
+        if approver:
+            self.update_registered_model_version_tag(
+                model_id, version, "mmr.approval.approver", approver
+            )
+
+        from datetime import datetime
+
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.approval.timestamp", datetime.utcnow().isoformat()
+        )
+
+        return {"approval_status": status, "required": required}
+
+    def set_rollback_info(self, model_id, version, previous_version):
+        """
+        Sets rollback information for a model version.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        previous_version : str
+            The previous version number to rollback to
+
+        Returns
+        -------
+        dict
+            Result of setting rollback information
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If previous_version is not provided
+        """
+        if not previous_version:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "previous_version"'
+            )
+
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.rollback.previous_version", previous_version
+        )
+
+        return {"rollback_target": previous_version}
+
+    def set_canary_deployment(self, model_id, version, percentage):
+        """
+        Sets canary deployment configuration for a model version.
+
+        Parameters
+        ----------
+        model_id : str
+            The ID of the registered model
+        version : str
+            The version number of the model
+        percentage : int or float
+            The percentage of traffic to route to this version (0-100)
+
+        Returns
+        -------
+        dict
+            Result of setting canary deployment
+
+        Raises
+        ------
+        ValueError
+            If percentage is not between 0 and 100
+        """
+        if not 0 <= percentage <= 100:
+            raise ValueError("Percentage must be between 0 and 100")
+
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.canary.percentage", str(percentage)
+        )
+
+        from datetime import datetime
+
+        self.update_registered_model_version_tag(
+            model_id, version, "mmr.canary.timestamp", datetime.utcnow().isoformat()
+        )
+
+        return {"canary_percentage": percentage}
