@@ -10,7 +10,7 @@ The HERO team recommends using [poetry](https://python-poetry.org/) or [pip](htt
 ### Using Poetry
 
 ```
-poetry add git+https://github.nrel.gov/Hero/hero@v0.9.7
+poetry add git+https://github.nrel.gov/Hero/hero@v0.9.8
 ```
 
 
@@ -18,7 +18,7 @@ poetry add git+https://github.nrel.gov/Hero/hero@v0.9.7
 
 
 ```
-pip install git+https://github.nrel.gov/Hero/hero@v0.9.7#egg=hero
+pip install git+https://github.nrel.gov/Hero/hero@v0.9.8#egg=hero
 ```
 
 ## Development Installation and Release
