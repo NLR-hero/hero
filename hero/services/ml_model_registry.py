@@ -16,6 +16,7 @@ from ..lib.errors import (
     MissingRequiredAttribute,
     HEROMLModelRegistryResourceAlreadyExists,
     HEROMLModelRegistryResourceNotFound,
+    HEROMLModelRegistryForbiddenError,
 )
 from requests.exceptions import HTTPError
 
@@ -98,6 +99,61 @@ class MLModelRegistry(ServiceBase):
                 description = tag["value"]
         return description
 
+    def _extract_detail_from_response(self, response):
+        if response is None:
+            return None
+        try:
+            body = response.json()
+            # Prefer common string fields, but handle nested structures safely.
+            for key in ("message", "error", "detail"):
+                if key in body:
+                    val = body.get(key)
+                    if isinstance(val, str):
+                        return val
+                    if isinstance(val, dict):
+                        # Try nested message-like fields
+                        for nk in ("message", "error", "detail"):
+                            nv = val.get(nk)
+                            if isinstance(nv, str):
+                                return nv
+                        # fall back to stringifying the nested dict
+                        return str(val)
+            return str(body)
+        except Exception:
+            return getattr(response, "text", None)
+
+    def _raise_forbidden_from_http_error(self, http_error, operation):
+        resp = getattr(http_error, "response", None)
+        if resp is None:
+            raise http_error
+        status = resp.status_code
+        detail = self._extract_detail_from_response(resp)
+        detail_str = None
+        if detail:
+            detail_str = detail if isinstance(detail, str) else str(detail)
+        # Fallback to raw response text if extractor didn't produce a string
+        if not detail_str:
+            raw_text = getattr(resp, "text", None)
+            if raw_text:
+                detail_str = raw_text
+
+        # Handle 403 as forbidden/access denied
+        if status == 403:
+            msg = None
+            if detail_str:
+                msg = f"HERO ML Model Registry access denied for registry '{self.registry_name}' during '{operation}': {detail_str}"
+            raise HEROMLModelRegistryForbiddenError(
+                self.registry_name, operation, message=msg
+            )
+
+        # Handle 400 with "already exists" messages as resource conflict
+        if status == 400 and detail_str:
+            detail_lower = detail_str.lower()
+            if "already exists" in detail_lower or "already exist" in detail_lower:
+                raise HEROMLModelRegistryResourceAlreadyExists()
+
+        raise http_error
+
     def list_experiments(self, count=None, next_token=None):
         """
         Lists the experiments in the registry
@@ -157,8 +213,13 @@ class MLModelRegistry(ServiceBase):
             data = response.json()
             return HeroObject(data)
         except HTTPError as e:
-            if e.response.status_code == 409:
+            if (
+                getattr(e, "response", None) is not None
+                and e.response.status_code == 409
+            ):
                 raise HEROMLModelRegistryResourceAlreadyExists()
+            if getattr(e, "response", None) is not None:
+                self._raise_forbidden_from_http_error(e, "create_experiment")
             else:
                 raise e
 
@@ -193,6 +254,8 @@ class MLModelRegistry(ServiceBase):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise HEROMLModelRegistryResourceNotFound()
+            if getattr(e, "response", None) is not None:
+                self._raise_forbidden_from_http_error(e, "read_experiment")
             else:
                 raise e
 
@@ -227,6 +290,8 @@ class MLModelRegistry(ServiceBase):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise HEROMLModelRegistryResourceNotFound()
+            if getattr(e, "response", None) is not None:
+                self._raise_forbidden_from_http_error(e, "read_experiment_by_name")
             else:
                 raise e
 
@@ -248,17 +313,17 @@ class MLModelRegistry(ServiceBase):
         ------
         MissingRequiredAttribute
             If a required attribute is missing
+        HEROMLModelRegistryForbiddenError
+            If access is denied (e.g., experiment belongs to another project)
         """
         try:
             return self.read_experiment_by_name(name)
-        except HTTPError as read_error:
-            if read_error.response.status_code == 404:
-                try:
-                    return self.create_experiment(name)
-                except HTTPError as create_error:
-                    raise create_error
-            else:
-                raise read_error
+        except HEROMLModelRegistryResourceNotFound:
+            # Experiment doesn't exist, try to create it
+            return self.create_experiment(name)
+        except HEROMLModelRegistryForbiddenError:
+            # Access denied (e.g., cross-project ownership) - don't try to create
+            raise
 
     def update_experiment(self, id, name=None, description=None):
         """
@@ -891,8 +956,13 @@ class MLModelRegistry(ServiceBase):
                 return HeroObject(data).registered_model
             return HeroObject(data)
         except HTTPError as e:
-            if e.response.status_code == 409:
+            if (
+                getattr(e, "response", None) is not None
+                and e.response.status_code == 409
+            ):
                 raise HEROMLModelRegistryResourceAlreadyExists()
+            if getattr(e, "response", None) is not None:
+                self._raise_forbidden_from_http_error(e, "create_registered_model")
             else:
                 raise e
 
@@ -975,6 +1045,8 @@ class MLModelRegistry(ServiceBase):
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise HEROMLModelRegistryResourceNotFound()
+            if getattr(e, "response", None) is not None:
+                self._raise_forbidden_from_http_error(e, "read_registered_model")
             else:
                 raise e
 
@@ -996,17 +1068,17 @@ class MLModelRegistry(ServiceBase):
         ------
         MissingRequiredAttribute
             If a required attribute is missing
+        HEROMLModelRegistryForbiddenError
+            If access is denied (e.g., model belongs to another project)
         """
         try:
             return self.read_registered_model(id)
-        except HTTPError as read_error:
-            if read_error.response.status_code == 404:
-                try:
-                    return self.create_registered_model(id)
-                except HTTPError as create_error:
-                    raise create_error
-            else:
-                raise read_error
+        except HEROMLModelRegistryResourceNotFound:
+            # Model doesn't exist, try to create it
+            return self.create_registered_model(id)
+        except HEROMLModelRegistryForbiddenError:
+            # Access denied (e.g., cross-project ownership) - don't try to create
+            raise
 
     def rename_registered_model(self, id, new_name):
         """

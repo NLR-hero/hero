@@ -139,3 +139,20 @@ class HEROMLModelRegistryResourceAlreadyExists(Exception):
 class HEROMLModelRegistryResourceNotFound(Exception):
     def __init__(self, message="HERO ML Model Registry resource not found"):
         super().__init__(message)
+
+
+class HEROMLModelRegistryForbiddenError(Exception):
+    def __init__(self, registry_name=None, operation=None, message=None):
+        if message is None:
+            if registry_name and operation:
+                message = (
+                    f"HERO ML Model Registry access denied for registry '{registry_name}' "
+                    f"during '{operation}'"
+                )
+            elif registry_name:
+                message = f"HERO ML Model Registry access denied for registry '{registry_name}'"
+            else:
+                message = "HERO ML Model Registry access denied"
+        super().__init__(message)
+        self.registry_name = registry_name
+        self.operation = operation
