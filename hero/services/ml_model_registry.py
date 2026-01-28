@@ -316,14 +316,22 @@ class MLModelRegistry(ServiceBase):
         HEROMLModelRegistryForbiddenError
             If access is denied (e.g., experiment belongs to another project)
         """
+        if name is None:
+            raise MissingRequiredAttribute('Missing required attribute: "name"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/project/{self.registry_name}/experiment/read-or-create"
         try:
-            return self.read_experiment_by_name(name)
-        except HEROMLModelRegistryResourceNotFound:
-            # Experiment doesn't exist, try to create it
-            return self.create_experiment(name)
-        except HEROMLModelRegistryForbiddenError:
-            # Access denied (e.g., cross-project ownership) - don't try to create
-            raise
+            response = self.api.request(
+                "POST", url, headers=headers, json={"experimentName": name}
+            )
+            data = response.json()
+            return HeroObject(data).experiment
+        except HTTPError as e:
+            if getattr(e, "response", None) is not None:
+                self._raise_forbidden_from_http_error(e, "read_or_create_experiment")
+            else:
+                raise e
 
     def update_experiment(self, id, name=None, description=None):
         """
