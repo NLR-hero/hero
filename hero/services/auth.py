@@ -1153,3 +1153,69 @@ class AuthService(ServiceBase):
             raise HEROAPIResponseException()
         except HTTPError as e:
             raise e
+    
+    def get_tvm_session(self,
+                        app_id=None,
+                        app_type=None,
+                        resource_id=None,
+                        resource_type=None,
+                        action=None):
+        """
+        Retrieves temporary AWS credentials from the Token Vending Machine (TVM) endpoint.
+        
+        Parameters
+        ----------
+        app_id : str, required
+            The ID of the application
+        app_type : str, required
+            The type of the application
+        resource_id : str, optional
+            The ID of the specific resource. When provided with resource_type,
+            enables fine-grained access control to specific resources.
+        resource_type : str, optional
+            The type of the resource. When provided with resource_id,
+            enables fine-grained access control to specific resources.
+        action : str, required
+            The action to perform (e.g., 'readFile', 'executeQuery')
+        
+        Returns
+        -------
+        credentials : dict
+        Temporary AWS credentials containing AccessKeyId, SecretAccessKey, 
+        SessionToken, and Expiration
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+        HEROAPIResponseException
+            If the API response is not parsable JSON
+        """
+        if app_id is None:
+            raise MissingRequiredAttribute("Missing required attribute: 'app_id'")
+        if app_type is None:
+            raise MissingRequiredAttribute("Missing required attribute: 'app_type'")
+        if action is None:
+            raise MissingRequiredAttribute("Missing required attribute: 'action'")
+        
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/tvm"
+
+        params = {
+            "applicationId": app_id,
+            "applicationType": app_type,
+            "action": action
+        }
+
+        if resource_id is not None:
+            params["resourceId"] = resource_id
+        if resource_type is not None:
+            params["resourceType"] = resource_type
+        
+        try:
+            response = self.api.request("GET", url, headers=headers, params=params)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
