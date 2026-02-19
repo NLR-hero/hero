@@ -15,7 +15,7 @@ from .lib import (
     get_env,
     get_client_credentials,
 )
-from .services import AuthService, DataRepoService, TaskEngineService, MLModelRegistry
+from .services import AuthService, DataRepoService, TaskEngineService, MLModelRegistry, AssistantService
 from .services import SearchService
 
 from .lib.errors import (
@@ -178,3 +178,9 @@ class HeroClient:
         Returns a SearchService instance.
         """
         return SearchService(self)
+
+    def Assistant(self, application_id):
+        """
+        Returns a AssistantService instance.
+        """
+        return AssistantService(self, application_id)
