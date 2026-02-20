@@ -1,19 +1,9 @@
 import os
+import json
 
 from . lib import errors
 from . lib.config import set_environment
+from . lib.event_trigger import event_trigger
+from . lib.loaders import get_env_variable, load_environment, load_runtime_config
 
 from .client import HeroClient
-
-
-def get_env_variable(var_name, default_value=None):
-    """
-    Simple method to get an environment variable and tells you if it didn't load with a simple error message.
-    """
-    value = os.getenv(var_name, default_value)
-    if value is None:
-        raise EnvironmentError(
-            f'Required environment variable "{var_name}" is not set.'
-        )
-    print("environment_variable", var_name, value)
-    return value
