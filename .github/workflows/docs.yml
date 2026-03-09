@@ -33,7 +33,7 @@ permissions:
 jobs:
     # Build the documentation and upload the static HTML files as an artifact.
     build:
-      runs-on: [ self-hosted ]
+      runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v3
         - uses: actions/setup-python@v4
@@ -56,7 +56,7 @@ jobs:
     # This is a separate job so that only actions/deploy-pages has the necessary permissions.
     deploy:
       needs: build
-      runs-on: [ self-hosted ]
+      runs-on: ubuntu-latest
       permissions:
         pages: write
         id-token: write

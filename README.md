@@ -10,7 +10,7 @@ The HERO team recommends using [poetry](https://python-poetry.org/) or [pip](htt
 ### Using Poetry
 
 ```
-poetry add git+https://github.nrel.gov/Hero/hero@v0.11.0
+poetry add git+https://github.com/nrel-hero/hero@v0.11.0
 ```
 
 
@@ -18,7 +18,7 @@ poetry add git+https://github.nrel.gov/Hero/hero@v0.11.0
 
 
 ```
-pip install git+https://github.nrel.gov/Hero/hero@v0.11.0#egg=hero
+pip install git+https://github.com/nrel-hero/hero@v0.11.0#egg=hero
 ```
 
 ## Development Installation and Release
@@ -103,6 +103,6 @@ export HERO_CLIENT_SECRET="*******************************"
 
 ### Examples
 
-Please check out the [HERO examples](https://github.nrel.gov/Hero/hero-examples).
+Please check out the [HERO examples](https://github.com/nrel-hero/hero-examples).
 
 Additionally, the tests in the `test` directory of this repo may also prove useful for basic usage examples.
