@@ -25,7 +25,7 @@ class DataRepoService(ServiceBase):
         self.data_repo_id = self.application_id
         self.client.add_scope("data-repo/user")
         self.base_url = get_conf_from_collection(URL_MAP, "HERO_DATA_REPO_API_URL")
-    
+
     @property
     def data_repo_url(self):
         return f"{self.base_url}/{self.data_repo_id}"
@@ -33,12 +33,12 @@ class DataRepoService(ServiceBase):
     def _build_pagination_params(self, use_pagination=False, last_evaluated_key=None):
         params = {}
         if use_pagination:
-            params["use_pagination"] = "true"
+            params["usePagination"] = "true"
         if last_evaluated_key is not None:
             params["lastEvaluatedKey"] = last_evaluated_key
         return params or None
 
-    def read_projects(self, use_pagination = False, last_evaluated_key = None):
+    def read_projects(self, use_pagination=False, last_evaluated_key=None):
         """
         List projects.
         Parameters
@@ -163,7 +163,9 @@ class DataRepoService(ServiceBase):
                 raise HERODataRepoProjectNotFound()
             raise e
 
-    def read_project_datasets(self, project_id=None, use_pagination=False, last_evaluated_key=None):
+    def read_project_datasets(
+        self, project_id=None, use_pagination=False, last_evaluated_key=None
+    ):
         """
         List datasets in a project.
 
@@ -269,8 +271,10 @@ class DataRepoService(ServiceBase):
         try:
             last_key = None
             while True:
-                result = self.read_project_datasets(project_id=id, use_pagination=True, last_evaluated_key=last_key)
-                for dataset in result['items']:
+                result = self.read_project_datasets(
+                    project_id=id, use_pagination=True, last_evaluated_key=last_key
+                )
+                for dataset in result["items"]:
                     self.delete_dataset(id=dataset["id"], cascade=cascade)
                 last_key = result.get("lastEvaluatedKey")
                 if not last_key:
@@ -637,7 +641,9 @@ class DataRepoService(ServiceBase):
                 raise HERODataRepoDatasetNotFound()
             raise e
 
-    def read_dataset_files(self, dataset_id=None, use_pagination=False, last_evaluated_key=None):
+    def read_dataset_files(
+        self, dataset_id=None, use_pagination=False, last_evaluated_key=None
+    ):
         """
         List files in a dataset.
 
@@ -738,8 +744,10 @@ class DataRepoService(ServiceBase):
         try:
             last_key = None
             while True:
-                result = self.read_dataset_files(id, use_pagination=True, last_evaluated_key=last_key)
-                for fileobj in result['items']:
+                result = self.read_dataset_files(
+                    id, use_pagination=True, last_evaluated_key=last_key
+                )
+                for fileobj in result["items"]:
                     self.delete_file(fileobj["id"])
                 last_key = result.get("lastEvaluatedKey")
                 if not last_key:
@@ -994,7 +1002,9 @@ class DataRepoService(ServiceBase):
             )
             return dataset
 
-    def read_files(self, dataset_id=None, use_pagination=False, last_evaluated_key=None):
+    def read_files(
+        self, dataset_id=None, use_pagination=False, last_evaluated_key=None
+    ):
         """
         List files in a dataset.
 
@@ -1619,8 +1629,16 @@ class DataRepoService(ServiceBase):
             return response.json()["url"]
         except JSONDecodeError:
             raise HEROAPIResponseException()
-        
-    def read_file_download_url_from_hierarchy(self, project_name=None, dataset_name=None, file_name=None, project_metatype='Project', dataset_metatype='Dataset', file_metatype='File'):
+
+    def read_file_download_url_from_hierarchy(
+        self,
+        project_name=None,
+        dataset_name=None,
+        file_name=None,
+        project_metatype="Project",
+        dataset_metatype="Dataset",
+        file_metatype="File",
+    ):
         """
         Get a signed S3 URL from where to download the file with a GET request using the full hierarchy of the File resource.
 
@@ -1669,23 +1687,36 @@ class DataRepoService(ServiceBase):
         if file_name is None:
             raise MissingRequiredAttribute('Missing required attribute: "file_name"')
         if project_metatype is None:
-            raise MissingRequiredAttribute('Missing required attribute: "project_metatype"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "project_metatype"'
+            )
         if dataset_metatype is None:
-            raise MissingRequiredAttribute('Missing required attribute: "dataset_metatype"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "dataset_metatype"'
+            )
         if file_metatype is None:
-            raise MissingRequiredAttribute('Missing required attribute: "file_metatype"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "file_metatype"'
+            )
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/files/download"
 
-        params = kwargs_to_json_for_request(projectName=project_name, datasetName=dataset_name, fileName=file_name, projectMetatype=project_metatype, datasetMetatype=dataset_metatype, fileMetatype=file_metatype)
+        params = kwargs_to_json_for_request(
+            projectName=project_name,
+            datasetName=dataset_name,
+            fileName=file_name,
+            projectMetatype=project_metatype,
+            datasetMetatype=dataset_metatype,
+            fileMetatype=file_metatype,
+        )
 
         try:
             response = self.api.request("GET", url, headers=headers, params=params)
             try:
                 return response.json()["url"]
             except JSONDecodeError:
-                raise HEROAPIResponseException('Unable to parse the response as json')
+                raise HEROAPIResponseException("Unable to parse the response as json")
         except HTTPError as e:
             result = e.response.json()
             message = f"{result['error']['name']}: {result['error']['message']} Request ID: {result['requestId']}"
