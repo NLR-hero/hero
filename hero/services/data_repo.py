@@ -30,15 +30,21 @@ class DataRepoService(ServiceBase):
     def data_repo_url(self):
         return f"{self.base_url}/{self.data_repo_id}"
 
-    def _build_pagination_params(self, use_pagination=False, last_evaluated_key=None):
+    def _build_pagination_params(
+        self, use_pagination=False, last_evaluated_key=None, page_size=None
+    ):
         params = {}
         if use_pagination:
             params["usePagination"] = "true"
         if last_evaluated_key is not None:
             params["lastEvaluatedKey"] = last_evaluated_key
+        if page_size is not None:
+            params["pageSize"] = page_size
         return params or None
 
-    def read_projects(self, use_pagination=False, last_evaluated_key=None):
+    def read_projects(
+        self, use_pagination=False, last_evaluated_key=None, page_size=None
+    ):
         """
         List projects.
         Parameters
@@ -48,6 +54,9 @@ class DataRepoService(ServiceBase):
 
         last_evaluated_key : str, optional
             Cursor from a previous paginated response to fetch the next page.
+
+        page_size : int, optional
+            The maximum number of items to return per page.
 
         Returns
         -------
@@ -61,7 +70,9 @@ class DataRepoService(ServiceBase):
         """
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/projects"
-        params = self._build_pagination_params(use_pagination, last_evaluated_key)
+        params = self._build_pagination_params(
+            use_pagination, last_evaluated_key, page_size
+        )
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
@@ -164,7 +175,11 @@ class DataRepoService(ServiceBase):
             raise e
 
     def read_project_datasets(
-        self, project_id=None, use_pagination=False, last_evaluated_key=None
+        self,
+        project_id=None,
+        use_pagination=False,
+        last_evaluated_key=None,
+        page_size=None,
     ):
         """
         List datasets in a project.
@@ -177,6 +192,8 @@ class DataRepoService(ServiceBase):
             Enable paginated responses. Defaults to False.
         last_evaluated_key : str, optional
             Cursor from a previous paginated response to fetch the next page.
+        page_size : int, optional
+            The maximum number of items to return per page.
 
         Returns
         --------
@@ -198,7 +215,9 @@ class DataRepoService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/project/{project_id}/datasets"
-        params = self._build_pagination_params(use_pagination, last_evaluated_key)
+        params = self._build_pagination_params(
+            use_pagination, last_evaluated_key, page_size
+        )
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
@@ -642,7 +661,11 @@ class DataRepoService(ServiceBase):
             raise e
 
     def read_dataset_files(
-        self, dataset_id=None, use_pagination=False, last_evaluated_key=None
+        self,
+        dataset_id=None,
+        use_pagination=False,
+        last_evaluated_key=None,
+        page_size=None,
     ):
         """
         List files in a dataset.
@@ -656,6 +679,8 @@ class DataRepoService(ServiceBase):
             Enable paginated responses. Defaults to False.
         last_evaluated_key : str, optional
             Cursor from a previous paginated response to fetch the next page.
+        page_size : int, optional
+            The maximum number of items to return per page.
 
         Returns
         --------
@@ -677,7 +702,9 @@ class DataRepoService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.data_repo_url}/dataset/{dataset_id}/files"
-        params = self._build_pagination_params(use_pagination, last_evaluated_key)
+        params = self._build_pagination_params(
+            use_pagination, last_evaluated_key, page_size
+        )
         response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
@@ -1003,7 +1030,11 @@ class DataRepoService(ServiceBase):
             return dataset
 
     def read_files(
-        self, dataset_id=None, use_pagination=False, last_evaluated_key=None
+        self,
+        dataset_id=None,
+        use_pagination=False,
+        last_evaluated_key=None,
+        page_size=None,
     ):
         """
         List files in a dataset.
@@ -1020,6 +1051,8 @@ class DataRepoService(ServiceBase):
             Enable paginated responses. Defaults to False.
         last_evaluated_key : str, optional
             Cursor from a previous paginated response to fetch the next page.
+        page_size : int, optional
+            The maximum number of items to return per page.
 
         Returns
         --------
@@ -1041,7 +1074,9 @@ class DataRepoService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.data_repo_url}/dataset/{dataset_id}/files"
-        params = self._build_pagination_params(use_pagination, last_evaluated_key)
+        params = self._build_pagination_params(
+            use_pagination, last_evaluated_key, page_size
+        )
         try:
             response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
