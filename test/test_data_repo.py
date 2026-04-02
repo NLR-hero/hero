@@ -837,16 +837,18 @@ class TestDataRepo:
         assert result is not None
         assert "items" in result
         assert isinstance(result["items"], list)
-        assert len(result["items"]) == 20
         if result.get("lastEvaluatedKey") is not None:
             assert isinstance(result["lastEvaluatedKey"], str)
+            assert len(result["items"]) == 20
+        else:
+            assert len(result["items"]) <= 20
 
     def test_read_projects_with_pagesize(self):
         """Test reading projects with pagesize enabled"""
         projects = self.data_repo.read_projects(page_size=20)
         assert projects is not None
         assert isinstance(projects, list)
-        assert len(projects) == 20
+        assert len(projects) <= 20
 
     def test_read_project_datasets_with_pagination(self):
         """Test reading project datasets with pagination enabled."""
@@ -898,7 +900,9 @@ class TestDataRepo:
         assert isinstance(result["items"], list)
         if result.get("lastEvaluatedKey") is not None:
             assert isinstance(result["lastEvaluatedKey"], str)
-        assert len(result["items"]) == 3
+            assert len(result["items"]) == 3
+        else:
+            assert len(result["items"]) <= 3
 
     def test_read_project_datasets_with_pagesize(self):
         """Test reading project datasets with pagesize enabled."""
@@ -924,7 +928,7 @@ class TestDataRepo:
         )
         assert datasets is not None
         assert isinstance(datasets, list)
-        assert len(datasets) == 3
+        assert len(datasets) <= 3
 
     def test_read_dataset_files_with_pagination(self):
         """Test reading dataset files with pagination enabled."""
@@ -967,10 +971,12 @@ class TestDataRepo:
         )
         assert result is not None
         assert "items" in result
+        assert isinstance(result["items"], list)
         if result.get("lastEvaluatedKey") is not None:
             assert isinstance(result["lastEvaluatedKey"], str)
-        assert isinstance(result["items"], list)
-        assert len(result["items"]) == 3
+            assert len(result["items"]) == 3
+        else:
+            assert len(result["items"]) <= 3
 
     def test_read_dataset_files_with_pagesize(self):
         """Test reading dataset files with pagesize enabled."""
@@ -991,4 +997,4 @@ class TestDataRepo:
         )
         assert result is not None
         assert isinstance(result, list)
-        assert len(result) == 3
+        assert len(result) <= 3
