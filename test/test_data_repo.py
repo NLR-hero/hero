@@ -831,6 +831,23 @@ class TestDataRepo:
         if result.get("lastEvaluatedKey") is not None:
             assert isinstance(result["lastEvaluatedKey"], str)
 
+    def test_read_projects_with_pagination_and_pagesize(self):
+        """Test reading projects with pagination and pagesize enabled"""
+        result = self.data_repo.read_projects(use_pagination=True, page_size=20)
+        assert result is not None
+        assert "items" in result
+        assert isinstance(result["items"], list)
+        assert len(result["items"]) == 20
+        if result.get("lastEvaluatedKey") is not None:
+            assert isinstance(result["lastEvaluatedKey"], str)
+
+    def test_read_projects_with_pagesize(self):
+        """Test reading projects with pagesize enabled"""
+        projects = self.data_repo.read_projects(page_size=20)
+        assert projects is not None
+        assert isinstance(projects, list)
+        assert len(projects) == 20
+
     def test_read_project_datasets_with_pagination(self):
         """Test reading project datasets with pagination enabled."""
         project_name = f"testing-pagination-datasets-{int(time.time())}"
@@ -850,7 +867,64 @@ class TestDataRepo:
         assert result is not None
         assert "items" in result
         assert isinstance(result["items"], list)
+        if result.get("lastEvaluatedKey") is not None:
+            assert isinstance(result["lastEvaluatedKey"], str)
         assert len(result["items"]) >= 2
+
+    def test_read_project_datasets_with_pagination_and_pagesize(self):
+        """Test reading project datasets with pagination and pagesize enabled."""
+        project_name = f"testing-pagination-datasets-{int(time.time())}"
+        self.register_project_for_cleanup(project_name)
+
+        project = self.data_repo.get_or_create_project(name=project_name)
+        self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset-1"
+        )
+        self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset-2"
+        )
+        self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset-3"
+        )
+        self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset-4"
+        )
+
+        result = self.data_repo.read_project_datasets(
+            project_id=project["id"], use_pagination=True, page_size=3
+        )
+        assert result is not None
+        assert "items" in result
+        assert isinstance(result["items"], list)
+        if result.get("lastEvaluatedKey") is not None:
+            assert isinstance(result["lastEvaluatedKey"], str)
+        assert len(result["items"]) == 3
+
+    def test_read_project_datasets_with_pagesize(self):
+        """Test reading project datasets with pagesize enabled."""
+        project_name = f"testing-pagination-datasets-{int(time.time())}"
+        self.register_project_for_cleanup(project_name)
+
+        project = self.data_repo.get_or_create_project(name=project_name)
+        self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset-1"
+        )
+        self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset-2"
+        )
+        self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset-3"
+        )
+        self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset-4"
+        )
+
+        datasets = self.data_repo.read_project_datasets(
+            project_id=project["id"], page_size=3
+        )
+        assert datasets is not None
+        assert isinstance(datasets, list)
+        assert len(datasets) == 3
 
     def test_read_dataset_files_with_pagination(self):
         """Test reading dataset files with pagination enabled."""
@@ -870,4 +944,51 @@ class TestDataRepo:
         assert result is not None
         assert "items" in result
         assert isinstance(result["items"], list)
+        if result.get("lastEvaluatedKey") is not None:
+            assert isinstance(result["lastEvaluatedKey"], str)
         assert len(result["items"]) >= 2
+
+    def test_read_dataset_files_with_pagination_and_pagesize(self):
+        """Test reading dataset files with pagination and pagesize enabled."""
+        project_name = f"testing-pagination-files-{int(time.time())}"
+        self.register_project_for_cleanup(project_name)
+
+        project = self.data_repo.get_or_create_project(name=project_name)
+        dataset = self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset"
+        )
+        self.data_repo.add_file(dataset_id=dataset["id"], name="file-1.txt")
+        self.data_repo.add_file(dataset_id=dataset["id"], name="file-2.txt")
+        self.data_repo.add_file(dataset_id=dataset["id"], name="file-3.txt")
+        self.data_repo.add_file(dataset_id=dataset["id"], name="file-4.txt")
+
+        result = self.data_repo.read_dataset_files(
+            dataset_id=dataset["id"], use_pagination=True, page_size=3
+        )
+        assert result is not None
+        assert "items" in result
+        if result.get("lastEvaluatedKey") is not None:
+            assert isinstance(result["lastEvaluatedKey"], str)
+        assert isinstance(result["items"], list)
+        assert len(result["items"]) == 3
+
+    def test_read_dataset_files_with_pagesize(self):
+        """Test reading dataset files with pagesize enabled."""
+        project_name = f"testing-pagination-files-{int(time.time())}"
+        self.register_project_for_cleanup(project_name)
+
+        project = self.data_repo.get_or_create_project(name=project_name)
+        dataset = self.data_repo.add_dataset(
+            project_id=project["id"], name="pagination-dataset"
+        )
+        self.data_repo.add_file(dataset_id=dataset["id"], name="file-1.txt")
+        self.data_repo.add_file(dataset_id=dataset["id"], name="file-2.txt")
+        self.data_repo.add_file(dataset_id=dataset["id"], name="file-3.txt")
+        self.data_repo.add_file(dataset_id=dataset["id"], name="file-4.txt")
+
+        result = self.data_repo.read_dataset_files(
+            dataset_id=dataset["id"], page_size=3
+        )
+        assert result is not None
+        assert isinstance(result, list)
+        assert len(result) == 3
