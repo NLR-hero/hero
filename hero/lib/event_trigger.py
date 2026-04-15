@@ -79,15 +79,14 @@ def build_lambda_event(messages):
         ]
     }
 
-def event_trigger(queue_name, handler):
+def event_trigger(queue: dict, handler):
     """
     Emulate the Event Source Trigger that start Lambda in AWS
 
     Parameters
     ----------
-    queue_name : string
-        The name of a TaskEngine queue
-    
+    queue : dict
+        A dictionary containing the queue name and metatype
     handler : function
         The lambda handler entry point
     """
@@ -99,21 +98,33 @@ def event_trigger(queue_name, handler):
             "Install with: uv add boto3"
         ) from e
 
+    # Guard against callers using the old string signature (queue_name).
+    # In 0.12.0, 'queue' was changed from a string to a dict to support metatype-based lookup (breaking change from 0.11.0).
+    # TODO: remove this check once callers have migrated to the new dict signature, at least by v1.0.0.
+    if isinstance(queue, str):
+        raise TypeError(
+            "event_trigger() 'queue' must be a dict with 'name' and 'metatype' keys. "
+            f"Got a string: '{queue}'. Example: {{'name': '{queue}', 'metatype': 'my-metatype'}}"
+        )
+
     runtime_config = load_runtime_config()
     application_id = load_environment(runtime_config)
-    sqs = boto3.client("sqs", region_name="us-west-2")
     hero_client = HeroClient()
     task_engine = hero_client.TaskEngine(application_id)
     hero_client.authenticate()
 
-    queue_record = task_engine.read_queue_by_name(name=queue_name)
-    QUEUE_URL = queue_record['queueUrl']
+    sqs = boto3.client("sqs", region_name="us-west-2")
+
+    queue_record = task_engine.read_queue_by_name(name=queue['name'], metatype=queue['metatype'])
+    queue_url = queue_record['queueUrl']
+    if not queue_url:
+        raise ValueError(f"Queue URL not found for queue {queue['name']} with metatype {queue['metatype']}")
 
     print(f"Listening for messages on '{queue_record['name']}'...")
 
     while True:
         response = sqs.receive_message(
-            QueueUrl=QUEUE_URL,
+            QueueUrl=queue_url,
             MaxNumberOfMessages=5,
             WaitTimeSeconds=10
         )
@@ -130,7 +141,7 @@ def event_trigger(queue_name, handler):
         # delete messages after processing
         for msg in messages:
             sqs.delete_message(
-                QueueUrl=QUEUE_URL,
+                QueueUrl=queue_url,
                 ReceiptHandle=msg["ReceiptHandle"]
             )
 
