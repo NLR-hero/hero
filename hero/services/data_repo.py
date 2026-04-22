@@ -25,16 +25,81 @@ class DataRepoService(ServiceBase):
         self.data_repo_id = self.application_id
         self.client.add_scope("data-repo/user")
         self.base_url = get_conf_from_collection(URL_MAP, "HERO_DATA_REPO_API_URL")
-        self.data_repo_url = f"{self.base_url}/{self.application_id}"
 
-    def read_projects(self):
+    @property
+    def data_repo_url(self):
+        """
+        The fully-qualified base URL for this data repo instance.
+
+        Combines the configured Data Repo API base URL with this service's
+        `data_repo_id` to produce the root URL used by resource endpoints
+        (projects, datasets and files).
+
+        Returns
+        -------
+        url : str
+            The base URL in the form `{base_url}/{data_repo_id}`.
+        """
+        return f"{self.base_url}/{self.data_repo_id}"
+
+    def _build_pagination_params(
+        self, use_pagination=False, last_evaluated_key=None, page_size=None
+    ):
+        """
+        Build the query-string params dict for paginated list endpoints.
+
+        Parameters
+        ----------
+        use_pagination : bool, optional
+            When True, adds `usePagination=true` to the request so the API
+            returns a paginated envelope (`items` plus an optional
+            `lastEvaluatedKey`). Defaults to False.
+
+        last_evaluated_key : str, optional
+            Cursor returned by a previous paginated response. Pass it back to
+            fetch the next page. Ignored if None.
+
+        page_size : int, optional
+            Maximum number of items the API should return per page. Ignored
+            if None.
+
+        Returns
+        -------
+        params : dict or None
+            A dict of query params suitable for `requests`' `params=`
+            argument, or None when no pagination options were provided (so
+            the caller sends a clean, unparameterized request).
+        """
+        params = {}
+        if use_pagination:
+            params["usePagination"] = "true"
+        if last_evaluated_key is not None:
+            params["lastEvaluatedKey"] = last_evaluated_key
+        if page_size is not None:
+            params["pageSize"] = page_size
+        return params or None
+
+    def read_projects(
+        self, use_pagination=False, last_evaluated_key=None, page_size=None
+    ):
         """
         List projects.
+        Parameters
+        ----------
+        use_pagination : bool, optional
+            Enable paginated responses. Defaults to False.
+
+        last_evaluated_key : str, optional
+            Cursor from a previous paginated response to fetch the next page.
+
+        page_size : int, optional
+            The maximum number of items to return per page.
 
         Returns
         -------
         projects : list of dict
-            A list of projects where each dict is project attributes.
+            A list of projects where each dict is project attributes (no pagination), or a dict with "items" and
+            optionally "lastEvaluatedKey" (when use_pagination=True).
 
         Notes
         -----
@@ -42,7 +107,10 @@ class DataRepoService(ServiceBase):
         """
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/projects"
-        response = self.api.request("GET", url, headers=headers)
+        params = self._build_pagination_params(
+            use_pagination, last_evaluated_key, page_size
+        )
+        response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
     def read_project(self, id: str) -> dict:
@@ -143,7 +211,13 @@ class DataRepoService(ServiceBase):
                 raise HERODataRepoProjectNotFound()
             raise e
 
-    def read_project_datasets(self, project_id=None):
+    def read_project_datasets(
+        self,
+        project_id=None,
+        use_pagination=False,
+        last_evaluated_key=None,
+        page_size=None,
+    ):
         """
         List datasets in a project.
 
@@ -151,11 +225,18 @@ class DataRepoService(ServiceBase):
         -----------
         project_id : str, required
             The project UUID
+        use_pagination : bool, optional
+            Enable paginated responses. Defaults to False.
+        last_evaluated_key : str, optional
+            Cursor from a previous paginated response to fetch the next page.
+        page_size : int, optional
+            The maximum number of items to return per page.
 
         Returns
         --------
-        datasets : list of dict
-            A list of datasets where each dict is dataset attributes.
+        datasets : list of dict, or dict
+            A list of datasets where each dict is dataset attributes (no pagination), or a dict with "items" and
+            optionally "lastEvaluatedKey" (when use_pagination=True).
 
         Raises
         -------
@@ -171,7 +252,10 @@ class DataRepoService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/project/{project_id}/datasets"
-        response = self.api.request("GET", url, headers=headers)
+        params = self._build_pagination_params(
+            use_pagination, last_evaluated_key, page_size
+        )
+        response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
     def delete_project(self, id=None, cascade=False):
@@ -241,9 +325,16 @@ class DataRepoService(ServiceBase):
         New in version 0.2.0.
         """
         try:
-            datasets = self.read_project_datasets(project_id=id)
-            for dataset in datasets:
-                self.delete_dataset(id=dataset["id"], cascade=cascade)
+            last_key = None
+            while True:
+                result = self.read_project_datasets(
+                    project_id=id, use_pagination=True, last_evaluated_key=last_key
+                )
+                for dataset in result["items"]:
+                    self.delete_dataset(id=dataset["id"], cascade=cascade)
+                last_key = result.get("lastEvaluatedKey")
+                if not last_key:
+                    break
             self.delete_project(id)
 
         except HTTPError as e:
@@ -606,7 +697,13 @@ class DataRepoService(ServiceBase):
                 raise HERODataRepoDatasetNotFound()
             raise e
 
-    def read_dataset_files(self, dataset_id=None):
+    def read_dataset_files(
+        self,
+        dataset_id=None,
+        use_pagination=False,
+        last_evaluated_key=None,
+        page_size=None,
+    ):
         """
         List files in a dataset.
 
@@ -615,11 +712,18 @@ class DataRepoService(ServiceBase):
 
         dataset_id : str, required
             The dataset UUID
+        use_pagination : bool, optional
+            Enable paginated responses. Defaults to False.
+        last_evaluated_key : str, optional
+            Cursor from a previous paginated response to fetch the next page.
+        page_size : int, optional
+            The maximum number of items to return per page.
 
         Returns
         --------
-        files : list of dict
-            A list of files where each dict is file attributes.
+        files : list of dict, or dict
+            A list of files where each dict is file attributes (no pagination), or a dict with "items" and
+        optionally "lastEvaluatedKey" (when use_pagination=True).
 
         Raises
         -------
@@ -635,7 +739,10 @@ class DataRepoService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.data_repo_url}/dataset/{dataset_id}/files"
-        response = self.api.request("GET", url, headers=headers)
+        params = self._build_pagination_params(
+            use_pagination, last_evaluated_key, page_size
+        )
+        response = self.api.request("GET", url, headers=headers, params=params)
         return response.json()
 
     def delete_dataset(self, id: str = None, cascade: bool = False):
@@ -699,9 +806,16 @@ class DataRepoService(ServiceBase):
         New in version 0.2.0.
         """
         try:
-            files = self.read_dataset_files(id)
-            for fileobj in files:
-                self.delete_file(fileobj["id"])
+            last_key = None
+            while True:
+                result = self.read_dataset_files(
+                    id, use_pagination=True, last_evaluated_key=last_key
+                )
+                for fileobj in result["items"]:
+                    self.delete_file(fileobj["id"])
+                last_key = result.get("lastEvaluatedKey")
+                if not last_key:
+                    break
             self.delete_dataset(id)
 
         except HTTPError as e:
@@ -952,7 +1066,13 @@ class DataRepoService(ServiceBase):
             )
             return dataset
 
-    def read_files(self, dataset_id=None):
+    def read_files(
+        self,
+        dataset_id=None,
+        use_pagination=False,
+        last_evaluated_key=None,
+        page_size=None,
+    ):
         """
         List files in a dataset.
 
@@ -964,11 +1084,18 @@ class DataRepoService(ServiceBase):
         -----------
         dataset_id : str, required
             The dataset UUID to filter files by
+        use_pagination : bool, optional
+            Enable paginated responses. Defaults to False.
+        last_evaluated_key : str, optional
+            Cursor from a previous paginated response to fetch the next page.
+        page_size : int, optional
+            The maximum number of items to return per page.
 
         Returns
         --------
-        files : list of dict
-            A list of files where each dict is file attributes.
+        files : list of dict, or dict
+            A list of files where each dict is file attributes (no pagination), or a dict with "items" and
+        optionally "lastEvaluatedKey" (when use_pagination=True).
 
         Raises
         -------
@@ -984,40 +1111,16 @@ class DataRepoService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.data_repo_url}/dataset/{dataset_id}/files"
+        params = self._build_pagination_params(
+            use_pagination, last_evaluated_key, page_size
+        )
         try:
-            response = self.api.request("GET", url, headers=headers)
+            response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
         except HTTPError as e:
             if e.response.status_code == 404:
                 raise HERODataRepoDatasetNotFound()
             raise e
-
-    def read_dataset_files(self, dataset_id=None):
-        """
-        List files of a given dataset.
-
-        Parameters
-        -----------
-        dataset_id : str, required
-            The dataset UUID
-
-        Returns
-        --------
-        files : list of dict
-            A list of files where each dict is file attributes.
-
-        """
-        headers = self.get_headers(self.client.get_token())
-        if dataset_id is None:
-            raise MissingRequiredAttribute(f"Missing required attribute: {dataset_id}")
-        url = "/".join([self.data_repo_url, "dataset", dataset_id, "files"])
-        try:
-            response = self.api.request("GET", url, headers=headers)
-        except HTTPError as e:
-            if e.response.status_code == 404:
-                raise HERODataRepoFileNotFound()
-            raise e
-        return response.json()
 
     def read_file(self, id=None):
         """
@@ -1455,84 +1558,6 @@ class DataRepoService(ServiceBase):
 
         return url
 
-    def read_file_download_url_from_hierarchy(
-        self,
-        datarepo_id,
-        project_name,
-        dataset_name,
-        file_name,
-        project_metatype="Project",
-        dataset_metatype="Dataset",
-        file_metatype="File",
-    ):
-        """
-        Get a signed S3 URL from where to download the file with a GET request.
-
-        Parameters
-        -----------
-        datarepo_id : str, required
-            The UUID of the data repository.
-
-        project_name : str, required
-            The name of the project.
-
-        dataset_name : str, required
-            The name of the dataset.
-
-        file_name : str, required
-            The name of the file.
-
-        project_metatype : str, optional
-            The project metatype. Defaults to "Project".
-
-        dataset_metatype : str, optional
-            The dataset metatype. Defaults to "Dataset".
-
-        file_metatype : str, optional
-            The file metatype. Defaults to "File".
-
-        Returns
-        --------
-        url : string
-            The signed S3 URL
-
-        Raises
-        -------
-        MissingRequiredAttribute
-            If a required attribute is missing
-
-        HEROAPIResponseException
-            When there is a problem trying to parse the response as json
-
-        Notes
-        -----
-        New in version 0.10.0.
-        """
-        if not all([datarepo_id, project_name, dataset_name, file_name]):
-            raise MissingRequiredAttribute("Missing required attribute")
-
-        try:
-            params = {
-                "datarepoId": datarepo_id,
-                "projectName": project_name,
-                "datasetName": dataset_name,
-                "fileName": file_name,
-                "projectMetatype": project_metatype,
-                "datasetMetatype": dataset_metatype,
-                "fileMetatype": file_metatype,
-            }
-            response = self.api.request(
-                "GET",
-                f"{self.base_url}/{datarepo_id}/files/download",
-                headers=self.get_headers(self.client.get_token()),
-                params=params,
-            )
-            url = response.json()["url"]
-        except HERODataRepoFileNotFound:
-            raise HERODataRepoFileNotFound(f"File not found: {file_name}")
-
-        return url
-
     def read_file_upload_url(self, file_id=None):
         """
         Get a signed S3 URL from where to upload the file with a PUT request.
@@ -1571,8 +1596,16 @@ class DataRepoService(ServiceBase):
             return response.json()["url"]
         except JSONDecodeError:
             raise HEROAPIResponseException()
-        
-    def read_file_download_url_from_hierarchy(self, project_name=None, dataset_name=None, file_name=None, project_metatype='Project', dataset_metatype='Dataset', file_metatype='File'):
+
+    def read_file_download_url_from_hierarchy(
+        self,
+        project_name=None,
+        dataset_name=None,
+        file_name=None,
+        project_metatype="Project",
+        dataset_metatype="Dataset",
+        file_metatype="File",
+    ):
         """
         Get a signed S3 URL from where to download the file with a GET request using the full hierarchy of the File resource.
 
@@ -1621,23 +1654,36 @@ class DataRepoService(ServiceBase):
         if file_name is None:
             raise MissingRequiredAttribute('Missing required attribute: "file_name"')
         if project_metatype is None:
-            raise MissingRequiredAttribute('Missing required attribute: "project_metatype"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "project_metatype"'
+            )
         if dataset_metatype is None:
-            raise MissingRequiredAttribute('Missing required attribute: "dataset_metatype"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "dataset_metatype"'
+            )
         if file_metatype is None:
-            raise MissingRequiredAttribute('Missing required attribute: "file_metatype"')
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "file_metatype"'
+            )
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/{self.data_repo_id}/files/download"
 
-        params = kwargs_to_json_for_request(projectName=project_name, datasetName=dataset_name, fileName=file_name, projectMetatype=project_metatype, datasetMetatype=dataset_metatype, fileMetatype=file_metatype)
+        params = kwargs_to_json_for_request(
+            projectName=project_name,
+            datasetName=dataset_name,
+            fileName=file_name,
+            projectMetatype=project_metatype,
+            datasetMetatype=dataset_metatype,
+            fileMetatype=file_metatype,
+        )
 
         try:
             response = self.api.request("GET", url, headers=headers, params=params)
             try:
                 return response.json()["url"]
             except JSONDecodeError:
-                raise HEROAPIResponseException('Unable to parse the response as json')
+                raise HEROAPIResponseException("Unable to parse the response as json")
         except HTTPError as e:
             result = e.response.json()
             message = f"{result['error']['name']}: {result['error']['message']} Request ID: {result['requestId']}"
@@ -1805,10 +1851,9 @@ class DataRepoService(ServiceBase):
                 metadata=metadata,
                 private=private,
             )
-        finally:
-            url = self.read_file_upload_url(file_resource["id"])
-            self.upload_file(url, local_filepath)
-            return file_resource
+        url = self.read_file_upload_url(file_resource["id"])
+        self.upload_file(url, local_filepath)
+        return file_resource
 
     def download_file_by_name(
         self, dataset_id=None, name=None, metatype="File", local_filepath=None
