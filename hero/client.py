@@ -15,7 +15,13 @@ from .lib import (
     get_env,
     get_client_credentials,
 )
-from .services import AuthService, DataRepoService, TaskEngineService, MLModelRegistry, AssistantService
+from .services import (
+    AuthService,
+    DataRepoService,
+    TaskEngineService,
+    MLModelRegistry,
+    AssistantService,
+)
 from .services import SearchService
 
 from .lib.errors import (
@@ -31,7 +37,7 @@ class HeroClient:
     Primary client for interfacing with the HERO API. Provides access to all services.
     """
 
-    def __init__(self):
+    def __init__(self, client_id: str = None, client_secret: str = None):
         """
         Creates the Hero client.
         """
@@ -40,7 +46,9 @@ class HeroClient:
         self.env = get_env()
         self.api = Session()
         region = "us-west-2"
-        client_id, client_secret = get_client_credentials()
+
+        if client_id is None or client_secret is None:
+            client_id, client_secret = get_client_credentials()
 
         self._client_id = client_id
         self._client_secret = client_secret
