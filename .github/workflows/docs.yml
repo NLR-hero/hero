@@ -33,7 +33,7 @@ permissions:
 jobs:
     # Build the documentation and upload the static HTML files as an artifact.
     build:
-      runs-on: [ self-hosted ]
+      runs-on: [ hero-runners ]
       steps:
         - uses: actions/checkout@v3
         - uses: actions/setup-python@v4
