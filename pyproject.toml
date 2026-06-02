@@ -1,3 +1,36 @@
+[project]
+name = "hero"
+version = "0.13.0"
+description = "Python client for HERO"
+readme = "README.md"
+license = { text = "Proprietary" }
+keywords = ["hero", "task engine", "data repo", "search"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "requests>=2.32.3",
+    "tenacity>=8.3.0",
+    "pyjwt>=2.8.0",
+    "tqdm>=4.66.4",
+    "cryptography>=44.0.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=24.8.0",
+    "pre-commit>=3.8.0",
+    "pytest>=8.3.5",
+]
+
+[project.urls]
+Homepage = "https://github.nrel.gov/Hero/hero"
+Documentation = "https://github.nrel.gov/Hero/hero"
+Repository = "https://github.nrel.gov/Hero/hero"
+"Bug Tracker" = "https://github.nrel.gov/Hero/hero/issues"
+
 [tool.poetry]
 name = "hero"
 version = "0.13.0"
