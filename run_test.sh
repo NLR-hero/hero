@@ -14,11 +14,11 @@ export HERO_CLIENT_SECRET="u21676f1mrcqmhh5m723l1og4urjbjjg0oir37d4k2j7frpa9i0"
 # In that case, try running the tests again
 
 # run all the things
-pytest test
+uv run pytest test
 # Or just run a single suite/collection
-# pytest -s -v test/test_ml_model_registry.py
+# uv run pytest -s -v test/test_ml_model_registry.py
 # Or just run a single test from a suite/collection
-# pytest -s -v test/test_data_repo.py::TestDataRepo::test_read_dataset_files_with_pagesize
+# uv run pytest -s -v test/test_data_repo.py::TestDataRepo::test_read_dataset_files_with_pagesize
 
 # Unset the environment variables
 unset HERO_ENV

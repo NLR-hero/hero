@@ -4,24 +4,15 @@ This is the Python SDK for HERO.
 
 ## Installation
 
-The HERO team recommends using [poetry](https://python-poetry.org/) or [pip](https://pypi.org/project/pip/) to install and manage project dependencies.
+The HERO team recommends using [uv](https://docs.astral.sh/uv/) to install and manage project dependencies.
 
-
-### Using UV
+### Using uv
 
 ```
 uv add https://github.nrel.gov/Hero/hero/archive/refs/tags/v0.13.0.zip
 ```
 
-### Using Poetry
-
-```
-poetry add git+https://github.nrel.gov/Hero/hero@v0.13.0
-```
-
-
-### Using Pip
-
+### Using pip
 
 ```
 pip install git+https://github.nrel.gov/Hero/hero@v0.13.0#egg=hero
@@ -29,59 +20,23 @@ pip install git+https://github.nrel.gov/Hero/hero@v0.13.0#egg=hero
 
 ## Development Installation and Release
 
-Similar to above, during development we currently support using [poetry](https://python-poetry.org/) or [pip](https://pypi.org/project/pip/) to install and manage project dependencies for local development. Both have their advantages/trade offs. We will outline specific installation options below.
-
-First, clone this repo locally. Then...
-
-### Using Poetry
-
-Next, install the dependencies, and the pre-commit hooks.
-
-- `poetry install`
-- `poetry run pre-commit install`
-
-To run the tests, execute the following
-
-- `poetry shell` (ensure you are in the Poetry shell)
-- `./run_test.sh`
-
-If you wish to link the local HERO codebase to a project for feature development, testing, etc., you may do the following. The below assumes you are using poetry for the consuming application(s).
-
-- Ensure you checkout the target branch you wish to work from in this repository (e.g. `git checkout THE-TARGET-BRANCH-YOU-WISH-TO-WORK-FROM`)
-- Open your _consuming_ project's `pyproject.toml` file
-- Add the `hero = {path="THE-PATH-TO-THE-NEWLY-CLONED-HERO-REPO", develop=true}` to your dependencies. The _develop_ flag will ensure updates to this codebase are reflected in the consuming application.
-
-
-### Using Pip
-
-Next, install the dependencies, and the pre-commit hooks.
-- `pip install virtualenv`
-- `python -m virtualenv venv`
-- `source venv/bin/activate`
-- `pip install`
-- `pre-commit install`
-
-To run the tests, execute the following
-
-- `./run_test.sh`
-
-When using Poetry to manage your Python environment + dependencies, you can do the following to install.
-
-1. Clone this repo locally
-2. Ensure you checkout the target branch you wish to work from (e.g. `git checkout THE-TARGET-BRANCH-YOU-WISH-TO-WORK-FROM`)
-2. Open your project's `pyproject.toml` file
-3. Add the `hero = {path="THE-PATH-TO-THE-NEWLY-CLONED-HERO-REPO", develop=true}` to your dependencies
-
-If you wish to link the local HERO codebase to a project for feature development, testing, etc., you may do the following.
-
-**TODO: ADD/UPDATE pip details below. Something akin to the following!!**
+First, clone this repo locally. Then install dependencies and pre-commit hooks:
 
 ```
-pip install virtualenv
-python -m virtualenv venv
-source venv/bin/activate
-python -m pip install --editable '.[dev]'
+uv sync
+uv run pre-commit install
 ```
+
+To run the tests:
+
+```
+./run_test.sh
+```
+
+To link the local HERO codebase into a consuming project for feature development:
+
+- Checkout the target branch in this repo
+- In your consuming project, run `uv add --editable THE-PATH-TO-THE-NEWLY-CLONED-HERO-REPO`
 
 ### Releasing a New Version
 
