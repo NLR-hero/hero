@@ -28,10 +28,10 @@ tqdm = "^4.66.4"
 cryptography = "^44.0.3"
 
 [tool.poetry.urls]
-Homepage = "https://github.nrel.gov/Hero/hero"
-Documentation = "https://github.nrel.gov/Hero/hero"
-Repository = "https://github.nrel.gov/Hero/hero"
-"Bug Tracker" = "https://github.nrel.gov/Hero/hero/issues"
+Homepage = "https://github.com/nrel-hero/hero"
+Documentation = "https://nrel-hero.github.io/hero"
+Repository = "https://github.com/nrel-hero/hero"
+"Bug Tracker" = "https://github.com/nrel-hero/hero/issues"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.8.0"
