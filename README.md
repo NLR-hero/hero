@@ -9,13 +9,13 @@ The HERO team recommends using [uv](https://docs.astral.sh/uv/) to install and m
 ### Using uv
 
 ```
-uv add https://github.nrel.gov/Hero/hero/archive/refs/tags/v0.13.0.zip
+uv add hero-sdk
 ```
 
 ### Using pip
 
 ```
-pip install git+https://github.nrel.gov/Hero/hero@v0.13.0#egg=hero
+pip install hero-sdk
 ```
 
 ## Development Installation and Release
