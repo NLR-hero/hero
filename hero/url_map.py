@@ -6,17 +6,17 @@ Env = Literal["dev", "stage", "production"]
 
 _URL_MAP_COMPONENTS = {
     "dev": {
-        "HERO_BASE_URL": "https://dev-hero.nrel.gov",
+        "HERO_BASE_URL": "https://dev-hero.nlr.gov",
         "USER_POOL_ID": "BXOYSVgFj",
         "HERO_COGNITO_API_URL": "https://dev-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
     },
     "stage": {
-        "HERO_BASE_URL": "https://stage-hero.nrel.gov",
+        "HERO_BASE_URL": "https://stage-hero.nlr.gov",
         "USER_POOL_ID": "rDmntXItO",
         "HERO_COGNITO_API_URL": "https://stage-nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
     },
     "production": {
-        "HERO_BASE_URL": "https://hero.nrel.gov",
+        "HERO_BASE_URL": "https://hero.nlr.gov",
         "USER_POOL_ID": "hnq46fXoH",
         "HERO_COGNITO_API_URL": "https://nrel-research.auth.us-west-2.amazoncognito.com/oauth2/token",
     },

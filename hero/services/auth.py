@@ -384,7 +384,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def create_user(self, username=None, name=None, email=None, roles=None):
+    def create_user(self, username=None, name=None, email=None, roles=None, pool=None):
         """
         Creates a user
 
@@ -398,6 +398,8 @@ class AuthService(ServiceBase):
             The email of the user
         roles : list, required
             The roles of the user
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -428,7 +430,13 @@ class AuthService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/principals/user"
         data = json.dumps(
-            {"username": username, "name": name, "email": email, "roles": roles}
+            {
+                "username": username,
+                "name": name,
+                "email": email,
+                "roles": roles,
+                "pool": pool,
+            }
         )
 
         try:
@@ -439,7 +447,9 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def list_users(self, count=20, next_token=None, filter_key=None, filter_val=None):
+    def list_users(
+        self, count=20, next_token=None, filter_key=None, filter_val=None, pool=None
+    ):
         """
         Lists and returns a collection of users
 
@@ -453,6 +463,8 @@ class AuthService(ServiceBase):
             An optional key to filter by. Note: this is required if filter_val is provided
         filter_val : str, optional
             An optional value to filter by. Note: this is required if filter_key is provided
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -482,6 +494,8 @@ class AuthService(ServiceBase):
         if filter_key and filter_val:
             params["filterKey"] = filter_key
             params["filterVal"] = filter_val
+        if pool:
+            params["pool"] = pool
 
         try:
             response = self.api.request("GET", url, headers=headers, params=params)
@@ -491,7 +505,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def read_user(self, username=None):
+    def read_user(self, username=None, pool=None):
         """
         Reads and returns a user
 
@@ -499,6 +513,8 @@ class AuthService(ServiceBase):
         ----------
         username : str, required
             The unique username of the user.
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -522,16 +538,21 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/principals/user/{username}"
+        params = {}
+        if pool:
+            params["pool"] = pool
 
         try:
-            response = self.api.request("GET", url, headers=headers)
+            response = self.api.request(
+                "GET", url, headers=headers, params=params or None
+            )
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
         except HTTPError as e:
             raise e
 
-    def update_user(self, username=None, enabled=None, roles=None):
+    def update_user(self, username=None, enabled=None, roles=None, pool=None):
         """
         Updates a user
 
@@ -543,6 +564,8 @@ class AuthService(ServiceBase):
             The enabled status of the user
         roles : list, optional
             The roles of the user
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -572,6 +595,8 @@ class AuthService(ServiceBase):
             data["enabled"] = enabled
         if roles is not None:
             data["roles"] = roles
+        if pool is not None:
+            data["pool"] = pool
         data = json.dumps(data)
 
         try:
@@ -582,7 +607,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def delete_user(self, username=None):
+    def delete_user(self, username=None, pool=None):
         """
         Deletes and returns a user
 
@@ -590,6 +615,8 @@ class AuthService(ServiceBase):
         ----------
         username : str, required
             The unique username of the user.
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -613,9 +640,14 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/principals/user/{username}"
+        params = {}
+        if pool:
+            params["pool"] = pool
 
         try:
-            response = self.api.request("DELETE", url, headers=headers)
+            response = self.api.request(
+                "DELETE", url, headers=headers, params=params or None
+            )
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
@@ -629,6 +661,7 @@ class AuthService(ServiceBase):
         generate_secret=None,
         callback_urls=None,
         logout_urls=None,
+        pool=None,
     ):
         """
         Creates a new machine client
@@ -645,6 +678,8 @@ class AuthService(ServiceBase):
             The callback URLs for the machine
         logout_urls : list, optional
             The logout URLs for the machine
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -677,6 +712,7 @@ class AuthService(ServiceBase):
                 "generateSecret": generate_secret,
                 "callbackUrls": callback_urls,
                 "logoutUrls": logout_urls,
+                "pool": pool,
             }
         )
 
@@ -688,7 +724,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def list_machines(self, count=20, next_token=None):
+    def list_machines(self, count=20, next_token=None, pool=None):
         """
         Returns a list of machine clients
 
@@ -698,6 +734,8 @@ class AuthService(ServiceBase):
             The number of machines to return
         next_token : str, optional
             The next token for pagination
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -724,6 +762,8 @@ class AuthService(ServiceBase):
             params["count"] = count
         if next_token:
             params["nextToken"] = next_token
+        if pool:
+            params["pool"] = pool
 
         try:
             response = self.api.request("GET", url, headers=headers, params=params)
@@ -733,7 +773,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def read_machine(self, id=None):
+    def read_machine(self, id=None, pool=None):
         """
         Reads and returns a machine client
 
@@ -741,6 +781,8 @@ class AuthService(ServiceBase):
         ----------
         id: str, required
             The unique ID of the machine client
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -764,9 +806,14 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/principals/machine/{id}"
+        params = {}
+        if pool:
+            params["pool"] = pool
 
         try:
-            response = self.api.request("GET", url, headers=headers)
+            response = self.api.request(
+                "GET", url, headers=headers, params=params or None
+            )
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
@@ -781,6 +828,7 @@ class AuthService(ServiceBase):
         generate_secret=None,
         callback_urls=None,
         logout_urls=None,
+        pool=None,
     ):
         """
         Updates a machine client
@@ -799,6 +847,8 @@ class AuthService(ServiceBase):
             The callback URLs for the machine
         logout_urls : list, optional
             The logout URLs for the machine
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -829,6 +879,7 @@ class AuthService(ServiceBase):
                 "generateSecret": generate_secret,
                 "callbackUrls": callback_urls,
                 "logoutUrls": logout_urls,
+                "pool": pool,
             }
         )
 
@@ -840,7 +891,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def delete_machine(self, id=None):
+    def delete_machine(self, id=None, pool=None):
         """
         Deletes a machine client
 
@@ -848,6 +899,8 @@ class AuthService(ServiceBase):
         ----------
         id: str, required
             The unique ID of the machine client
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -871,16 +924,21 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/principals/machine/{id}"
+        params = {}
+        if pool:
+            params["pool"] = pool
 
         try:
-            response = self.api.request("DELETE", url, headers=headers)
+            response = self.api.request(
+                "DELETE", url, headers=headers, params=params or None
+            )
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
         except HTTPError as e:
             raise e
 
-    def create_role(self, resource=None, scope=None, description=None):
+    def create_role(self, resource=None, scope=None, description=None, pool=None):
         """
         Creates a role
 
@@ -892,6 +950,8 @@ class AuthService(ServiceBase):
             The scope this role covers for the given resource
         description : str, optional
             The description of the role
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -919,7 +979,7 @@ class AuthService(ServiceBase):
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/role"
 
-        data = json.dumps({"name": name, "description": description})
+        data = json.dumps({"name": name, "description": description, "pool": pool})
 
         try:
             response = self.api.request("POST", url, headers=headers, data=data)
@@ -929,7 +989,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def list_roles(self, count=20, next_token=None):
+    def list_roles(self, count=20, next_token=None, pool=None):
         """
         Reads and returns a collection of role entries
 
@@ -939,6 +999,8 @@ class AuthService(ServiceBase):
             The number of roles to return
         next_token : str, optional
             The next token for pagination
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -965,6 +1027,8 @@ class AuthService(ServiceBase):
             params["count"] = count
         if next_token:
             params["nextToken"] = next_token
+        if pool:
+            params["pool"] = pool
 
         try:
             response = self.api.request("GET", url, headers=headers, params=params)
@@ -974,7 +1038,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def read_role(self, resource=None, scope=None):
+    def read_role(self, resource=None, scope=None, pool=None):
         """
         Reads and returns a role
 
@@ -984,6 +1048,8 @@ class AuthService(ServiceBase):
             The resource this role is for
         scope : str, required
             The scope this role covers for the given resource
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -1009,16 +1075,21 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/role/{resource}/{scope}"
+        params = {}
+        if pool:
+            params["pool"] = pool
 
         try:
-            response = self.api.request("GET", url, headers=headers)
+            response = self.api.request(
+                "GET", url, headers=headers, params=params or None
+            )
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
         except HTTPError as e:
             raise e
 
-    def update_role(self, resource=None, scope=None, description=None):
+    def update_role(self, resource=None, scope=None, description=None, pool=None):
         """
         Updates a role
 
@@ -1030,6 +1101,8 @@ class AuthService(ServiceBase):
             The scope this role covers for the given resource
         description : str, required
             The description of the role
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -1057,7 +1130,7 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/role/{resource}/{scope}"
-        data = json.dumps({"description": description})
+        data = json.dumps({"description": description, "pool": pool})
 
         try:
             response = self.api.request("PUT", url, headers=headers, data=data)
@@ -1067,7 +1140,7 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def delete_role(self, resource=None, scope=None):
+    def delete_role(self, resource=None, scope=None, pool=None):
         """
         Deletes a role
 
@@ -1077,6 +1150,8 @@ class AuthService(ServiceBase):
             The resource this role is for
         scope : str, required
             The scope this role covers for the given resource
+        pool : str, optional
+            The Cognito pool to target
 
         Returns
         -------
@@ -1102,9 +1177,14 @@ class AuthService(ServiceBase):
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/role/{resource}/{scope}"
+        params = {}
+        if pool:
+            params["pool"] = pool
 
         try:
-            response = self.api.request("DELETE", url, headers=headers)
+            response = self.api.request(
+                "DELETE", url, headers=headers, params=params or None
+            )
             return response.json()
         except JSONDecodeError:
             raise HEROAPIResponseException()
@@ -1153,16 +1233,675 @@ class AuthService(ServiceBase):
             raise HEROAPIResponseException()
         except HTTPError as e:
             raise e
-    
-    def get_tvm_session(self,
-                        app_id=None,
-                        app_type=None,
-                        resource_id=None,
-                        resource_type=None,
-                        action=None):
+
+    # ─── Access Requests ──────────────────────────────────────────────────────
+
+    def create_access_request(
+        self,
+        app_type=None,
+        app_id=None,
+        role=None,
+        permission_set=None,
+        subject=None,
+        resource_type=None,
+        resource_id=None,
+    ):
+        """
+        Submits an access request for the given role on the given application.
+        Auto-approves and grants permissions immediately if the user's email domain
+        matches the app's allowedDomains list.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The type of the app (e.g. 'data-repo', 'task-engine')
+        app_id : str, required
+            The ID of the app
+        role : str, optional
+            The role to request (defaults to 'viewer' if omitted)
+        permission_set : list, optional
+            The permission set to request
+        subject : str, optional
+            The subject of the access request
+        resource_type : str, optional
+            The type of the resource
+        resource_id : str, optional
+            The ID of the resource
+
+        Returns
+        -------
+        access_request : dict
+            The newly created access request entry
+
+        Raises
+        ------
+        MissingRequiredAttribute
+            If a required attribute is missing
+
+        HEROAPIResponseException
+            If the API response is not parsable JSON
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if app_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}"
+        data = json.dumps(
+            {
+                "role": role,
+                "permissionSet": permission_set,
+                "subject": subject,
+                "resourceType": resource_type,
+                "resourceId": resource_id,
+            }
+        )
+
+        try:
+            response = self.api.request("POST", url, headers=headers, data=data)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def read_access_request(self, app_type=None, app_id=None, request_id=None):
+        """
+        Reads a single access request by ID.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The type of the app
+        app_id : str, required
+            The ID of the app
+        request_id : str, required
+            The ID of the access request
+
+        Returns
+        -------
+        access_request : dict
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if app_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_id"')
+        if request_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "request_id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}/{request_id}"
+
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def list_access_requests(self, app_type=None, app_id=None, status=None):
+        """
+        Lists all access requests for an application.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The type of the app
+        app_id : str, required
+            The ID of the app
+        status : str, optional
+            Optional status filter (pending | approved | denied | revoked)
+
+        Returns
+        -------
+        access_requests : list
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if app_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-requests/{app_type}/{app_id}"
+        params = {}
+        if status:
+            params["status"] = status
+
+        try:
+            response = self.api.request(
+                "GET", url, headers=headers, params=params or None
+            )
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def list_my_access_requests(self, status=None):
+        """
+        Lists all access requests submitted by the authenticated user.
+
+        Parameters
+        ----------
+        status : str, optional
+            Optional status filter (pending | approved | denied | revoked)
+
+        Returns
+        -------
+        access_requests : list
+
+        Raises
+        ------
+        HEROAPIResponseException
+        """
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-requests/me"
+        params = {}
+        if status:
+            params["status"] = status
+
+        try:
+            response = self.api.request(
+                "GET", url, headers=headers, params=params or None
+            )
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def update_access_request(
+        self, app_type=None, app_id=None, request_id=None, status=None
+    ):
+        """
+        Approves, denies, or revokes an access request.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The type of the app
+        app_id : str, required
+            The ID of the app
+        request_id : str, required
+            The ID of the access request
+        status : str, required
+            New status: 'approved' | 'denied' | 'revoked'
+
+        Returns
+        -------
+        access_request : dict
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if app_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_id"')
+        if request_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "request_id"')
+        if status is None:
+            raise MissingRequiredAttribute('Missing required attribute: "status"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}/{request_id}"
+        data = json.dumps({"status": status})
+
+        try:
+            response = self.api.request("PUT", url, headers=headers, data=data)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def delete_access_request(self, app_type=None, app_id=None, request_id=None):
+        """
+        Permanently deletes an access request record.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The type of the app
+        app_id : str, required
+            The ID of the app
+        request_id : str, required
+            The ID of the access request
+
+        Returns
+        -------
+        access_request : dict
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if app_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_id"')
+        if request_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "request_id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}/{request_id}"
+
+        try:
+            response = self.api.request("DELETE", url, headers=headers)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    # ─── Access Request Config ────────────────────────────────────────────────
+
+    def list_access_request_configs(self):
+        """
+        Lists all access request configs across all applications.
+
+        Returns
+        -------
+        configs : list
+
+        Raises
+        ------
+        HEROAPIResponseException
+        """
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-request/configs"
+
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def create_access_request_config(
+        self,
+        app_type=None,
+        app_id=None,
+        allowed_domains=None,
+        requestable_roles=None,
+        schema_version=None,
+    ):
+        """
+        Creates the access request config for an application.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The type of the app
+        app_id : str, required
+            The ID of the app
+        allowed_domains : list, required
+            List of email domains that are auto-approved (e.g. ['nrel.gov'])
+        requestable_roles : list, required
+            List of roles that can be requested
+        schema_version : int, optional
+            The schema version
+
+        Returns
+        -------
+        config : dict
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if app_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_id"')
+        if allowed_domains is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "allowed_domains"'
+            )
+        if requestable_roles is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "requestable_roles"'
+            )
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}/config"
+        data = json.dumps(
+            {
+                "allowedDomains": allowed_domains,
+                "requestableRoles": requestable_roles,
+                "schemaVersion": schema_version,
+            }
+        )
+
+        try:
+            response = self.api.request("POST", url, headers=headers, data=data)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def read_access_request_config(self, app_type=None, app_id=None):
+        """
+        Reads the access request config for an application.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The type of the app
+        app_id : str, required
+            The ID of the app
+
+        Returns
+        -------
+        config : dict
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if app_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_id"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}/config"
+
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def update_access_request_config(
+        self,
+        app_type=None,
+        app_id=None,
+        allowed_domains=None,
+        requestable_roles=None,
+        schema_version=None,
+    ):
+        """
+        Replaces the access request config for an application.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The type of the app
+        app_id : str, required
+            The ID of the app
+        allowed_domains : list, required
+            Updated list of email domains
+        requestable_roles : list, required
+            Updated list of requestable roles
+        schema_version : int, optional
+            The schema version
+
+        Returns
+        -------
+        config : dict
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if app_id is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_id"')
+        if allowed_domains is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "allowed_domains"'
+            )
+        if requestable_roles is None:
+            raise MissingRequiredAttribute(
+                'Missing required attribute: "requestable_roles"'
+            )
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}/config"
+        data = json.dumps(
+            {
+                "allowedDomains": allowed_domains,
+                "requestableRoles": requestable_roles,
+                "schemaVersion": schema_version,
+            }
+        )
+
+        try:
+            response = self.api.request("PUT", url, headers=headers, data=data)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    # ─── Service Schema ───────────────────────────────────────────────────────
+
+    def register_service_schema(
+        self,
+        app_type=None,
+        version=None,
+        permissions=None,
+        roles=None,
+        resource_types=None,
+    ):
+        """
+        Registers or overwrites a service's permission and role schema with hero-auth-api.
+        Requires the hero-auth/admin role or the REGISTER_SERVICE_SCHEMA OAuth scope.
+        Intended to be called at deploy time from each service's deploy pipeline.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The service identifier (e.g. 'data-repo', 'task-engine')
+        version : int, required
+            The schema version as a positive integer
+        permissions : list, required
+            Full list of permission strings the service defines
+        roles : dict, optional
+            Map of role names to permission subsets. Either roles or resource_types is required.
+        resource_types : list, optional
+            Resource type definitions. Either roles or resource_types is required.
+
+        Returns
+        -------
+        schema : dict
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if version is None:
+            raise MissingRequiredAttribute('Missing required attribute: "version"')
+        if permissions is None:
+            raise MissingRequiredAttribute('Missing required attribute: "permissions"')
+        if roles is None and resource_types is None:
+            raise MissingRequiredAttribute(
+                'Either "roles" or "resource_types" is required'
+            )
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/service-schema/{app_type}/{version}"
+        body = {"appType": app_type, "version": version, "permissions": permissions}
+        if roles is not None:
+            body["roles"] = roles
+        if resource_types is not None:
+            body["resourceTypes"] = resource_types
+        data = json.dumps(body)
+
+        try:
+            response = self.api.request("POST", url, headers=headers, data=data)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def read_service_schema(self, app_type=None, version=None):
+        """
+        Reads the registered permission and role schema for a specific service version.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The service identifier
+        version : int, required
+            The schema version as a positive integer
+
+        Returns
+        -------
+        schema : dict
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if version is None:
+            raise MissingRequiredAttribute('Missing required attribute: "version"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/service-schema/{app_type}/{version}"
+
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def list_service_schema_versions(self, app_type=None):
+        """
+        Lists all registered versions of a service's schema.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The service identifier
+
+        Returns
+        -------
+        schemas : list
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/service-schema/{app_type}"
+
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def delete_service_schema(self, app_type=None, version=None):
+        """
+        Deletes a specific versioned service schema.
+        Requires the hero-auth/admin role or the REGISTER_SERVICE_SCHEMA OAuth scope.
+
+        Parameters
+        ----------
+        app_type : str, required
+            The service identifier
+        version : int, required
+            The schema version as a positive integer
+
+        Returns
+        -------
+        schema : dict
+
+        Raises
+        ------
+        MissingRequiredAttribute
+        HEROAPIResponseException
+        """
+        if app_type is None:
+            raise MissingRequiredAttribute('Missing required attribute: "app_type"')
+        if version is None:
+            raise MissingRequiredAttribute('Missing required attribute: "version"')
+
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/service-schema/{app_type}/{version}"
+
+        try:
+            response = self.api.request("DELETE", url, headers=headers)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def list_service_schemas(self):
+        """
+        Lists all registered service schemas across all appTypes and versions.
+
+        Returns
+        -------
+        schemas : list
+
+        Raises
+        ------
+        HEROAPIResponseException
+        """
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/service-schemas"
+
+        try:
+            response = self.api.request("GET", url, headers=headers)
+            return response.json()
+        except JSONDecodeError:
+            raise HEROAPIResponseException()
+        except HTTPError as e:
+            raise e
+
+    def get_tvm_session(
+        self,
+        app_id=None,
+        app_type=None,
+        resource_id=None,
+        resource_type=None,
+        action=None,
+    ):
         """
         Retrieves temporary AWS credentials from the Token Vending Machine (TVM) endpoint.
-        
+
         Parameters
         ----------
         app_id : str, required
@@ -1177,11 +1916,11 @@ class AuthService(ServiceBase):
             enables fine-grained access control to specific resources.
         action : str, required
             The action to perform (e.g., 'readFile', 'executeQuery')
-        
+
         Returns
         -------
         credentials : dict
-        Temporary AWS credentials containing AccessKeyId, SecretAccessKey, 
+        Temporary AWS credentials containing AccessKeyId, SecretAccessKey,
         SessionToken, and Expiration
 
         Raises
@@ -1197,21 +1936,21 @@ class AuthService(ServiceBase):
             raise MissingRequiredAttribute("Missing required attribute: 'app_type'")
         if action is None:
             raise MissingRequiredAttribute("Missing required attribute: 'action'")
-        
+
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/tvm"
 
         params = {
             "applicationId": app_id,
             "applicationType": app_type,
-            "action": action
+            "action": action,
         }
 
         if resource_id is not None:
             params["resourceId"] = resource_id
         if resource_type is not None:
             params["resourceType"] = resource_type
-        
+
         try:
             response = self.api.request("GET", url, headers=headers, params=params)
             return response.json()
