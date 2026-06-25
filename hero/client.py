@@ -37,7 +37,7 @@ class HeroClient:
     Primary client for interfacing with the HERO API. Provides access to all services.
     """
 
-    def __init__(self, client_id: str = None, client_secret: str = None):
+    def __init__(self, client_id: str = None, client_secret: str = None, access_token: str = None):
         """
         Creates the Hero client.
         """
@@ -47,19 +47,27 @@ class HeroClient:
         self.api = Session()
         region = "us-west-2"
 
-        if client_id is None or client_secret is None:
-            client_id, client_secret = get_client_credentials()
-
-        self._client_id = client_id
-        self._client_secret = client_secret
-        self._cognito_api_url = get_conf_from_collection(
-            URL_MAP, "HERO_COGNITO_API_URL"
-        )
         self._cognito_user_pool_id = get_conf_from_collection(URL_MAP, "USER_POOL_ID")
         self._cognito_auth_url = f"https://cognito-idp.{region}.amazonaws.com/{region}_{self._cognito_user_pool_id}"
         self._jwks_url = f"{self._cognito_auth_url}/.well-known/jwks.json"
         self._jwk_client = PyJWKClient(self._jwks_url)
-        self._access_token = None
+
+        if access_token is not None:
+            self._access_token = access_token
+            self._token_mode = "bearer"
+            self._client_id = None
+            self._client_secret = None
+            self._cognito_api_url = None
+        else:
+            if client_id is None or client_secret is None:
+                client_id, client_secret = get_client_credentials()
+            self._client_id = client_id
+            self._client_secret = client_secret
+            self._cognito_api_url = get_conf_from_collection(
+                URL_MAP, "HERO_COGNITO_API_URL"
+            )
+            self._access_token = None
+            self._token_mode = "client_credentials"
 
     def _fetch_token(self):
         """
@@ -110,6 +118,8 @@ class HeroClient:
             )
         except ExpiredSignatureError:
             # token expired, we need to refresh it
+            if self._token_mode == "bearer":
+                raise TokenInvalidError("Bearer token has expired. Provide a fresh access_token.")
             self._fetch_token()
             # try to decode again
             return jwt.decode(
@@ -140,6 +150,9 @@ class HeroClient:
         """
         Authenticates the client with the Cognito user pool.
         """
+        if self._token_mode == "bearer":
+            self._decode_token(self._access_token)
+            return
         self._fetch_token()
 
     def get_token(self):
