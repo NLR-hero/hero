@@ -29,6 +29,7 @@ def load_runtime_config():
 
     os.environ["HERO_CLIENT_ID"] = secrets.get("HERO_CLIENT_ID")
     os.environ["HERO_CLIENT_SECRET"] = secrets.get("HERO_CLIENT_SECRET")
+    os.environ["HERO_ENV"] = secrets.get("HERO_ENV")
 
     return secrets
 
