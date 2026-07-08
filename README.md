@@ -29,8 +29,17 @@ uv run pre-commit install
 
 To run the tests:
 
+Export test machine client credentials:
 ```
-./run_test.sh
+export HERO_ENV="dev"
+export HERO_PROJECT="************"
+export HERO_CLIENT_ID="************"
+export HERO_CLIENT_SECRET="************"
+```
+
+Run:
+```
+uv run pytest test/
 ```
 
 To link the local HERO codebase into a consuming project for feature development:
