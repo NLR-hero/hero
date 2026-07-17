@@ -123,7 +123,7 @@ class HeroClient:
             self._fetch_token()
             # try to decode again
             return jwt.decode(
-                token, algorithms=["RS256"], options={"verify_signature": False}
+                self._access_token, algorithms=["RS256"], options={"verify_signature": False}
             )
         except InvalidSignatureError:
             # The signature doesn't match — token could be tampered with
