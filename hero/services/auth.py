@@ -26,6 +26,7 @@ class AuthService(ServiceBase):
         resource_type=None,
         resource_id=None,
         permission_set=None,
+        access_request_id=None,
     ):
         """
         Creates a permission for the given app, principal, and resource
@@ -46,6 +47,10 @@ class AuthService(ServiceBase):
             The ID of the resource
         permission_set : list, required
             The permission set
+        access_request_id : str, optional
+            When provided, the perm row's accessRequestId is set to this value and
+            no synthetic audit row is written on the server. Use when this grant is
+            authorized by a real access-request record that you own.
 
         Returns
         -------
@@ -87,6 +92,8 @@ class AuthService(ServiceBase):
             )
 
         attributes = {"permissionSet": permission_set}
+        if access_request_id:
+            attributes["accessRequestId"] = access_request_id
 
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/permission/{app_type}/{app_id}/{principal_type}/{principal_id}/{resource_type}/{resource_id}"
@@ -238,6 +245,7 @@ class AuthService(ServiceBase):
         resource_type=None,
         resource_id=None,
         permission_set=None,
+        access_request_id=None,
     ):
         """
         Updates a permission for the given app, principal, and resource
@@ -258,6 +266,10 @@ class AuthService(ServiceBase):
             The ID of the resource
         permission_set : list, required
             The updated permission set
+        access_request_id : str, optional
+            Same semantics as on create_permission. Overwrites the perm row's
+            existing accessRequestId with this value and skips the synthetic audit
+            row on the server.
 
         Returns
         -------
@@ -299,6 +311,9 @@ class AuthService(ServiceBase):
             )
 
         attributes = {"permissionSet": permission_set}
+        if access_request_id:
+            attributes["accessRequestId"] = access_request_id
+
         headers = self.get_headers(self.client.get_token())
         url = f"{self.base_url}/permission/{app_type}/{app_id}/{principal_type}/{principal_id}/{resource_type}/{resource_id}"
         data = json.dumps(attributes)

@@ -28,6 +28,82 @@ def test_create_permission():
     assert res["permissionSet"] == permission_set
 
 
+def test_create_permission_with_access_request_id():
+    # First create an access request to get a real requestId, then use it as the
+    # access_request_id when directly creating a permission. The perm row should
+    # carry the access-request id we supplied rather than a synthetic one generated
+    # server-side.
+    hero_client = hero.HeroClient()
+    auth = hero_client.Auth()
+
+    app_type = "data-repo"
+    app_id = "dev-hero-test-framework"
+    principal_id = "python-app-test-user"
+    resource_type = "data-repo"
+    resource_id = "dev-hero-test-framework"
+
+    try:
+        access_request = auth.create_access_request(
+            app_type=app_type, app_id=app_id, role="viewer"
+        )
+    except Exception:
+        # Conflict — reuse whatever pending/approved request we have
+        mine = auth.list_my_access_requests()
+        access_request = next(
+            (r for r in mine if r["appType"] == app_type and r["appId"] == app_id),
+            None,
+        )
+
+    assert access_request is not None
+    assert access_request.get("requestId") is not None
+
+    # Ensure a clean slate then re-create with the anchor id
+    try:
+        auth.delete_permission(
+            app_type=app_type,
+            app_id=app_id,
+            principal_type="user",
+            principal_id=principal_id,
+            resource_type=resource_type,
+            resource_id=resource_id,
+        )
+    except Exception:
+        pass
+
+    permission = auth.create_permission(
+        app_type=app_type,
+        app_id=app_id,
+        principal_type="user",
+        principal_id=principal_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        permission_set=["READ_PROJECT"],
+        access_request_id=access_request["requestId"],
+    )
+    assert permission["accessRequestId"] == access_request["requestId"]
+
+
+def test_update_permission_with_access_request_id():
+    hero_client = hero.HeroClient()
+    auth = hero_client.Auth()
+
+    app_type = "data-repo"
+    app_id = "dev-hero-test-framework"
+    principal_id = "python-app-test-user"
+
+    permission = auth.update_permission(
+        app_type=app_type,
+        app_id=app_id,
+        principal_type="user",
+        principal_id=principal_id,
+        resource_type="data-repo",
+        resource_id="dev-hero-test-framework",
+        permission_set=["READ_PROJECT"],
+        access_request_id="sdk-test-external-ar-id",
+    )
+    assert permission["accessRequestId"] == "sdk-test-external-ar-id"
+
+
 def test_read_permission():
     hero_client = hero.HeroClient()
     auth = hero_client.Auth()
