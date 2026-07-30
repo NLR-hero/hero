@@ -1538,12 +1538,14 @@ class AuthService(ServiceBase):
         self,
         app_type=None,
         app_id=None,
+        resource_type=None,
+        resource_id=None,
         allowed_domains=None,
         requestable_roles=None,
         schema_version=None,
     ):
         """
-        Creates the access request config for an application.
+        Creates an access request config, scoped to the app or a specific resource within the app.
 
         Parameters
         ----------
@@ -1551,12 +1553,16 @@ class AuthService(ServiceBase):
             The type of the app
         app_id : str, required
             The ID of the app
+        resource_type : str, optional
+            Optional resource type — defaults to app_type for an app-scoped config
+        resource_id : str, optional
+            Optional resource id — defaults to app_id for an app-scoped config
         allowed_domains : list, required
             List of email domains that are auto-approved (e.g. ['nrel.gov'])
         requestable_roles : list, required
-            List of roles that can be requested
+            Role names users may request
         schema_version : int, optional
-            The schema version
+            Service-schema version for role resolution
 
         Returns
         -------
@@ -1580,8 +1586,11 @@ class AuthService(ServiceBase):
                 'Missing required attribute: "requestable_roles"'
             )
 
+        resolved_resource_type = resource_type if resource_type is not None else app_type
+        resolved_resource_id = resource_id if resource_id is not None else app_id
+
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/access-request/{app_type}/{app_id}/config"
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}/{resolved_resource_type}/{resolved_resource_id}/config"
         data = json.dumps(
             {
                 "allowedDomains": allowed_domains,
@@ -1598,9 +1607,15 @@ class AuthService(ServiceBase):
         except HTTPError as e:
             raise e
 
-    def read_access_request_config(self, app_type=None, app_id=None):
+    def read_access_request_config(
+        self,
+        app_type=None,
+        app_id=None,
+        resource_type=None,
+        resource_id=None,
+    ):
         """
-        Reads the access request config for an application.
+        Reads an access request config, scoped to the app or a specific resource within the app.
 
         Parameters
         ----------
@@ -1608,6 +1623,10 @@ class AuthService(ServiceBase):
             The type of the app
         app_id : str, required
             The ID of the app
+        resource_type : str, optional
+            Optional resource type — defaults to app_type
+        resource_id : str, optional
+            Optional resource id — defaults to app_id
 
         Returns
         -------
@@ -1623,8 +1642,11 @@ class AuthService(ServiceBase):
         if app_id is None:
             raise MissingRequiredAttribute('Missing required attribute: "app_id"')
 
+        resolved_resource_type = resource_type if resource_type is not None else app_type
+        resolved_resource_id = resource_id if resource_id is not None else app_id
+
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/access-request/{app_type}/{app_id}/config"
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}/{resolved_resource_type}/{resolved_resource_id}/config"
 
         try:
             response = self.api.request("GET", url, headers=headers)
@@ -1638,12 +1660,14 @@ class AuthService(ServiceBase):
         self,
         app_type=None,
         app_id=None,
+        resource_type=None,
+        resource_id=None,
         allowed_domains=None,
         requestable_roles=None,
         schema_version=None,
     ):
         """
-        Replaces the access request config for an application.
+        Replaces the config values for an access request config (app or resource-scoped).
 
         Parameters
         ----------
@@ -1651,12 +1675,16 @@ class AuthService(ServiceBase):
             The type of the app
         app_id : str, required
             The ID of the app
+        resource_type : str, optional
+            Optional resource type — defaults to app_type
+        resource_id : str, optional
+            Optional resource id — defaults to app_id
         allowed_domains : list, required
             Updated list of email domains
         requestable_roles : list, required
-            Updated list of requestable roles
+            Updated list of requestable role names
         schema_version : int, optional
-            The schema version
+            Service-schema version for role resolution
 
         Returns
         -------
@@ -1680,8 +1708,11 @@ class AuthService(ServiceBase):
                 'Missing required attribute: "requestable_roles"'
             )
 
+        resolved_resource_type = resource_type if resource_type is not None else app_type
+        resolved_resource_id = resource_id if resource_id is not None else app_id
+
         headers = self.get_headers(self.client.get_token())
-        url = f"{self.base_url}/access-request/{app_type}/{app_id}/config"
+        url = f"{self.base_url}/access-request/{app_type}/{app_id}/{resolved_resource_type}/{resolved_resource_id}/config"
         data = json.dumps(
             {
                 "allowedDomains": allowed_domains,

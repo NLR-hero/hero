@@ -545,6 +545,55 @@ def test_access_request_config_crud():
     assert updated["schemaVersion"] == 2
 
 
+def test_access_request_config_resource_scoped_crud():
+    # Resource-scoped variant of the CRUD test above. When resource_type/resource_id
+    # are provided explicitly (differing from app_type/app_id), the SDK hits the
+    # resource-scoped route and the API persists a distinct config row per resource tuple.
+    hero_client = hero.HeroClient()
+    hero_client.add_scope("hero-auth/admin")
+    auth = hero_client.Auth()
+
+    app_type = "data-repo"
+    app_id = "dev-hero-test-framework"
+    resource_type = "project"
+    resource_id = "sdk-test-proj-1"
+
+    created = auth.create_access_request_config(
+        app_type=app_type,
+        app_id=app_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        allowed_domains=["nrel.gov"],
+        requestable_roles=["viewer"],
+        schema_version=1,
+    )
+    assert type(created) is dict
+    assert created["resourceType"] == resource_type
+    assert created["resourceId"] == resource_id
+
+    fetched = auth.read_access_request_config(
+        app_type=app_type,
+        app_id=app_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+    )
+    assert type(fetched) is dict
+    assert fetched["resourceType"] == resource_type
+    assert fetched["resourceId"] == resource_id
+
+    updated = auth.update_access_request_config(
+        app_type=app_type,
+        app_id=app_id,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        allowed_domains=["nrel.gov", "example.com"],
+        requestable_roles=["viewer"],
+        schema_version=1,
+    )
+    assert type(updated) is dict
+    assert "example.com" in updated["allowedDomains"]
+
+
 def test_list_access_request_configs():
     hero_client = hero.HeroClient()
     hero_client.add_scope("hero-auth/admin")
