@@ -1,6 +1,6 @@
 [project]
 name = "hero-sdk"
-version = "0.16.0"
+version = "0.16.1"
 description = "Python client for HERO"
 readme = "README.md"
 license = { text = "Proprietary" }
