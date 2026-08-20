@@ -1939,8 +1939,21 @@ class DataRepoService(ServiceBase):
                 'Missing required attribute: "local_filepath"'
             )
 
-        url = self.read_file_download_url(file_id)
-        self.download_file(url, local_filepath)
+        headers = self.get_headers(self.client.get_token())
+        url = f"{self.base_url}/{self.data_repo_id}/file/{file_id}/download"
+
+        try:
+            with self.api.get(url, headers=headers, stream=True) as r:
+                r.raise_for_status()
+                with open(local_filepath, "wb") as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+        except HTTPError as e:
+            if e.response is not None and e.response.status_code == 404:
+                presigned_url = self.read_file_download_url(file_id)
+                self.download_file(presigned_url, local_filepath)
+            else:
+                raise e
 
     def upload_file(self, url=None, local_filepath=None):
         """
