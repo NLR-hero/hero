@@ -9,7 +9,7 @@ from jwt import (
     DecodeError,
 )
 
-from .url_map import URL_MAP
+from .url_map import URL_MAP, get_pool_config, detect_pool_from_token, Pool
 from .lib import (
     get_conf_from_collection,
     get_env,
@@ -37,7 +37,10 @@ class HeroClient:
     Primary client for interfacing with the HERO API. Provides access to all services.
     """
 
-    def __init__(self, client_id: str = None, client_secret: str = None, access_token: str = None):
+    def __init__(self, client_id: str = None,
+                 client_secret: str = None,
+                 access_token: str = None,
+                 pool: Pool = None):
         """
         Creates the Hero client.
         """
@@ -47,27 +50,31 @@ class HeroClient:
         self.api = Session()
         region = "us-west-2"
 
-        self._cognito_user_pool_id = get_conf_from_collection(URL_MAP, "USER_POOL_ID")
-        self._cognito_auth_url = f"https://cognito-idp.{region}.amazonaws.com/{region}_{self._cognito_user_pool_id}"
-        self._jwks_url = f"{self._cognito_auth_url}/.well-known/jwks.json"
-        self._jwk_client = PyJWKClient(self._jwks_url)
-
         if access_token is not None:
             self._access_token = access_token
             self._token_mode = "bearer"
             self._client_id = None
             self._client_secret = None
             self._cognito_api_url = None
+            resolved_pool = pool or detect_pool_from_token(self.env, access_token)
         else:
             if client_id is None or client_secret is None:
                 client_id, client_secret = get_client_credentials()
             self._client_id = client_id
             self._client_secret = client_secret
-            self._cognito_api_url = get_conf_from_collection(
-                URL_MAP, "HERO_COGNITO_API_URL"
-            )
+            resolved_pool = pool or "LEGACY"
             self._access_token = None
             self._token_mode = "client_credentials"
+        
+        pool_config = get_pool_config(self.env, resolved_pool)
+        self._pool = resolved_pool
+        self._cognito_user_pool_id = pool_config["USER_POOL_ID"]
+        self._cognito_auth_url = f"https://cognito-idp.{region}.amazonaws.com/{region}_{self._cognito_user_pool_id}"
+        self._jwks_url = f"{self._cognito_auth_url}/.well-known/jwks.json"
+        self._jwk_client = PyJWKClient(self._jwks_url)
+
+        if self._token_mode == "client_credentials":
+            self._cognito_api_url = pool_config["HERO_COGNITO_API_URL"]
 
     def _fetch_token(self):
         """
@@ -95,7 +102,6 @@ class HeroClient:
             raise Exception(
                 f"Failed to fetch access token: {response.status_code} - {response.text}, {self._scopes}"
             )
-
         self._access_token = response.json()["access_token"]
 
     def _decode_token(self, token):
