@@ -33,7 +33,7 @@ permissions:
 jobs:
     # Build the documentation and upload the static HTML files as an artifact.
     build:
-      runs-on: [ hero-runners ]
+      runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v4
         - uses: actions/setup-python@v5
@@ -42,12 +42,12 @@ jobs:
 
         # ADJUST THIS: install all dependencies (including pdoc)
         - run: pip install .
-        - run: pip install pdoc
-        # ADJUST THIS: build your documentation into docs/.
-        # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
-        - run: pdoc ./hero --template-dir ./pdoc/templates --output-dir docs
-        # - run: PUT COMMAND TO MOVE FILES UP A DIR HERE <- we don't need this anymore
-
+        - run: pip install pdoc3
+        # Build HTML docs. --html is required (pdoc3 defaults to markdown).
+        # lunr_search is disabled: it needs a Node subprocess and crashes in CI.
+        - run: pdoc --html -c 'lunr_search=None' ./hero --template-dir ./pdoc/templates --output-dir docs
+        # pdoc3 nests output under docs/hero/; add a root index that redirects there.
+        - run: echo '<!doctype html><meta http-equiv="refresh" content="0; url=hero/">' > docs/index.html
         - uses: actions/upload-pages-artifact@v3
           with:
             path: docs
