@@ -33,7 +33,7 @@ permissions:
 jobs:
     # Build the documentation and upload the static HTML files as an artifact.
     build:
-      runs-on: [ hero-runners ]
+      runs-on: ubuntu-latest
       steps:
         - uses: actions/checkout@v4
         - uses: actions/setup-python@v5
@@ -42,7 +42,7 @@ jobs:
 
         # ADJUST THIS: install all dependencies (including pdoc)
         - run: pip install .
-        - run: pip install pdoc
+        - run: pip install pdoc3
         # ADJUST THIS: build your documentation into docs/.
         # We use a custom build script for pdoc itself, ideally you just run `pdoc -o docs/ ...` here.
         - run: pdoc ./hero --template-dir ./pdoc/templates --output-dir docs
