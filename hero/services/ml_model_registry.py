@@ -56,7 +56,7 @@ class MLModelRegistry(ServiceBase):
         except ImportError as e:
             raise RuntimeError(
                 "hero-mlflow is not installed. To use MLflow support, install it via:\n"
-                "pip install git+https://github.nrel.gov/Hero/hero-mlflow.git"
+                "pip install git+https://github.nlr.gov/Hero/hero-mlflow.git"
             ) from e
 
         return get_patched_mlflow(
