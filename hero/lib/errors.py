@@ -1,3 +1,5 @@
+import difflib
+
 from tenacity import (
     retry_if_exception_type,
 )
@@ -156,3 +158,50 @@ class HEROMLModelRegistryForbiddenError(Exception):
         super().__init__(message)
         self.registry_name = registry_name
         self.operation = operation
+
+
+class HeroConfigurationError(Exception):
+    """Base class for errors caused by a misconfigured HERO client."""
+
+
+class InvalidEnvironmentError(HeroConfigurationError):
+    def __init__(
+        self,
+        env,
+        valid_environments,
+        source="the HERO_ENV environment variable",
+    ):
+        valid = tuple(valid_environments)
+        message = (
+            f"Invalid HERO environment {env!r} (from {source}). "
+            f"Valid environments are: {', '.join(valid)}."
+        )
+        close_match = difflib.get_close_matches(str(env), valid, n=1, cutoff=0.3)
+        if close_match:
+            message += f" Did you mean {close_match[0]!r}?"
+        super().__init__(message)
+        self.env = env
+        self.valid_environments = valid
+
+
+class InvalidPoolError(HeroConfigurationError):
+    def __init__(self, pool, valid_pools):
+        valid = tuple(valid_pools)
+        super().__init__(
+            f"Invalid HERO user pool {pool!r}. Valid pools are: {', '.join(valid)}."
+        )
+        self.pool = pool
+        self.valid_pools = valid
+
+
+class MissingConfigurationError(HeroConfigurationError):
+    def __init__(self, key, env, available_keys=()):
+        message = (
+            f"Configuration key {key!r} is not defined for HERO environment {env!r}. "
+            f"Set the {key} environment variable to provide it explicitly."
+        )
+        if available_keys:
+            message += f" Keys available for {env!r}: {', '.join(available_keys)}."
+        super().__init__(message)
+        self.key = key
+        self.env = env

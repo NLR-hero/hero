@@ -4,11 +4,18 @@ import json
 import logging
 import pathlib
 
+from .errors import InvalidEnvironmentError, MissingConfigurationError
+
 log = logging.getLogger("hero:config")
 
 
 def get_env():
-    return os.environ.get("HERO_ENV", "dev")
+    from ..url_map import ENVIRONMENTS
+
+    env = os.environ.get("HERO_ENV", "dev")
+    if env not in ENVIRONMENTS:
+        raise InvalidEnvironmentError(env, ENVIRONMENTS)
+    return env
 
 
 def get_service_id(key):
@@ -17,7 +24,20 @@ def get_service_id(key):
 
 
 def get_conf_from_collection(collection, key):
-    return os.environ.get(key, collection[get_env()][key])
+    override = os.environ.get(key)
+    if override is not None:
+        return override
+
+    env = get_env()
+    try:
+        env_conf = collection[env]
+    except KeyError:
+        raise InvalidEnvironmentError(env, sorted(collection)) from None
+
+    try:
+        return env_conf[key]
+    except KeyError:
+        raise MissingConfigurationError(key, env, sorted(env_conf)) from None
 
 
 def get_resilient_session():
