@@ -35,7 +35,7 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.nrel.gov/Hero/hero"
+Homepage = "https://github.com/NLR-hero/hero"
 Documentation = "https://nlr-hero.github.io/hero/"
 Repository = "https://github.com/NLR-hero/hero"
 "Bug Tracker" = "https://github.com/NLR-hero/hero/issues"
