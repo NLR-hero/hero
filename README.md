@@ -73,8 +73,8 @@ export HERO_CLIENT_SECRET="*******************************"
 
 ### Examples
 
-Please check out the [HERO examples](https://github.com/nrel-hero/hero-examples).
+Will be added in future.
 
-Additionally, the tests in the `test` directory of this repo may also prove useful for basic usage examples.
+In the mean time, the tests in the `test` directory of this repo may also prove useful for basic usage examples.
 
 SWR 26-024
