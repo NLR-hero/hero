@@ -48,9 +48,10 @@ The values can also go in `test/.env` (gitignored), which the tests load when
 #### ML Model Registry tests
 
 `test/test_ml_model_registry.py` and `test/test_ml_model_registry_mlflow.py` run
-against the deployed dev API and the `[SEED]` data in the `hero-test-framework`
-project (`HERO_PROJECT=hero-test-framework`). Writes go to throwaway experiments
-and models that are deleted afterwards.
+against a deployed API. Point `HERO_PROJECT` at a project that holds the fixture
+data described at the top of `test/test_ml_model_registry.py`; the `MMR_TEST_*`
+variables override the fixture names. Writes go to throwaway experiments and
+models that are deleted afterwards.
 
 The MLflow suite drives real MLflow through `get_patched_mlflow()` (training,
 logging, artifacts, logged models, registering, aliases, loading). It is skipped
@@ -60,14 +61,14 @@ version that matches the server:
 ```
 uv venv .venv-mmr-test
 uv pip install --python .venv-mmr-test/bin/python -e ".[dev]" \
-    "hero-mlflow @ git+https://github.nlr.gov/Hero/hero-mlflow.git" \
+    hero-mlflow \
     "mlflow==3.16.1" scikit-learn python-dotenv
 .venv-mmr-test/bin/python -m pytest test/test_ml_model_registry.py test/test_ml_model_registry_mlflow.py
 ```
 
-Tests marked `xfail` with a ticket key (HMR-248, HMR-250, HMR-253) document API
-or edge bugs. Set `MMR_API_FIXES_DEPLOYED=1` once the API fixes are deployed so
-those tests must pass.
+Tests marked `xfail` document known API or edge issues. Set
+`MMR_API_FIXES_DEPLOYED=1` against an API that passes MLflow error codes through and
+deletes versions by number, so those tests must pass.
 
 To link the local HERO codebase into a consuming project for feature development:
 

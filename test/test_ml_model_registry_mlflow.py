@@ -1,7 +1,7 @@
 # test_ml_model_registry_mlflow.py
 #
-# Real MLflow workflows through the HERO proxy, as in hero-examples/ml-model-registry
-# (ex_01 training + logging, ex_02 evaluating + registering): the patched mlflow
+# Real MLflow workflows through the HERO proxy, following the ML Model Registry
+# examples (training + logging, then evaluating + registering): the patched mlflow
 # module from get_patched_mlflow() logs runs, params, metrics, datasets, artifacts
 # and a wrapped pyfunc model, then loads and registers it.
 #
@@ -34,18 +34,18 @@ from hero.lib.errors import HEROMLModelRegistryResourceNotFound
 
 SEED = 86
 
-# MLflow branches on the proxy's error_code; needs the hero-ml-model-registry-api
-# fix for HMR-248 deployed. Set MMR_API_FIXES_DEPLOYED=1 once it is.
-needs_hmr248 = pytest.mark.xfail(
+# MLflow branches on the error_code the proxy returns; older APIs dropped it.
+# Set MMR_API_FIXES_DEPLOYED=1 against an API that passes it through.
+needs_error_codes = pytest.mark.xfail(
     not os.environ.get("MMR_API_FIXES_DEPLOYED"),
-    reason="HMR-248: proxy drops MLflow error_code until the API fix is deployed",
+    reason="needs an API that passes MLflow error codes through",
     strict=False,
 )
 PREPROCESS_SOURCE = "def preprocess(model_input):\n    return model_input\n"
 
 
 class ModelWrapper(PythonModel):
-    """The ex_01 pattern: a pyfunc wrapper that preprocesses before predicting."""
+    """A pyfunc wrapper that preprocesses before predicting, as in the examples."""
 
     def __init__(self, model):
         self.model = model
@@ -103,7 +103,7 @@ def data():
 
 @pytest.fixture(scope="module")
 def trained_run(mlflow, experiment, data, tmp_path_factory):
-    """Trains and logs a wrapped model the way ex_01 does; returns (run, metrics)."""
+    """Trains and logs a wrapped model the way the examples do; returns (run, metrics)."""
     X_train, X_test, y_train, y_test = data
     params = {"random_state": SEED, "n_estimators": 20, "max_depth": 4}
     tags = {"Project": "hero-python-sdk tests", "autologging": "false"}
@@ -137,7 +137,7 @@ def trained_run(mlflow, experiment, data, tmp_path_factory):
 
 
 # ----------------------------
-# ex_01: training and logging
+# Training and logging
 # ----------------------------
 
 
@@ -202,7 +202,7 @@ def test_logged_model_loads_and_predicts(model_registry, mlflow, trained_run, da
 
 
 # ----------------------------
-# ex_02: evaluating and registering
+# Evaluating and registering
 # ----------------------------
 
 
@@ -223,7 +223,7 @@ def logged_model_id(model_registry, run):
 def test_register_through_the_sdk(model_registry, registered_model_name, trained_run):
     run, _ = trained_run
     model_registry.read_or_create_registered_model(id=registered_model_name)
-    # ex_02 points the version at the run's artifact_uri; a logged model's URI is
+    # The examples point the version at the run's artifact_uri; a logged model's URI is
     # what MLflow can load back, so use that
     version = model_registry.create_registered_model_version(
         model_id=registered_model_name,
@@ -255,13 +255,13 @@ def test_alias_and_load_by_alias(
     )
 
 
-@needs_hmr248
+@needs_error_codes
 def test_register_model_on_an_existing_model(
     model_registry, mlflow, registered_model_name, trained_run
 ):
     run, _ = trained_run
     # register_model() creates the model first and expects RESOURCE_ALREADY_EXISTS
-    # when it's already there, then adds a version (HMR-248)
+    # when it's already there, then adds a version
     mv = mlflow.register_model(
         f"models:/{logged_model_id(model_registry, run)}", registered_model_name
     )
@@ -272,7 +272,7 @@ def test_register_model_on_an_existing_model(
     assert sorted(v.version for v in versions) == ["1", "2"]
 
 
-@needs_hmr248
+@needs_error_codes
 def test_duplicate_create_raises_mlflow_resource_already_exists(
     mlflow, registered_model_name
 ):
@@ -283,7 +283,7 @@ def test_duplicate_create_raises_mlflow_resource_already_exists(
 
 
 @pytest.mark.xfail(
-    reason="HMR-250: CloudFront replaces API 404 bodies with the SPA index.html",
+    reason="the HERO edge can replace API 404 bodies with the web app's HTML",
     strict=False,
 )
 def test_missing_model_raises_mlflow_resource_does_not_exist(mlflow):

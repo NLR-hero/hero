@@ -1,12 +1,18 @@
 # test_ml_model_registry.py
 #
-# Runs against a deployed ML Model Registry API. Reads use the [SEED] data in the
-# dev test project (seeded by hero-ml-model-registry-api/scripts/seed); writes use
+# Runs against a deployed ML Model Registry API. Reads check a project that holds
+# known fixture data (named below, overridable with MMR_TEST_* env vars); writes use
 # throwaway entities that are deleted when the module finishes, so a failed test
-# can't leave the shared seed data changed.
+# can't leave the shared fixture data changed.
 #
-# Env: HERO_ENV=dev, HERO_PROJECT=hero-test-framework, and HERO_CLIENT_ID /
+# Env: HERO_ENV, HERO_PROJECT (the fixture project), and HERO_CLIENT_ID /
 # HERO_CLIENT_SECRET for a client with the ml-model-registry/user scope.
+#
+# Expected fixture data: a classification experiment with five runs (one FAILED, a
+# parent with two nested children, and a pyfunc run with a logged model); a
+# regression experiment with metric history; a registered model with versions 1-3
+# and aliases champion -> 2, challenger -> 3; a second single-version model; and a
+# prompt, which must not appear in model listings.
 import os
 import uuid
 
@@ -18,16 +24,28 @@ from hero.lib.errors import (
     HEROMLModelRegistryResourceNotFound,
 )
 
-SEED_EXPERIMENT_NAME = "[SEED] Iris Classification"
-SEED_REGRESSION_EXPERIMENT_NAME = "[SEED] Diabetes Regression"
-SEED_RUN_NAME = "[SEED] pyfunc"
-SEED_MODEL_ID = "seed_diabetes_regressor"
+CLASSIFICATION_EXPERIMENT_NAME = os.environ.get(
+    "MMR_TEST_CLASSIFICATION_EXPERIMENT", "Fixture Iris Classification"
+)
+REGRESSION_EXPERIMENT_NAME = os.environ.get(
+    "MMR_TEST_REGRESSION_EXPERIMENT", "Fixture Diabetes Regression"
+)
+# Run names in the classification experiment are this prefix + a fixed suffix
+RUN_PREFIX = os.environ.get("MMR_TEST_RUN_PREFIX", "Fixture ")
+PYFUNC_RUN_NAME = f"{RUN_PREFIX}pyfunc"
+MULTI_VERSION_MODEL_ID = os.environ.get(
+    "MMR_TEST_MULTI_VERSION_MODEL", "fixture_diabetes_regressor"
+)
+SINGLE_VERSION_MODEL_ID = os.environ.get(
+    "MMR_TEST_SINGLE_VERSION_MODEL", "fixture_iris_classifier"
+)
+PROMPT_NAME = os.environ.get("MMR_TEST_PROMPT", "fixture_summarizer_prompt")
 
-# These need the hero-ml-model-registry-api fixes for HMR-248 (error codes) and
-# HMR-253 (version delete) deployed; set MMR_API_FIXES_DEPLOYED=1 once they are
+# Tests that need the API to pass MLflow error codes through and to delete versions
+# by number; set MMR_API_FIXES_DEPLOYED=1 against an API that does
 needs_api_fixes = pytest.mark.xfail(
     not os.environ.get("MMR_API_FIXES_DEPLOYED"),
-    reason="HMR-248/HMR-253: needs the API fix deployed",
+    reason="needs an API that passes MLflow error codes and deletes versions",
     strict=False,
 )
 
@@ -58,16 +76,16 @@ def model_registry():
 
 
 @pytest.fixture(scope="module")
-def seed_experiment(model_registry):
-    return experiment_by_name(model_registry, SEED_EXPERIMENT_NAME)
+def fixture_experiment(model_registry):
+    return experiment_by_name(model_registry, CLASSIFICATION_EXPERIMENT_NAME)
 
 
 @pytest.fixture(scope="module")
-def seed_run(model_registry, seed_experiment):
-    for run in model_registry.list_runs(experiment_id=seed_experiment.experiment_id):
-        if run.info.run_name == SEED_RUN_NAME:
+def fixture_run(model_registry, fixture_experiment):
+    for run in model_registry.list_runs(experiment_id=fixture_experiment.experiment_id):
+        if run.info.run_name == PYFUNC_RUN_NAME:
             return run
-    pytest.fail(f"run {SEED_RUN_NAME!r} is missing")
+    pytest.fail(f"run {PYFUNC_RUN_NAME!r} is missing")
 
 
 @pytest.fixture(scope="module")
@@ -98,24 +116,26 @@ def temp_model(model_registry):
 
 def test_list_experiments(model_registry):
     names = [e.name for e in model_registry.list_experiments()]
-    assert SEED_EXPERIMENT_NAME in names
-    assert SEED_REGRESSION_EXPERIMENT_NAME in names
+    assert CLASSIFICATION_EXPERIMENT_NAME in names
+    assert REGRESSION_EXPERIMENT_NAME in names
 
 
-def test_read_experiment(model_registry, seed_experiment):
-    experiment = model_registry.read_experiment(id=seed_experiment.experiment_id)
-    assert experiment.name == SEED_EXPERIMENT_NAME
+def test_read_experiment(model_registry, fixture_experiment):
+    experiment = model_registry.read_experiment(id=fixture_experiment.experiment_id)
+    assert experiment.name == CLASSIFICATION_EXPERIMENT_NAME
     assert experiment.lifecycle_stage == "active"
 
 
-def test_read_experiment_by_name_with_brackets(model_registry, seed_experiment):
-    experiment = model_registry.read_experiment_by_name(name=SEED_EXPERIMENT_NAME)
-    assert experiment.experiment_id == seed_experiment.experiment_id
+def test_read_experiment_by_name_with_brackets(model_registry, fixture_experiment):
+    experiment = model_registry.read_experiment_by_name(
+        name=CLASSIFICATION_EXPERIMENT_NAME
+    )
+    assert experiment.experiment_id == fixture_experiment.experiment_id
 
 
 def test_read_experiment_by_name_missing_raises(model_registry):
     with pytest.raises(HEROMLModelRegistryResourceNotFound):
-        model_registry.read_experiment_by_name(name=make_temp_name("hmr244 missing"))
+        model_registry.read_experiment_by_name(name=make_temp_name("sdk-test missing"))
 
 
 def test_read_or_create_experiment_returns_existing(model_registry, temp_experiment):
@@ -178,24 +198,24 @@ def test_update_and_delete_experiment_tag(model_registry, temp_experiment):
 # ----------------------------
 
 
-def test_list_runs_includes_failed_and_nested(model_registry, seed_experiment):
+def test_list_runs_includes_failed_and_nested(model_registry, fixture_experiment):
     runs = model_registry.list_runs(
-        experiment_id=seed_experiment.experiment_id, run_view_type="ALL"
+        experiment_id=fixture_experiment.experiment_id, run_view_type="ALL"
     )
     by_name = {r.info.run_name: r for r in runs}
     assert len(runs) == 5
-    assert by_name["[SEED] failed"].info.status == "FAILED"
-    parent_id = by_name["[SEED] sweep-parent"].info.run_id
-    child = by_name["[SEED] sweep-child-C0.1"]
+    assert by_name[f"{RUN_PREFIX}failed"].info.status == "FAILED"
+    parent_id = by_name[f"{RUN_PREFIX}sweep-parent"].info.run_id
+    child = by_name[f"{RUN_PREFIX}sweep-child-C0.1"]
     assert get_tag_map(child.data.tags)["mlflow.parentRunId"] == parent_id
 
 
-def test_list_runs_with_filter(model_registry, seed_experiment):
+def test_list_runs_with_filter(model_registry, fixture_experiment):
     runs = model_registry.list_runs(
-        experiment_id=seed_experiment.experiment_id,
+        experiment_id=fixture_experiment.experiment_id,
         filter="attributes.status = 'FAILED'",
     )
-    assert [r.info.run_name for r in runs] == ["[SEED] failed"]
+    assert [r.info.run_name for r in runs] == [f"{RUN_PREFIX}failed"]
 
 
 def test_list_runs_missing_experiment_id_raises(model_registry):
@@ -203,15 +223,15 @@ def test_list_runs_missing_experiment_id_raises(model_registry):
         model_registry.list_runs(experiment_id=None)
 
 
-def test_read_run(model_registry, seed_run):
-    run = model_registry.read_run(id=seed_run.info.run_id)
-    assert run.info.run_id == seed_run.info.run_id
+def test_read_run(model_registry, fixture_run):
+    run = model_registry.read_run(id=fixture_run.info.run_id)
+    assert run.info.run_id == fixture_run.info.run_id
     assert run.data.params
     assert run.outputs.model_outputs, "pyfunc run should have a logged model output"
 
 
 def test_read_metric_history(model_registry):
-    experiment = experiment_by_name(model_registry, SEED_REGRESSION_EXPERIMENT_NAME)
+    experiment = experiment_by_name(model_registry, REGRESSION_EXPERIMENT_NAME)
     run = model_registry.list_runs(experiment_id=experiment.experiment_id)[0]
     metric = run.data.metrics[0].key
     history = model_registry.read_metric_history(run_id=run.info.run_id, metric=metric)
@@ -219,7 +239,7 @@ def test_read_metric_history(model_registry):
 
 
 def test_read_bulk_metric_history(model_registry):
-    experiment = experiment_by_name(model_registry, SEED_REGRESSION_EXPERIMENT_NAME)
+    experiment = experiment_by_name(model_registry, REGRESSION_EXPERIMENT_NAME)
     runs = model_registry.list_runs(experiment_id=experiment.experiment_id)
     metric = runs[0].data.metrics[0].key
     history = model_registry.read_bulk_metric_history(
@@ -252,8 +272,10 @@ def test_read_bulk_metric_history_validation(model_registry):
         )
 
 
-def test_list_artifacts(model_registry, seed_run):
-    paths = [a.path for a in model_registry.list_artifacts(run_id=seed_run.info.run_id)]
+def test_list_artifacts(model_registry, fixture_run):
+    paths = [
+        a.path for a in model_registry.list_artifacts(run_id=fixture_run.info.run_id)
+    ]
     assert "predictions.csv" in paths
 
 
@@ -262,9 +284,9 @@ def test_list_artifacts(model_registry, seed_run):
 # ----------------------------
 
 
-def test_list_and_read_logged_models(model_registry, seed_experiment):
+def test_list_and_read_logged_models(model_registry, fixture_experiment):
     logged = model_registry.list_logged_models(
-        experiment_id=seed_experiment.experiment_id
+        experiment_id=fixture_experiment.experiment_id
     )
     assert logged, "the Iris experiment has a logged model"
 
@@ -282,25 +304,27 @@ def test_list_and_read_logged_models(model_registry, seed_experiment):
 
 def test_list_registered_models_hides_prompts(model_registry):
     names = [m.name for m in model_registry.list_registered_models()]
-    assert SEED_MODEL_ID in names
-    assert "seed_iris_classifier" in names
-    assert "seed_summarizer_prompt" not in names
+    assert MULTI_VERSION_MODEL_ID in names
+    assert SINGLE_VERSION_MODEL_ID in names
+    assert PROMPT_NAME not in names
 
 
 def test_list_registered_models_with_filter(model_registry):
-    models = model_registry.list_registered_models(filter="name LIKE 'seed_iris%'")
-    assert [m.name for m in models] == ["seed_iris_classifier"]
+    models = model_registry.list_registered_models(
+        filter=f"name = '{SINGLE_VERSION_MODEL_ID}'"
+    )
+    assert [m.name for m in models] == [SINGLE_VERSION_MODEL_ID]
 
 
 def test_read_registered_model_with_aliases(model_registry):
-    model = model_registry.read_registered_model(id=SEED_MODEL_ID)
+    model = model_registry.read_registered_model(id=MULTI_VERSION_MODEL_ID)
     aliases = {a.alias: a.version for a in model.aliases}
     assert aliases == {"champion": "2", "challenger": "3"}
 
 
 def test_read_registered_model_missing_raises(model_registry):
     with pytest.raises(HEROMLModelRegistryResourceNotFound):
-        model_registry.read_registered_model(id=make_temp_name("hmr244_missing"))
+        model_registry.read_registered_model(id=make_temp_name("sdk_test_missing"))
 
 
 def test_create_duplicate_registered_model_raises(model_registry, temp_model):
@@ -314,14 +338,16 @@ def test_read_or_create_registered_model_returns_existing(model_registry, temp_m
 
 
 def test_list_registered_model_versions_is_scoped_to_the_model(model_registry):
-    versions = model_registry.list_registered_model_versions(model_id=SEED_MODEL_ID)
+    versions = model_registry.list_registered_model_versions(
+        model_id=MULTI_VERSION_MODEL_ID
+    )
     assert sorted(v.version for v in versions) == ["1", "2", "3"]
-    assert {v.name for v in versions} == {SEED_MODEL_ID}
+    assert {v.name for v in versions} == {MULTI_VERSION_MODEL_ID}
 
 
 def test_list_registered_model_versions_sorted(model_registry):
     versions = model_registry.list_registered_model_versions(
-        model_id=SEED_MODEL_ID, search_key="version_number", sort_order="DESC"
+        model_id=MULTI_VERSION_MODEL_ID, search_key="version_number", sort_order="DESC"
     )
     assert [v.version for v in versions] == ["3", "2", "1"]
 
@@ -363,15 +389,15 @@ def test_rename_registered_model(model_registry):
 
 
 @needs_api_fixes
-def test_registered_model_version_lifecycle(model_registry, temp_model, seed_run):
-    run_id = seed_run.info.run_id
+def test_registered_model_version_lifecycle(model_registry, temp_model, fixture_run):
+    run_id = fixture_run.info.run_id
     created = model_registry.create_registered_model_version(
         model_id=temp_model.name, run_id=run_id, source=f"runs:/{run_id}/model"
     )
     version = created.version
 
     model_registry.update_registered_model_version(
-        model_id=temp_model.name, id=version, description="HMR-244 test"
+        model_id=temp_model.name, id=version, description="sdk test description"
     )
     model_registry.update_registered_model_version_tag(
         model_id=temp_model.name, id=version, key="test-key", value="test-value"
@@ -379,7 +405,7 @@ def test_registered_model_version_lifecycle(model_registry, temp_model, seed_run
     read = model_registry.read_registered_model_version(
         model_id=temp_model.name, id=version
     )
-    assert read.description == "HMR-244 test"
+    assert read.description == "sdk test description"
     assert get_tag_map(read.tags)["test-key"] == "test-value"
 
     model_registry.delete_registered_model_version_tag(
@@ -390,7 +416,7 @@ def test_registered_model_version_lifecycle(model_registry, temp_model, seed_run
     )
     assert "test-key" not in get_tag_map(read.tags)
 
-    # HMR-253: the API dropped the version number, so this failed until fixed
+    # the API used to drop the version number, so MLflow rejected the delete
     model_registry.delete_registered_model_version(model_id=temp_model.name, id=version)
     remaining = model_registry.list_registered_model_versions(model_id=temp_model.name)
     assert [v.version for v in remaining] == []
@@ -398,7 +424,7 @@ def test_registered_model_version_lifecycle(model_registry, temp_model, seed_run
 
 @needs_api_fixes
 def test_read_registered_model_version_missing_raises(model_registry, temp_model):
-    # HMR-248: a missing version came back as a generic 400 until fixed
+    # the API used to answer a missing version with a generic 400
     with pytest.raises(HEROMLModelRegistryResourceNotFound):
         model_registry.read_registered_model_version(model_id=temp_model.name, id="999")
 
