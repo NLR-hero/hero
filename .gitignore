@@ -12,3 +12,5 @@ test/download.json
 test/example.json
 
 .DS_Store
+.venv-mmr-test/
+test/.env

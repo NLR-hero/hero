@@ -42,6 +42,33 @@ Run:
 uv run pytest test/
 ```
 
+The values can also go in `test/.env` (gitignored), which the tests load when
+`python-dotenv` is installed.
+
+#### ML Model Registry tests
+
+`test/test_ml_model_registry.py` and `test/test_ml_model_registry_mlflow.py` run
+against the deployed dev API and the `[SEED]` data in the `hero-test-framework`
+project (`HERO_PROJECT=hero-test-framework`). Writes go to throwaway experiments
+and models that are deleted afterwards.
+
+The MLflow suite drives real MLflow through `get_patched_mlflow()` (training,
+logging, artifacts, logged models, registering, aliases, loading). It is skipped
+unless `hero-mlflow`, `mlflow` and `scikit-learn` are installed; use an MLflow
+version that matches the server:
+
+```
+uv venv .venv-mmr-test
+uv pip install --python .venv-mmr-test/bin/python -e ".[dev]" \
+    "hero-mlflow @ git+https://github.nlr.gov/Hero/hero-mlflow.git" \
+    "mlflow==3.16.1" scikit-learn python-dotenv
+.venv-mmr-test/bin/python -m pytest test/test_ml_model_registry.py test/test_ml_model_registry_mlflow.py
+```
+
+Tests marked `xfail` with a ticket key (HMR-248, HMR-250, HMR-253) document API
+or edge bugs. Set `MMR_API_FIXES_DEPLOYED=1` once the API fixes are deployed so
+those tests must pass.
+
 To link the local HERO codebase into a consuming project for feature development:
 
 - Checkout the target branch in this repo
