@@ -1,26 +1,58 @@
 # test_ml_model_registry.py
+#
+# Runs against a deployed ML Model Registry API. Reads check a project that holds
+# known fixture data (named below, overridable with MMR_TEST_* env vars); writes use
+# throwaway entities that are deleted when the module finishes, so a failed test
+# can't leave the shared fixture data changed.
+#
+# Env: HERO_ENV, HERO_PROJECT (the fixture project), and HERO_CLIENT_ID /
+# HERO_CLIENT_SECRET for a client with the ml-model-registry/user scope.
+#
+# Expected fixture data: a classification experiment with five runs (one FAILED, a
+# parent with two nested children, and a pyfunc run with a logged model); a
+# regression experiment with metric history; a registered model with versions 1-3
+# and aliases champion -> 2, challenger -> 3; a second single-version model; and a
+# prompt, which must not appear in model listings.
+import os
 import uuid
+
 import pytest
 import hero
 from hero.lib.errors import (
     MissingRequiredAttribute,
-    HEROMLModelRegistryResourceNotFound,
+    HEROMLModelRegistryResourceAlreadyExists,
     HEROMLModelRegistryResourceNotFound,
 )
 
+CLASSIFICATION_EXPERIMENT_NAME = os.environ.get(
+    "MMR_TEST_CLASSIFICATION_EXPERIMENT", "Fixture Iris Classification"
+)
+REGRESSION_EXPERIMENT_NAME = os.environ.get(
+    "MMR_TEST_REGRESSION_EXPERIMENT", "Fixture Diabetes Regression"
+)
+# Run names in the classification experiment are this prefix + a fixed suffix
+RUN_PREFIX = os.environ.get("MMR_TEST_RUN_PREFIX", "Fixture ")
+PYFUNC_RUN_NAME = f"{RUN_PREFIX}pyfunc"
+MULTI_VERSION_MODEL_ID = os.environ.get(
+    "MMR_TEST_MULTI_VERSION_MODEL", "fixture_diabetes_regressor"
+)
+SINGLE_VERSION_MODEL_ID = os.environ.get(
+    "MMR_TEST_SINGLE_VERSION_MODEL", "fixture_iris_classifier"
+)
+PROMPT_NAME = os.environ.get("MMR_TEST_PROMPT", "fixture_summarizer_prompt")
 
-TESTABLE_EXPERIMENT_ID = "2"
-TESTABLE_EXPERIMENT_NAME = "Wrapped Model Tests"
-TESTABLE_RUN_ID = "60c96b78b73649bd91d697ac8a44a1cd"
-TESTABLE_MODEL_ID = "Test Experiment 1"
-TESTABLE_MODEL_VERSION_ID = "1"
+# Tests that need the API to pass MLflow error codes through and to delete versions
+# by number; set MMR_API_FIXES_DEPLOYED=1 against an API that does
+needs_api_fixes = pytest.mark.xfail(
+    not os.environ.get("MMR_API_FIXES_DEPLOYED"),
+    reason="needs an API that passes MLflow error codes and deletes versions",
+    strict=False,
+)
 
 
 def get_tag_map(tags):
-    tags = tags or []
     tags_map = {}
-    for tag in tags:
-        # HeroObject should behave like a Mapping
+    for tag in tags or []:
         key = tag.get("key")
         if key is not None:
             tags_map[key] = tag.get("value")
@@ -31,155 +63,134 @@ def make_temp_name(prefix):
     return f"{prefix}-{uuid.uuid4().hex[:8]}"
 
 
+def experiment_by_name(model_registry, name):
+    for experiment in model_registry.list_experiments():
+        if experiment.name == name:
+            return experiment
+    pytest.fail(f"experiment {name!r} is missing from list_experiments")
+
+
+@pytest.fixture(scope="module")
+def model_registry():
+    return hero.HeroClient().MLModelRegistry()
+
+
+@pytest.fixture(scope="module")
+def fixture_experiment(model_registry):
+    return experiment_by_name(model_registry, CLASSIFICATION_EXPERIMENT_NAME)
+
+
+@pytest.fixture(scope="module")
+def fixture_run(model_registry, fixture_experiment):
+    for run in model_registry.list_runs(experiment_id=fixture_experiment.experiment_id):
+        if run.info.run_name == PYFUNC_RUN_NAME:
+            return run
+    pytest.fail(f"run {PYFUNC_RUN_NAME!r} is missing")
+
+
+@pytest.fixture(scope="module")
+def temp_experiment(model_registry):
+    created = model_registry.create_experiment(
+        name=make_temp_name("hero-python-sdk test")
+    )
+    # create returns only the experiment_id
+    experiment = model_registry.read_experiment(id=created.experiment_id)
+    yield experiment
+    model_registry.delete_experiment(id=experiment.experiment_id)
+
+
+@pytest.fixture(scope="module")
+def temp_model(model_registry):
+    model = model_registry.create_registered_model(
+        id=make_temp_name("hero_python_sdk_test")
+    )
+    yield model
+    # deleting the model also removes its versions
+    model_registry.delete_registered_model(id=model.name)
+
+
 # ----------------------------
 # Experiments
 # ----------------------------
 
 
-def test_list_experiments():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    experiments = model_registry.list_experiments()
-    assert experiments is not None
-    assert isinstance(experiments, list)
-    # smoke check on first item shape (if present)
-    if experiments:
-        exp0 = experiments[0]
-        # HeroObject supports dot access
-        assert hasattr(exp0, "id") or hasattr(exp0, "experiment_id")
+def test_list_experiments(model_registry):
+    names = [e.name for e in model_registry.list_experiments()]
+    assert CLASSIFICATION_EXPERIMENT_NAME in names
+    assert REGRESSION_EXPERIMENT_NAME in names
 
 
-def test_read_experiment():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
+def test_read_experiment(model_registry, fixture_experiment):
+    experiment = model_registry.read_experiment(id=fixture_experiment.experiment_id)
+    assert experiment.name == CLASSIFICATION_EXPERIMENT_NAME
+    assert experiment.lifecycle_stage == "active"
 
-    experiment = model_registry.read_experiment(id=TESTABLE_EXPERIMENT_ID)
-    assert experiment is not None
-    # MLflow uses experiment_id; some APIs also include id
-    assert (getattr(experiment, "experiment_id", None) == TESTABLE_EXPERIMENT_ID) or (
-        getattr(experiment, "id", None) == TESTABLE_EXPERIMENT_ID
+
+def test_read_experiment_by_name_with_brackets(model_registry, fixture_experiment):
+    experiment = model_registry.read_experiment_by_name(
+        name=CLASSIFICATION_EXPERIMENT_NAME
     )
+    assert experiment.experiment_id == fixture_experiment.experiment_id
 
 
-def test_read_experiment_by_name():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    experiment = model_registry.read_experiment_by_name(name=TESTABLE_EXPERIMENT_NAME)
-    assert experiment is not None
-    assert experiment.name == TESTABLE_EXPERIMENT_NAME
+def test_read_experiment_by_name_missing_raises(model_registry):
+    with pytest.raises(HEROMLModelRegistryResourceNotFound):
+        model_registry.read_experiment_by_name(name=make_temp_name("sdk-test missing"))
 
 
-def test_update_experiment_and_reset():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    experiment = model_registry.read_experiment(id=TESTABLE_EXPERIMENT_ID)
-    original_name = experiment.name
-    original_description = model_registry.get_description_from_tags(experiment.tags)
-
-    updated_name = "Updated Experiment"
-    updated_description = "Updated Description"
-
-    # update
-    experiment = model_registry.update_experiment(
-        id=TESTABLE_EXPERIMENT_ID,
-        name=updated_name,
-        description=updated_description,
-    )
-    assert experiment is not None
-    assert experiment.name == updated_name
-    assert (
-        model_registry.get_description_from_tags(experiment.tags) == updated_description
-    )
-
-    # reset
-    experiment = model_registry.update_experiment(
-        id=TESTABLE_EXPERIMENT_ID,
-        name=original_name,
-        description=original_description,
-    )
-    assert experiment is not None
-    assert experiment.name == original_name
-    assert (
-        model_registry.get_description_from_tags(experiment.tags)
-        == original_description
-    )
+def test_read_or_create_experiment_returns_existing(model_registry, temp_experiment):
+    experiment = model_registry.read_or_create_experiment(name=temp_experiment.name)
+    assert experiment.experiment_id == temp_experiment.experiment_id
 
 
-def test_update_and_delete_experiment_tag():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    key = "test-key"
-    value = "test-value"
-
-    model_registry.update_experiment_tag(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
-        key=key,
-        value=value,
-    )
-
-    experiment = model_registry.read_experiment(id=TESTABLE_EXPERIMENT_ID)
-    tags_map = get_tag_map(experiment.tags)
-    assert tags_map.get(key) == value
-
-    model_registry.delete_experiment_tag(
-        experiment_id=TESTABLE_EXPERIMENT_ID,
-        key=key,
-    )
-
-    experiment = model_registry.read_experiment(id=TESTABLE_EXPERIMENT_ID)
-    tags_map = get_tag_map(experiment.tags)
-    assert key not in tags_map
-
-
-def test_create_read_or_create_and_delete_experiment():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    temp_name = make_temp_name("sdk-test-exp")
-
-    # create
-    created = model_registry.create_experiment(name=temp_name)
-    assert created is not None
-    created_id = getattr(created, "experiment_id", None) or getattr(created, "id", None)
-    assert created_id is not None
-
-    # read_or_create should read existing
-    roc = model_registry.read_or_create_experiment(name=temp_name)
-    assert roc is not None
-    assert roc.name == temp_name
-
-    # delete
-    _ = model_registry.delete_experiment(id=created_id)
-
-    # post-conditions: accept hard OR soft delete
+def test_read_or_create_experiment_creates(model_registry):
+    name = make_temp_name("hero-python-sdk read-or-create")
+    experiment = model_registry.read_or_create_experiment(name=name)
     try:
-        exp_after = model_registry.read_experiment(id=created_id)
-    except HEROMLModelRegistryResourceNotFound:
-        # hard delete
-        return
-
-    # soft delete – ensure lifecycle + listing behavior
-    assert getattr(exp_after, "lifecycle_stage", "").lower() != "active"
-
-    # and it should not be returned by the active list
-    listed = model_registry.list_experiments()
-    listed_ids = {
-        getattr(e, "experiment_id", None) or getattr(e, "id", None)
-        for e in (listed or [])
-    }
-    assert created_id not in listed_ids
+        assert experiment.name == name
+        again = model_registry.read_experiment_by_name(name=name)
+        assert again.experiment_id == experiment.experiment_id
+    finally:
+        model_registry.delete_experiment(id=experiment.experiment_id)
 
 
-def test_read_or_create_experiment_missing_name_raises():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
+def test_read_or_create_experiment_missing_name_raises(model_registry):
     with pytest.raises(MissingRequiredAttribute):
         model_registry.read_or_create_experiment(name=None)
+
+
+@needs_api_fixes
+def test_create_duplicate_experiment_raises(model_registry, temp_experiment):
+    with pytest.raises(HEROMLModelRegistryResourceAlreadyExists):
+        model_registry.create_experiment(name=temp_experiment.name)
+
+
+def test_update_experiment(model_registry, temp_experiment):
+    new_name = f"{temp_experiment.name} updated"
+    model_registry.update_experiment(
+        id=temp_experiment.experiment_id,
+        name=new_name,
+        description="Updated Description",
+    )
+    experiment = model_registry.read_experiment(id=temp_experiment.experiment_id)
+    assert experiment.name == new_name
+    assert (
+        model_registry.get_description_from_tags(experiment.tags)
+        == "Updated Description"
+    )
+
+
+def test_update_and_delete_experiment_tag(model_registry, temp_experiment):
+    experiment_id = temp_experiment.experiment_id
+    model_registry.update_experiment_tag(
+        experiment_id=experiment_id, key="test-key", value="test-value"
+    )
+    experiment = model_registry.read_experiment(id=experiment_id)
+    assert get_tag_map(experiment.tags)["test-key"] == "test-value"
+
+    model_registry.delete_experiment_tag(experiment_id=experiment_id, key="test-key")
+    experiment = model_registry.read_experiment(id=experiment_id)
+    assert "test-key" not in get_tag_map(experiment.tags)
 
 
 # ----------------------------
@@ -187,377 +198,255 @@ def test_read_or_create_experiment_missing_name_raises():
 # ----------------------------
 
 
-def test_list_runs():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
+def test_list_runs_includes_failed_and_nested(model_registry, fixture_experiment):
+    runs = model_registry.list_runs(
+        experiment_id=fixture_experiment.experiment_id, run_view_type="ALL"
+    )
+    by_name = {r.info.run_name: r for r in runs}
+    assert len(runs) == 5
+    assert by_name[f"{RUN_PREFIX}failed"].info.status == "FAILED"
+    parent_id = by_name[f"{RUN_PREFIX}sweep-parent"].info.run_id
+    child = by_name[f"{RUN_PREFIX}sweep-child-C0.1"]
+    assert get_tag_map(child.data.tags)["mlflow.parentRunId"] == parent_id
 
-    runs = model_registry.list_runs(experiment_id=TESTABLE_EXPERIMENT_ID)
-    assert runs is not None
-    assert isinstance(runs, list)
+
+def test_list_runs_with_filter(model_registry, fixture_experiment):
+    runs = model_registry.list_runs(
+        experiment_id=fixture_experiment.experiment_id,
+        filter="attributes.status = 'FAILED'",
+    )
+    assert [r.info.run_name for r in runs] == [f"{RUN_PREFIX}failed"]
 
 
-def test_list_runs_missing_experiment_id_raises():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
+def test_list_runs_missing_experiment_id_raises(model_registry):
     with pytest.raises(MissingRequiredAttribute):
         model_registry.list_runs(experiment_id=None)
 
 
-def test_read_run():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
+def test_read_run(model_registry, fixture_run):
+    run = model_registry.read_run(id=fixture_run.info.run_id)
+    assert run.info.run_id == fixture_run.info.run_id
+    assert run.data.params
+    assert run.outputs.model_outputs, "pyfunc run should have a logged model output"
 
-    run = model_registry.read_run(
-        id=TESTABLE_RUN_ID,
+
+def test_read_metric_history(model_registry):
+    experiment = experiment_by_name(model_registry, REGRESSION_EXPERIMENT_NAME)
+    run = model_registry.list_runs(experiment_id=experiment.experiment_id)[0]
+    metric = run.data.metrics[0].key
+    history = model_registry.read_metric_history(run_id=run.info.run_id, metric=metric)
+    assert len(history) >= 1
+
+
+def test_read_bulk_metric_history(model_registry):
+    experiment = experiment_by_name(model_registry, REGRESSION_EXPERIMENT_NAME)
+    runs = model_registry.list_runs(experiment_id=experiment.experiment_id)
+    metric = runs[0].data.metrics[0].key
+    history = model_registry.read_bulk_metric_history(
+        experiment_id=experiment.experiment_id,
+        run_ids=[r.info.run_id for r in runs],
+        metric=metric,
     )
-    assert run is not None
-    assert run.info.run_id == TESTABLE_RUN_ID
+    assert len(history) >= len(runs)
 
 
-def test_update_run_and_reset():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    run = model_registry.read_run(id=TESTABLE_RUN_ID)
-    original_name = run.info.run_name
-    original_description = model_registry.get_description_from_tags(run.data.tags)
-
-    updated_name = "Updated Run"
-    updated_description = "Updated Description"
-
-    run = model_registry.update_run(
-        id=TESTABLE_RUN_ID,
-        name=updated_name,
-        description=updated_description,
-    )
-    assert run is not None
-    assert run.info.run_name == updated_name
-    assert (
-        model_registry.get_description_from_tags(run.data.tags) == updated_description
-    )
-
-    # reset
-    run = model_registry.update_run(
-        id=TESTABLE_RUN_ID,
-        name=original_name,
-        description=original_description,
-    )
-    assert run is not None
-    assert run.info.run_name == original_name
-    assert (
-        model_registry.get_description_from_tags(run.data.tags) == original_description
-    )
-
-
-def test_update_and_delete_run_tag():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    key = "test-key"
-    value = "test-value"
-
-    model_registry.update_run_tag(
-        run_id=TESTABLE_RUN_ID,
-        key=key,
-        value=value,
-    )
-
-    run = model_registry.read_run(
-        id=TESTABLE_RUN_ID,
-    )
-    tags_map = get_tag_map(run.data.tags)
-    assert tags_map.get(key) == value
-
-    model_registry.delete_run_tag(
-        run_id=TESTABLE_RUN_ID,
-        key=key,
-    )
-
-    run = model_registry.read_run(
-        id=TESTABLE_RUN_ID,
-    )
-    tags_map = get_tag_map(run.data.tags)
-    assert key not in tags_map
-
-
-def test_read_metric_history_validation():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
+def test_read_metric_history_validation(model_registry):
     with pytest.raises(MissingRequiredAttribute):
         model_registry.read_metric_history(run_id=None, metric="m")
     with pytest.raises(MissingRequiredAttribute):
-        model_registry.read_metric_history(run_id=TESTABLE_RUN_ID, metric=None)
+        model_registry.read_metric_history(run_id="r", metric=None)
 
 
-def test_read_bulk_metric_history_validation():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
+def test_read_bulk_metric_history_validation(model_registry):
     with pytest.raises(MissingRequiredAttribute):
         model_registry.read_bulk_metric_history(
-            experiment_id=None, run_ids=[TESTABLE_RUN_ID], metric="m"
+            experiment_id=None, run_ids=["r"], metric="m"
         )
     with pytest.raises(MissingRequiredAttribute):
         model_registry.read_bulk_metric_history(
-            experiment_id=TESTABLE_EXPERIMENT_ID, run_ids=[], metric="m"
+            experiment_id="e", run_ids=None, metric="m"
         )
     with pytest.raises(MissingRequiredAttribute):
         model_registry.read_bulk_metric_history(
-            experiment_id=TESTABLE_EXPERIMENT_ID, run_ids=[TESTABLE_RUN_ID], metric=None
+            experiment_id="e", run_ids=["r"], metric=None
         )
 
 
-def test_list_artifacts():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
+def test_list_artifacts(model_registry, fixture_run):
+    paths = [
+        a.path for a in model_registry.list_artifacts(run_id=fixture_run.info.run_id)
+    ]
+    assert "predictions.csv" in paths
 
-    artifacts = model_registry.list_artifacts(
-        run_id=TESTABLE_RUN_ID,
+
+# ----------------------------
+# Logged models
+# ----------------------------
+
+
+def test_list_and_read_logged_models(model_registry, fixture_experiment):
+    logged = model_registry.list_logged_models(
+        experiment_id=fixture_experiment.experiment_id
     )
+    assert logged, "the Iris experiment has a logged model"
 
-    # SDK returns HeroObject(data) for artifacts; backend commonly returns a list.
-    # Assert it's list-like (many backends return a simple list).
-    assert artifacts is not None
-    assert isinstance(artifacts, list) or hasattr(artifacts, "__iter__")
+    model_id = logged[0].info.model_id
+    model = model_registry.read_logged_model(id=model_id)
+    assert model.info.model_id == model_id
+    files = model_registry.list_logged_model_artifacts(model_id=model_id)
+    assert any(f.path == "MLmodel" for f in files)
 
 
 # ----------------------------
-# Logged Models (optional data)
+# Registered models
 # ----------------------------
 
 
-def test_list_logged_models_and_optionally_read_one():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
+def test_list_registered_models_hides_prompts(model_registry):
+    names = [m.name for m in model_registry.list_registered_models()]
+    assert MULTI_VERSION_MODEL_ID in names
+    assert SINGLE_VERSION_MODEL_ID in names
+    assert PROMPT_NAME not in names
 
-    logged = model_registry.list_logged_models(experiment_id=TESTABLE_EXPERIMENT_ID)
-    assert logged is not None
-    assert isinstance(logged, list)
 
-    if not logged:
-        pytest.skip(
-            "No logged models found for the test experiment; skipping detail checks."
-        )
-    first = logged[0]
-    lm = model_registry.read_logged_model(
-        experiment_id=TESTABLE_EXPERIMENT_ID, id=first.id
+def test_list_registered_models_with_filter(model_registry):
+    models = model_registry.list_registered_models(
+        filter=f"name = '{SINGLE_VERSION_MODEL_ID}'"
     )
-    assert lm is not None
-    # Artifacts may or may not exist — if they do, list them
-    arts = model_registry.list_logged_model_artifacts(
-        experiment_id=TESTABLE_EXPERIMENT_ID, model_id=first.id
+    assert [m.name for m in models] == [SINGLE_VERSION_MODEL_ID]
+
+
+def test_read_registered_model_with_aliases(model_registry):
+    model = model_registry.read_registered_model(id=MULTI_VERSION_MODEL_ID)
+    aliases = {a.alias: a.version for a in model.aliases}
+    assert aliases == {"champion": "2", "challenger": "3"}
+
+
+def test_read_registered_model_missing_raises(model_registry):
+    with pytest.raises(HEROMLModelRegistryResourceNotFound):
+        model_registry.read_registered_model(id=make_temp_name("sdk_test_missing"))
+
+
+def test_create_duplicate_registered_model_raises(model_registry, temp_model):
+    with pytest.raises(HEROMLModelRegistryResourceAlreadyExists):
+        model_registry.create_registered_model(id=temp_model.name)
+
+
+def test_read_or_create_registered_model_returns_existing(model_registry, temp_model):
+    model = model_registry.read_or_create_registered_model(id=temp_model.name)
+    assert model.name == temp_model.name
+
+
+def test_list_registered_model_versions_is_scoped_to_the_model(model_registry):
+    versions = model_registry.list_registered_model_versions(
+        model_id=MULTI_VERSION_MODEL_ID
     )
-    # list_logged_model_artifacts returns HeroObject(data); many backends return list
-    assert arts is not None
+    assert sorted(v.version for v in versions) == ["1", "2", "3"]
+    assert {v.name for v in versions} == {MULTI_VERSION_MODEL_ID}
 
 
-# ----------------------------
-# Registered Models
-# ----------------------------
+def test_list_registered_model_versions_sorted(model_registry):
+    versions = model_registry.list_registered_model_versions(
+        model_id=MULTI_VERSION_MODEL_ID, search_key="version_number", sort_order="DESC"
+    )
+    assert [v.version for v in versions] == ["3", "2", "1"]
 
 
-def test_list_registered_models():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    models = model_registry.list_registered_models()
-    assert models is not None
-    assert isinstance(models, list)
-
-
-def test_read_registered_model():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    model = model_registry.read_registered_model(id=TESTABLE_MODEL_ID)
-    assert model is not None
-    assert model.name == TESTABLE_MODEL_ID
-
-
-def test_update_registered_model_and_reset():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    model = model_registry.read_registered_model(id=TESTABLE_MODEL_ID)
-    original_description = model.description
-    updated_description = "Updated Description"
-
+def test_update_registered_model(model_registry, temp_model):
     model = model_registry.update_registered_model(
-        id=TESTABLE_MODEL_ID,
-        description=updated_description,
+        id=temp_model.name, description="Updated Description"
     )
-    assert model is not None
-    assert model.description == updated_description
-
-    model = model_registry.update_registered_model(
-        id=TESTABLE_MODEL_ID,
-        description=original_description,
-    )
-    assert model is not None
-    assert model.description == original_description
+    assert model.description == "Updated Description"
 
 
-def test_update_and_delete_registered_model_tag():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    key = "test-key"
-    value = "test-value"
-
+def test_update_and_delete_registered_model_tag(model_registry, temp_model):
     model_registry.update_registered_model_tag(
-        model_id=TESTABLE_MODEL_ID,
-        key=key,
-        value=value,
+        model_id=temp_model.name, key="test-key", value="test-value"
     )
+    model = model_registry.read_registered_model(id=temp_model.name)
+    assert get_tag_map(model.tags)["test-key"] == "test-value"
 
-    model = model_registry.read_registered_model(id=TESTABLE_MODEL_ID)
-    tags_map = get_tag_map(model.tags)
-    assert tags_map.get(key) == value
+    model_registry.delete_registered_model_tag(model_id=temp_model.name, key="test-key")
+    model = model_registry.read_registered_model(id=temp_model.name)
+    assert "test-key" not in get_tag_map(model.tags)
 
-    model_registry.delete_registered_model_tag(
-        model_id=TESTABLE_MODEL_ID,
-        key=key,
+
+def test_rename_registered_model(model_registry):
+    old_name = make_temp_name("hero_python_sdk_rename")
+    new_name = f"{old_name}_renamed"
+    model_registry.create_registered_model(id=old_name)
+    try:
+        model = model_registry.rename_registered_model(id=old_name, new_name=new_name)
+        assert model.name == new_name
+        with pytest.raises(HEROMLModelRegistryResourceNotFound):
+            model_registry.read_registered_model(id=old_name)
+    finally:
+        for name in (new_name, old_name):
+            try:
+                model_registry.delete_registered_model(id=name)
+            except HEROMLModelRegistryResourceNotFound:
+                pass
+
+
+@needs_api_fixes
+def test_registered_model_version_lifecycle(model_registry, temp_model, fixture_run):
+    run_id = fixture_run.info.run_id
+    created = model_registry.create_registered_model_version(
+        model_id=temp_model.name, run_id=run_id, source=f"runs:/{run_id}/model"
     )
+    version = created.version
 
-    model = model_registry.read_registered_model(id=TESTABLE_MODEL_ID)
-    tags_map = get_tag_map(model.tags)
-    assert key not in tags_map
-
-
-# def test_registered_model_crud_and_rename_cycle():
-#     hero_client = hero.HeroClient()
-#     model_registry = hero_client.MLModelRegistry()
-
-#     temp_name = make_temp_name("sdk-test-model")
-
-#     # create
-#     created = model_registry.create_registered_model(id=temp_name)
-#     assert created is not None
-#     assert created.name == temp_name
-
-#     # read_or_create should read existing
-#     roc = model_registry.read_or_create_registered_model(id=temp_name)
-#     assert roc is not None
-#     assert roc.name == temp_name
-
-#     # rename (changes the resource path)
-#     new_name = f"{temp_name}-renamed"
-#     _ = model_registry.rename_registered_model(id=temp_name, new_name=new_name)
-
-#     # read using new name (should succeed)
-#     model_after = model_registry.read_registered_model(id=new_name)
-#     assert model_after is not None
-#     assert model_after.name == new_name
-
-#     # old name should now 404
-#     with pytest.raises(HEROMLModelRegistryResourceNotFound):
-#         model_registry.read_registered_model(id=temp_name)
-
-#     # delete using new name
-#     deleted = model_registry.delete_registered_model(id=new_name)
-#     assert deleted is not None
-
-#     # both old and new names should now 404
-#     with pytest.raises(HEROMLModelRegistryResourceNotFound):
-#         model_registry.read_registered_model(id=new_name)
-#     with pytest.raises(HEROMLModelRegistryResourceNotFound):
-#         model_registry.read_registered_model(id=temp_name)
-
-
-def test_registered_model_version_read_update_and_tag_flow():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    version = model_registry.read_registered_model_version(
-        model_id=TESTABLE_MODEL_ID, id=TESTABLE_MODEL_VERSION_ID
+    model_registry.update_registered_model_version(
+        model_id=temp_model.name, id=version, description="sdk test description"
     )
-    assert version is not None
-
-    orig_desc = getattr(version, "description", None)
-    upd_desc = "Updated Version Description"
-
-    _ = model_registry.update_registered_model_version(
-        model_id=TESTABLE_MODEL_ID,
-        id=TESTABLE_MODEL_VERSION_ID,
-        description=upd_desc,
-    )
-    version_after = model_registry.read_registered_model_version(
-        model_id=TESTABLE_MODEL_ID, id=TESTABLE_MODEL_VERSION_ID
-    )
-    assert getattr(version_after, "description", None) == upd_desc
-
-    _ = model_registry.update_registered_model_version(
-        model_id=TESTABLE_MODEL_ID,
-        id=TESTABLE_MODEL_VERSION_ID,
-        description=orig_desc,
-    )
-    version_reset = model_registry.read_registered_model_version(
-        model_id=TESTABLE_MODEL_ID, id=TESTABLE_MODEL_VERSION_ID
-    )
-    assert getattr(version_reset, "description", None) == orig_desc
-
-    key = "test-key"
-    value = "test-value"
-
     model_registry.update_registered_model_version_tag(
-        model_id=TESTABLE_MODEL_ID, id=TESTABLE_MODEL_VERSION_ID, key=key, value=value
+        model_id=temp_model.name, id=version, key="test-key", value="test-value"
     )
-
-    version = model_registry.read_registered_model_version(
-        model_id=TESTABLE_MODEL_ID, id=TESTABLE_MODEL_VERSION_ID
+    read = model_registry.read_registered_model_version(
+        model_id=temp_model.name, id=version
     )
-    tags_map = get_tag_map(version.tags)
-    assert tags_map.get(key) == value
+    assert read.description == "sdk test description"
+    assert get_tag_map(read.tags)["test-key"] == "test-value"
 
     model_registry.delete_registered_model_version_tag(
-        model_id=TESTABLE_MODEL_ID, id=TESTABLE_MODEL_VERSION_ID, key=key
+        model_id=temp_model.name, id=version, key="test-key"
     )
-
-    version = model_registry.read_registered_model_version(
-        model_id=TESTABLE_MODEL_ID, id=TESTABLE_MODEL_VERSION_ID
+    read = model_registry.read_registered_model_version(
+        model_id=temp_model.name, id=version
     )
-    tags_map = get_tag_map(version.tags)
-    assert key not in tags_map
+    assert "test-key" not in get_tag_map(read.tags)
+
+    # the API used to drop the version number, so MLflow rejected the delete
+    model_registry.delete_registered_model_version(model_id=temp_model.name, id=version)
+    remaining = model_registry.list_registered_model_versions(model_id=temp_model.name)
+    assert [v.version for v in remaining] == []
 
 
-def test_list_registered_model_versions_shape():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    # SDK currently returns `.model_version` from this method
-    versions = model_registry.list_registered_model_versions(model_id=TESTABLE_MODEL_ID)
-    assert versions is not None
-    # Some APIs return a list; the SDK exposes `.model_version`—assert it is list-like or object
-    assert isinstance(versions, list) or hasattr(versions, "version")
+@needs_api_fixes
+def test_read_registered_model_version_missing_raises(model_registry, temp_model):
+    # the API used to answer a missing version with a generic 400
+    with pytest.raises(HEROMLModelRegistryResourceNotFound):
+        model_registry.read_registered_model_version(model_id=temp_model.name, id="999")
 
 
 # ----------------------------
-# Tracking URI & Patched MLflow (optional)
+# Tracking URI & patched MLflow
 # ----------------------------
 
 
-def test_get_tracking_uri_basic_shape():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
+def test_get_tracking_uri(model_registry):
     uri = model_registry.get_tracking_uri()
-    assert isinstance(uri, str)
-    assert "/proxy/" in uri
+    assert uri.endswith(f"/proxy/{model_registry.registry_name}")
 
 
-def test_patched_mlflow_optional_dependency():
-    hero_client = hero.HeroClient()
-    model_registry = hero_client.MLModelRegistry()
-
-    # This should either return a client or raise a RuntimeError if hero-mlflow isn't installed.
+def test_patched_mlflow_optional_dependency(model_registry):
+    # Either returns the patched module/client or explains how to install hero-mlflow
     try:
-        mlf = model_registry.get_patched_mlflow()
-        assert mlf is not None
+        assert model_registry.get_patched_mlflow() is not None
     except RuntimeError as e:
         assert "hero-mlflow is not installed" in str(e)
 
     try:
-        mlc = model_registry.get_patched_mlflow_client()
-        assert mlc is not None
+        assert model_registry.get_patched_mlflow_client() is not None
     except RuntimeError as e:
         assert "hero-mlflow is not installed" in str(e)
